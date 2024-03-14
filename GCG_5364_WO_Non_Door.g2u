@@ -1,0 +1,676 @@
+Program.Sub.ScreenSU.Start
+Gui.FormNonDoor..Create
+Gui.FormNonDoor..Caption("Work Order Non-Door Queue")
+Gui.FormNonDoor..Size(12975,7500)
+Gui.FormNonDoor..MinX(0)
+Gui.FormNonDoor..MinY(0)
+Gui.FormNonDoor..Position(0,0)
+Gui.FormNonDoor..BackColor(-2147483633)
+Gui.FormNonDoor..MousePointer(0)
+Gui.FormNonDoor..Event(UnLoad,FormNonDoor_UnLoad)
+Gui.FormNonDoor.GsGridControlNonDoor.Create(GsGridControl)
+Gui.FormNonDoor.GsGridControlNonDoor.Size(12705,6420)
+Gui.FormNonDoor.GsGridControlNonDoor.Position(60,555)
+Gui.FormNonDoor.GsGridControlNonDoor.Event(RowCellClick,GsGridControlNonDoor_RowCellClick)
+Gui.FormNonDoor.cmdRefresh.Create(Button)
+Gui.FormNonDoor.cmdRefresh.Size(855,375)
+Gui.FormNonDoor.cmdRefresh.Position(11910,90)
+Gui.FormNonDoor.cmdRefresh.Caption("REFRESH")
+Gui.FormNonDoor.cmdRefresh.Event(Click,cmdRefresh_Click)
+Gui.FormNonDoor.cmdRefresh.Anchor(9)
+Gui.FormNonDoor.lblPrinter.Create(Label,"Label Printer:",True,1095,255,0,8430,210,True,0,"Arial",8,-2147483633,0)
+Gui.FormNonDoor.lblPrinter.Anchor(9)
+Gui.FormNonDoor.ddlPrinter.Create(DropDownList)
+Gui.FormNonDoor.ddlPrinter.Size(2265,330)
+Gui.FormNonDoor.ddlPrinter.Position(9570,105)
+Gui.FormNonDoor.ddlPrinter.Anchor(9)
+Gui.FormNonDoor.cmdRelease.Create(Button)
+Gui.FormNonDoor.cmdRelease.Size(2280,375)
+Gui.FormNonDoor.cmdRelease.Position(105,105)
+Gui.FormNonDoor.cmdRelease.Caption("Release Selected")
+Gui.FormNonDoor.cmdRelease.Event(Click,cmdRelease_Click)
+Program.Sub.ScreenSU.End
+
+Program.Sub.Preflight.Start
+Program.External.Include.Library("900100.lib")
+Program.Sub.Preflight.End
+
+Program.Sub.Main.Start
+F.Intrinsic.Control.SetErrorHandler("Main_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+V.Local.sSql.Declare(String,"")
+
+F.ODBC.Connection!ConC.OpenCommonConnection
+
+'creating dictionary for sentinel enabled printers
+V.Local.sSql.Set("Select PrinterName, rtrim(Sentinelalias) From Server_Printers Where Sentinelenabled = 1 and Sentinelalias <> '' Order By Sentinelalias")
+F.Data.Dictionary.CreateFromSQL("Printer","ConC",V.Local.sSql)
+
+Gui.FormNonDoor.ddlPrinter.AddItem("",0)
+Gui.FormNonDoor.ddlPrinter.AddItems("Dictionary","Printer")
+
+F.Data.Dictionary.Close("Printer")
+
+F.ODBC.Connection!ConC.Close
+
+F.Intrinsic.Control.CallSub(Get_Data)
+F.Intrinsic.Control.CallSub(Set_Properties)
+
+Gui.FormNonDoor..Show
+
+Gui.FormNonDoor..AlwaysOnTop(True)
+Gui.FormNonDoor..AlwaysOnTop(False)
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("Main_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_5364_WO_Non_Door.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(FormNonDoor_Unload)
+Function.Intrinsic.Control.EndIf
+Program.Sub.Main.End
+
+Program.Sub.GsGridControlNonDoor_RowCellClick.Start
+F.Intrinsic.Control.SetErrorHandler("GsGridControlNonDoor_RowCellClick_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+V.Local.sSql.Declare(String,"")
+V.Local.sFilter.Declare(String,"")
+
+F.Intrinsic.Control.If(V.Args.Column.UCase,=,"RELEASE_JOB")
+	'printing labels for selected row
+	Gui.FormNonDoor..Enabled(False)
+	F.Intrinsic.String.Build("JS = '{0}'",V.DataTable.Job(V.Args.RowIndex).JS!FieldValTrim,V.Local.sFilter)
+	F.Data.DataView.Create("ReWork","VReWork",22,V.Local.sFilter,"")
+	F.ODBC.Connection!Conx.OpenCompanyConnection
+	
+	F.Intrinsic.String.Build("select Part from V_INVENTORY_ALL where PART = '{0}' and UCASE(CODE_SORT) IN (Select UCase(Sort_Code) From GCG_5364_SORT_MAINT Where UCASE(Status) = 'DOOR' OR UCASE(Status) like 'NON-DOOR%') and (PRODUCT_LINE = 'MM' OR PRODUCT_LINE = 'ND')",V.DataTable.Job(V.Args.RowIndex).Part!FieldValTrim,V.Local.sSql)
+	F.ODBC.Connection!conx.OpenLocalRecordsetRO("rstPart",V.Local.sSQL)
+	F.Intrinsic.Control.If(V.ODBC.conx!rstPart.EOF,=,False)
+		F.Intrinsic.Control.CallSub(Print_Labels,"RowIndex",V.Args.RowIndex,"Part",V.DataTable.Job(V.Args.RowIndex).Part!FieldValTrim)
+	F.Intrinsic.Control.Else
+		'printing barcode wo report 1811
+		F.Intrinsic.Control.CallSub(Print_Barcode_WO,"RowIndex",V.Args.RowIndex)
+	F.Intrinsic.Control.EndIf
+	F.ODBC.conx!rstPart.Close
+	
+	
+	F.Intrinsic.Control.If(V.DataView.ReWork!VReWork.RowCount--,<>,-1)
+		F.Data.DataTable.DeleteRow("ReWork",V.DataView.ReWork!VReWork(V.DataView.ReWork!VReWork.RowCount--).DataTableIndex)
+		F.Data.DataTable.SaveToDB("ReWork","conx","GCG_5364_Rework","Job*!*Suffix",7,"Job@!@Job*!*Suffix@!@Suffix*!*ReWork_Qty@!@ReWork_Qty")
+		F.Data.DataTable.AcceptChanges("ReWork")
+	F.Intrinsic.Control.EndIf
+	
+	F.Data.DataView.Close("ReWork","VReWork")
+	
+	F.Data.DataTable.SetValue("Job",V.Args.RowIndex,"JOB_RELEASED",True)
+
+	F.Data.DataTable.SaveToDB("Job","Conx","GCG_5364_NON_DOOR_WO","Job*!*Suffix",256,"Job@!@Job*!*Suffix@!@Suffix*!*Part@!@Part*!*JOB_RELEASED@!@JOB_RELEASED")
+	F.Data.DataTable.AcceptChanges("Job")
+	F.ODBC.Connection!Conx.Close
+	Gui.FormNonDoor..Enabled(True)
+	
+	Gui.FormNonDoor..AlwaysOnTop(True)
+	Gui.FormNonDoor..AlwaysOnTop(False)
+
+F.Intrinsic.Control.ElseIf(V.Args.Column.UCase,=,"SELECTION")
+'	F.Data.DataView.SetValue("Job","VJob",V.Args.RowHandle,"Selection",V.DataView.Job!VJob(V.Args.RowHandle).Selection!FieldValNot)
+	F.Data.DataTable.SetValue("Job",V.Args.RowIndex,"Selection",V.DataTable.Job(V.Args.RowIndex).Selection!FieldValNot)
+F.Intrinsic.Control.EndIf
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("GsGridControlNonDoor_RowCellClick_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_5364_WO_Non_Door.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(FormNonDoor_Unload)
+Function.Intrinsic.Control.EndIf
+Program.Sub.GsGridControlNonDoor_RowCellClick.End
+
+Program.Sub.FormNonDoor_UnLoad.Start
+F.Intrinsic.Control.SetErrorHandler("FormNonDoor_UnLoad_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+
+F.Intrinsic.Control.End
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("FormNonDoor_UnLoad_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_5364_WO_Non_Door.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.End
+Function.Intrinsic.Control.EndIf
+Program.Sub.FormNonDoor_UnLoad.End
+
+Program.Sub.Get_Data.Start
+F.Intrinsic.Control.SetErrorHandler("Get_Data_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+
+F.ODBC.Connection!Con.OpenCompanyConnection
+F.Data.DataTable.CreateFromSQL("Job","con","Select A.Job+A.Suffix as JS, A.Job, A.Suffix, A.Part, B.Description, B.Qty_Order, Cast(0 as Double) as Rework_Qty, '' as Finish, '' as Release_Job, JOB_RELEASED From GCG_5364_NON_DOOR_WO A Left Join V_Job_Header B on A.Job = B.Job and A.Suffix = B.Suffix Left Join V_Inventory_Mstr C on A.Part = C.Part Where JOB_RELEASED = 0 Order by A.Job,A.Suffix",True)
+'F.Data.DataTable.CreateFromSQL("Job","con","Select Job+Suffix as JS, Job, Suffix, Part, '' as Finish, '' as Release_Job, JOB_RELEASED From GCG_5364_NON_DOOR_WO Where Job_Released = 0 Order by Job,Suffix",True)
+F.Data.DataTable.SetPK("Job","JS")
+
+F.Data.DataTable.CreateFromSQL("ReWork","con","Select a.Job+a.Suffix as JS, a.Job, a.Suffix, b.Part, B.Description, B.Qty_Order, ReWork_Qty, '' as Release_Job, Cast(0 as Bit) as JOB_RELEASED From GCG_5364_Rework a Left Join V_Job_Header b On a.job = b.Job and a.Suffix = b.Suffix Left Join V_Inventory_Mstr c On b.Part = c.Part Where c.Code_Sort In(Select Sort_Code From GCG_5364_SORT_MAINT Where UCase(Status) Like 'NON-DOOR%')",True)
+'F.Data.DataTable.CreateFromSQL("ReWork","con","Select Rec_No, a.Job+a.Suffix as JS, a.Job, a.Suffix, b.Part, '' as Release_Job, Cast(0 as Bit) as JOB_RELEASED, ReWork_Qty From GCG_5364_Rework a Left Join V_Job_Header b On a.job = b.Job and a.Suffix = b.Suffix Left Join V_Inventory_Mstr c On b.Part = c.Part Where c.Code_Sort In(Select Sort_Code From GCG_5364_SORT_MAINT Where UCase(Status) Like 'NON-DOOR%')",True)
+F.Data.DataTable.SetPK("ReWork","JS")
+
+F.Data.DataTable.Merge("ReWork","Job",False,2)
+
+F.Data.Dictionary.CreateFromSQL("Fin","con","Select Job+Suffix as JS, Fin_Desc From V_Order_To_WO A Join GCG_5364_OE_Lines B on a.Order_No = b.Order_No and A.Order_Line = b.Record_No")
+F.Data.Dictionary.SetDefaultReturn("Fin"," ")
+F.Data.DataTable.FillFromDictionary("Job","Fin","JS","Finish")
+F.Data.Dictionary.Close("Fin")
+
+F.Data.Dictionary.CreateFromSQL("Desc","con","Select Job+Suffix as JS, B.Description From V_Order_To_WO A Join GCG_5364_OE_Lines B on a.Order_No = b.Order_No and A.Order_Line = b.Record_No")
+'F.Data.Dictionary.SetDefaultReturn("Desc"," ")
+F.Data.DataTable.FillFromDictionary("Job","Desc","JS","Description")
+F.Data.Dictionary.Close("Desc")
+
+F.Data.Dictionary.CreateFromSQL("Desc","con","Select Job+Suffix as JS, Description From V_Job_Header")
+F.Data.DataTable.FillFromDictionary("Job","Desc","Description","Description")
+F.Data.Dictionary.Close("Desc")
+
+F.Data.DataView.Create("Job","VJob",22,"JOB_RELEASED = False","")
+
+F.Data.DataTable.AddColumn("Job","Due_Date",Date)
+F.Data.DataTable.AddColumn("Job","Selection",Boolean)
+
+F.Data.DataTable.SetValue("Job",-1,"Selection",False)
+
+F.Data.Dictionary.CreateFromSQL("DUE","con","Select Distinct a.Job+a.Suffix, Date_Item_Prom From V_Order_To_WO A Join V_Order_Lines B on A.Order_No = B.Order_No and A.Order_Line = B.Record_No")
+F.Data.Dictionary.SetDefaultReturn("DUE","01/01/1900")
+F.Data.DataTable.FillFromDictionary("Job","DUE","JS","Due_Date")
+F.Data.Dictionary.Close("DUE")
+
+F.ODBC.Connection!Con.Close
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("Get_Data_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_5364_WO_Non_Door.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(FormNonDoor_Unload)
+	F.Intrinsic.Control.End
+Function.Intrinsic.Control.EndIf
+Program.Sub.Get_Data.End
+
+Program.Sub.Set_Properties.Start
+F.Intrinsic.Control.SetErrorHandler("Set_Properties_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+
+Gui.FormNonDoor.GsGridControlNonDoor.Anchor(15)
+
+Gui.FormNonDoor.GsGridControlNonDoor.AddGridviewFromDataview("GJob","Job","VJob")
+
+Gui.FormNonDoor.GsGridControlNonDoor.SetGridviewProperty("GJob","Editable",False)
+Gui.FormNonDoor.GsGridControlNonDoor.SetGridviewProperty("GJob","ReadOnly",True)
+Gui.FormNonDoor.GsGridControlNonDoor.SetGridviewProperty("GJob","AllowColumnMoving",True)
+
+Gui.FormNonDoor.GsGridControlNonDoor.SetColumnProperty("GJob","Selection","HeaderBackColor","MediumSeaGreen")
+Gui.FormNonDoor.GsGridControlNonDoor.SetColumnProperty("GJob","Selection","HeaderFontBold",True)
+Gui.FormNonDoor.GsGridControlNonDoor.SetColumnProperty("GJob","Selection","Caption"," ")
+Gui.FormNonDoor.GsGridControlNonDoor.SetColumnProperty("GJob","Selection","Fixed","Left")
+
+Gui.FormNonDoor.GsGridControlNonDoor.SetColumnProperty("GJob","JS","HeaderBackColor","MediumSeaGreen")
+Gui.FormNonDoor.GsGridControlNonDoor.SetColumnProperty("GJob","JS","HeaderFontBold",True)
+Gui.FormNonDoor.GsGridControlNonDoor.SetColumnProperty("GJob","JS","Visible",False)
+Gui.FormNonDoor.GsGridControlNonDoor.SetColumnProperty("GJob","Job","HeaderBackColor","MediumSeaGreen")
+Gui.FormNonDoor.GsGridControlNonDoor.SetColumnProperty("GJob","Job","HeaderFontBold",True)
+Gui.FormNonDoor.GsGridControlNonDoor.SetColumnProperty("GJob","Suffix","HeaderBackColor","MediumSeaGreen")
+Gui.FormNonDoor.GsGridControlNonDoor.SetColumnProperty("GJob","Suffix","HeaderFontBold",True)
+Gui.FormNonDoor.GsGridControlNonDoor.SetColumnProperty("GJob","Part","HeaderBackColor","MediumSeaGreen")
+Gui.FormNonDoor.GsGridControlNonDoor.SetColumnProperty("GJob","Part","HeaderFontBold",True)
+Gui.FormNonDoor.GsGridControlNonDoor.SetColumnProperty("GJob","Description","HeaderBackColor","MediumSeaGreen")
+Gui.FormNonDoor.GsGridControlNonDoor.SetColumnProperty("GJob","Description","HeaderFontBold",True)
+Gui.FormNonDoor.GsGridControlNonDoor.SetColumnProperty("GJob","Description","CellHAlignment","Near")
+Gui.FormNonDoor.GsGridControlNonDoor.SetColumnProperty("GJob","Qty_Order","HeaderBackColor","MediumSeaGreen")
+Gui.FormNonDoor.GsGridControlNonDoor.SetColumnProperty("GJob","Qty_Order","HeaderFontBold",True)
+Gui.FormNonDoor.GsGridControlNonDoor.SetColumnProperty("GJob","Qty_Order","Caption","Qty Ordered")
+Gui.FormNonDoor.GsGridControlNonDoor.SetColumnProperty("GJob","Rework_Qty","HeaderBackColor","MediumSeaGreen")
+Gui.FormNonDoor.GsGridControlNonDoor.SetColumnProperty("GJob","Rework_Qty","HeaderFontBold",True)
+Gui.FormNonDoor.GsGridControlNonDoor.SetColumnProperty("GJob","Rework_Qty","Caption","Rework Qty")
+Gui.FormNonDoor.GsGridControlNonDoor.SetColumnProperty("GJob","Due_Date","HeaderBackColor","MediumSeaGreen")
+Gui.FormNonDoor.GsGridControlNonDoor.SetColumnProperty("GJob","Due_Date","HeaderFontBold",True)
+Gui.FormNonDoor.GsGridControlNonDoor.SetColumnProperty("GJob","Due_Date","DisplayCustomDatetime","d")
+Gui.FormNonDoor.GsGridControlNonDoor.SetColumnProperty("GJob","Finish","HeaderBackColor","MediumSeaGreen")
+Gui.FormNonDoor.GsGridControlNonDoor.SetColumnProperty("GJob","Finish","HeaderFontBold",True)
+Gui.FormNonDoor.GsGridControlNonDoor.SetColumnProperty("GJob","Finish","CellHAlignment","Near")
+Gui.FormNonDoor.GsGridControlNonDoor.SetColumnProperty("GJob","Release_Job","HeaderBackColor","MediumSeaGreen")
+Gui.FormNonDoor.GsGridControlNonDoor.SetColumnProperty("GJob","Release_Job","HeaderFontBold",True)
+Gui.FormNonDoor.GsGridControlNonDoor.SetColumnProperty("GJob","Release_Job","Caption"," ")
+Gui.FormNonDoor.GsGridControlNonDoor.SetColumnProperty("GJob","Release_Job","Fixed","Right")
+Gui.FormNonDoor.GsGridControlNonDoor.ColumnEdit("GJob","Release_Job","EditorButton","Release")
+Gui.FormNonDoor.GsGridControlNonDoor.SetColumnProperty("GJob","Release_Job","MaxWidth",100)
+Gui.FormNonDoor.GsGridControlNonDoor.SetColumnProperty("GJob","JOB_RELEASED","HeaderBackColor","MediumSeaGreen")
+Gui.FormNonDoor.GsGridControlNonDoor.SetColumnProperty("GJob","JOB_RELEASED","HeaderFontBold",True)
+Gui.FormNonDoor.GsGridControlNonDoor.SetColumnProperty("GJob","JOB_RELEASED","Visible",False)
+Gui.FormNonDoor.GsGridControlNonDoor.SetColumnProperty("GJob","Release_Job","Caption","Job Released")
+
+Gui.FormNonDoor.GsGridControlNonDoor.MainView("GJob")
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("Set_Properties_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_5364_WO_Non_Door.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(FormNonDoor_Unload)
+	F.Intrinsic.Control.End
+Function.Intrinsic.Control.EndIf
+Program.Sub.Set_Properties.End
+
+Program.Sub.cmdRefresh_Click.Start
+F.Intrinsic.Control.SetErrorHandler("cmdRefresh_Click_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+
+F.ODBC.Connection!Con.OpenCompanyConnection
+
+Gui.FormNonDoor..Enabled(False)
+
+'refreshing grid with updated jobs that are non door since the program was intially opened.
+F.Data.DataTable.CreateFromSQL("Temp","con","Select A.Job+A.Suffix as JS, A.Job, A.Suffix, A.Part, B.Description, B.Qty_Order, Cast(0 as Double) as Rework_Qty, '' as Finish, '' as Release_Job, JOB_RELEASED From GCG_5364_NON_DOOR_WO A Left Join V_Job_Header B on A.Job = B.Job and A.Suffix = B.Suffix Left Join V_Inventory_Mstr C on A.Part = C.Part Where JOB_RELEASED = 0 Order by A.Job,A.Suffix",True)
+'F.Data.DataTable.CreateFromSQL("Temp","con","Select Job+Suffix as JS, Job, Suffix, Part, JOB_RELEASED From GCG_5364_NON_DOOR_WO Where JOB_RELEASED = 0 Order by Job,Suffix",True)
+F.Data.DataTable.SetPK("Temp","JS")
+
+Gui.FormNonDoor.GsGridControlNonDoor.SuspendLayout
+
+F.Data.Dictionary.CreateFromSQL("Fin","con","Select Job+Suffix as JS, Fin_Desc From V_Order_To_WO A Join GCG_5364_OE_Lines B on a.Order_No = b.Order_No and A.Order_Line = b.Record_No")
+F.Data.Dictionary.SetDefaultReturn("Fin"," ")
+
+F.Data.Dictionary.CreateFromSQL("DUE","con","Select Distinct Job, Date_Due From V_Order_To_WO A Join V_Order_Header B on A.Order_No = B.Order_No")
+F.Data.Dictionary.SetDefaultReturn("DUE","01/01/1900")
+
+F.Data.DataTable.DeleteRow("Job")
+F.Data.DataTable.Merge("Temp","Job",False,4)
+F.Data.DataTable.AcceptChanges("Job")
+
+F.Data.DataTable.Close("Temp")
+
+F.Data.DataTable.CreateFromSQL("Temp","con","Select a.Job+a.Suffix as JS, a.Job, a.Suffix, b.Part, B.Description, B.Qty_Order, ReWork_Qty, '' as Release_Job, Cast(0 as Bit) as JOB_RELEASED From GCG_5364_Rework a Left Join V_Job_Header b On a.job = b.Job and a.Suffix = b.Suffix Left Join V_Inventory_Mstr c On b.Part = c.Part Where c.Code_Sort In(Select Sort_Code From GCG_5364_SORT_MAINT Where UCase(Status) Like 'NON-DOOR%')",True)
+'F.Data.DataTable.CreateFromSQL("Temp","con","Select Rec_No, a.Job+a.Suffix as JS, a.Job, a.Suffix, b.Part, '' as Release_Job, Cast(0 as Bit) as JOB_RELEASED, ReWork_Qty From GCG_5364_Rework a Left Join V_Job_Header b On a.job = b.Job and a.Suffix = b.Suffix Left Join V_Inventory_Mstr c On b.Part = c.Part Where c.Code_Sort In(Select Sort_Code From GCG_5364_SORT_MAINT Where UCase(Status) Like 'NON-DOOR%')",True)
+F.Data.DataTable.SetPK("Temp","JS")
+
+F.Data.DataTable.DeleteRow("ReWork")
+F.Data.DataTable.Merge("Temp","ReWork",False,4)
+F.Data.DataTable.AcceptChanges("ReWork")
+
+F.Data.DataTable.Close("Temp")
+
+F.Data.DataTable.Merge("ReWork","Job",False,2)
+
+F.Data.DataTable.FillFromDictionary("Job","Fin","JS","Finish")
+F.Data.Dictionary.Close("Fin")
+
+F.Data.DataTable.FillFromDictionary("Job","DUE","Job","Due_Date")
+F.Data.Dictionary.Close("DUE")
+
+F.Data.Dictionary.CreateFromSQL("Desc","con","Select Job+Suffix as JS, B.Description From V_Order_To_WO A Join GCG_5364_OE_Lines B on a.Order_No = b.Order_No and A.Order_Line = b.Record_No")
+F.Data.DataTable.FillFromDictionary("Job","Desc","JS","Description")
+F.Data.Dictionary.Close("Desc")
+
+F.Data.Dictionary.CreateFromSQL("Desc","con","Select Job+Suffix as JS, Description From V_Job_Header")
+F.Data.DataTable.FillFromDictionary("Job","Desc","Description","Description")
+F.Data.Dictionary.Close("Desc")
+
+F.ODBC.Connection!Con.Close
+
+F.Intrinsic.Control.If(V.DataTable.Job.RowCount--,<>,-1)
+	F.Data.DataTable.SetValue("Job",-1,"SELECTION",False)
+F.Intrinsic.Control.EndIf
+
+Gui.FormNonDoor.GsGridControlNonDoor.ResumeLayout
+
+Gui.FormNonDoor..Enabled(True)
+
+Gui.FormNonDoor..AlwaysOnTop(True)
+Gui.FormNonDoor..AlwaysOnTop(False)
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("cmdRefresh_Click_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_5364_WO_Non_Door.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(FormNonDoor_Unload)
+	F.Intrinsic.Control.End
+Function.Intrinsic.Control.EndIf
+Program.Sub.cmdRefresh_Click.End
+
+Program.Sub.Print_Labels.Start
+F.Intrinsic.Control.SetErrorHandler("Print_Labels_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+V.Local.sSql.Declare(String,"")
+V.Local.iBiRunID.Declare(Long,0)
+V.Local.iLogID.Declare(Long,0)
+V.Local.iRptID.Declare(Long,0)
+V.Local.sPrinter.Declare(String,"")
+V.Local.sLaborRet.Declare(String,"")
+V.Local.sSerial.Declare(String,"")
+V.Local.sPL.Declare(String,"")
+V.Local.iQty.Declare(Long,0)
+V.Local.iIns.Declare(Long,0)
+V.Local.bRW.Declare(Boolean,False)
+V.Local.iInstance.Declare(Long,0)
+
+V.Local.sPrinter.Set(V.Screen.FormNonDoor!ddlPrinter.Value)
+
+F.ODBC.Connection!Con.OpenCompanyConnection(999)
+
+'cleaning up label data table incase old data for job suffix is in the table
+F.Intrinsic.String.Build("Delete From GCG_5364_Label_Data Where Job = '{0}' and Suffix = '{1}'",V.DataTable.Job(V.Args.RowIndex).Job!FieldValTrim,V.DataTable.Job(V.Args.RowIndex).Suffix!FieldValTrim,V.Local.sSql)
+F.ODBC.Connection!Con.Execute(V.Local.sSql)
+
+'getting label data from custom table
+F.Intrinsic.String.Build("Select Job,Suffix,Seq,Instance,Part,Description,Order_No,Order_Line,Qty,Due_Date,Totallength,TotalWidth,Wkg1,Wkg2,Wkg3,Wkg4,Wkg5,Drill_Code,JSSI,MATL,MAT_DESC,FINISH,TEXT,CUSTOMER,NAME_CUSTOMER,FIN_DESC,SHIP_NAME From GCG_5364_Label_Data Where Job = '{0}' and Suffix = '{1}'",V.DataTable.Job(V.Args.RowIndex).Job!FieldValTrim,V.DataTable.Job(V.Args.RowIndex).Suffix!FieldValTrim,V.Local.sSql)
+
+F.Data.DataTable.CreateFromSQL("Label","con",V.Local.sSql,True)
+F.Data.DataTable.CreateFromSQL("LabelData","con",V.Local.sSql,True)
+
+F.Intrinsic.String.Build("Select Top 1 Product_Line From V_Inventory_Mstr Where Part = '{0}'",V.Args.Part,V.Local.sSql)
+F.ODBC.Connection!Con.ExecuteAndReturn(V.Local.sSql,V.Local.sPL)
+
+F.Intrinsic.Control.If(V.DataTable.Label.RowCount--,=,-1)
+	F.Intrinsic.Control.If(V.Local.sPL.UCase,=,"ND")
+'		F.Intrinsic.String.Build("Select Qty_Order From V_Job_Header Where Job = '{0}' and Suffix = '{1}'",V.Datatable.Job(V.Args.RowIndex).Job!FieldValTrim,V.Datatable.Job(V.Args.RowIndex).Suffix!FieldValTrim,V.Local.sSql)
+'		F.ODBC.Connection!Con.ExecuteAndReturn(V.Local.sSql,V.Local.iQty)
+		F.Intrinsic.Control.If(V.Datatable.Job(V.Args.RowIndex).ReWork_Qty!FieldValLong,>,0)
+			V.Local.bRW.Set(True)
+			V.Local.iQty.Set(V.Datatable.Job(V.Args.RowIndex).ReWork_Qty!FieldValLong)
+			F.Intrinsic.String.Build("select Top 1 Instance from GCG_5364_LABEL_DATA Where Job = '{0}' and SUffix = '{1}' Order By Cast(Instance as Int) Desc",V.Datatable.Job(V.Args.RowIndex).Job!FieldValTrim,V.Datatable.Job(V.Args.RowIndex).Suffix!FieldValTrim,V.Local.sSql)
+			F.ODBC.Connection!Con.ExecuteAndReturn(V.Local.sSql,V.Local.iInstance)
+		F.Intrinsic.Control.Else
+			V.Local.bRW.Set(False)
+			V.Local.iQty.Set(V.Datatable.Job(V.Args.RowIndex).Qty_Order!FieldValLong)
+			V.Local.iInstance.Set(0)
+		F.Intrinsic.Control.EndIf
+		F.Intrinsic.Control.For(V.Local.iIns,1,V.Local.iQty,1)
+			F.Intrinsic.Math.Add(V.Local.iInstance,1,V.Local.iInstance)
+			F.Intrinsic.Control.If(V.Local.bRW)
+				F.Data.DataTable.AddRow("Label","Job",V.Datatable.Job(V.Args.RowIndex).Job!FieldValTrim,"Suffix",V.Datatable.Job(V.Args.RowIndex).Suffix!FieldValTrim,"Part",V.Datatable.Job(V.Args.RowIndex).Part!FieldValTrim,"Instance",V.Local.iInstance,"Qty",1,"JSSI","Y")
+				F.Data.DataTable.AddRow("LabelData","Job",V.Datatable.Job(V.Args.RowIndex).Job!FieldValTrim,"Suffix",V.Datatable.Job(V.Args.RowIndex).Suffix!FieldValTrim,"Part",V.Datatable.Job(V.Args.RowIndex).Part!FieldValTrim,"Instance",V.Local.iInstance,"Qty",1)
+			F.Intrinsic.Control.Else
+				F.Data.DataTable.AddRow("Label","Job",V.Datatable.Job(V.Args.RowIndex).Job!FieldValTrim,"Suffix",V.Datatable.Job(V.Args.RowIndex).Suffix!FieldValTrim,"Part",V.Datatable.Job(V.Args.RowIndex).Part!FieldValTrim,"Instance",V.Local.iInstance,"Qty",1,"JSSI","N")
+				F.Data.DataTable.AddRow("LabelData","Job",V.Datatable.Job(V.Args.RowIndex).Job!FieldValTrim,"Suffix",V.Datatable.Job(V.Args.RowIndex).Suffix!FieldValTrim,"Part",V.Datatable.Job(V.Args.RowIndex).Part!FieldValTrim,"Instance",V.Local.iInstance,"Qty",1)
+			F.Intrinsic.Control.EndIf
+		F.Intrinsic.Control.Next(v.Local.iIns)
+	F.Intrinsic.Control.Else
+		F.Data.DataTable.AddRow("Label","Job",V.Datatable.Job(V.Args.RowIndex).Job!FieldValTrim,"Suffix",V.Datatable.Job(V.Args.RowIndex).Suffix!FieldValTrim,"Part",V.Datatable.Job(V.Args.RowIndex).Part!FieldValTrim,"Instance",1)
+		F.Data.DataTable.AddRow("LabelData","Job",V.Datatable.Job(V.Args.RowIndex).Job!FieldValTrim,"Suffix",V.Datatable.Job(V.Args.RowIndex).Suffix!FieldValTrim,"Part",V.Datatable.Job(V.Args.RowIndex).Part!FieldValTrim,"Instance",1)
+	F.Intrinsic.Control.EndIf
+F.Intrinsic.Control.EndIf
+
+F.Intrinsic.String.Build("Select Order_No, Order_Line From V_Order_To_Wo Where Job = '{0}' and Suffix = '{1}'",V.Datatable.Job(V.Args.RowIndex).Job!FieldValTrim,V.Datatable.Job(V.Args.RowIndex).Suffix!FieldValTrim,V.Local.sSql)
+F.Data.DataTable.CreateFromSQL("Order","con",V.Local.sSql)
+F.Intrinsic.Control.If(V.DataTable.Order.RowCount--,<>,-1)
+	F.Data.DataTable.SetValue("Label",-1,"Order_No",V.DataTable.Order(V.DataTable.Order.RowCount--).Order_No!FieldValTrim,"Order_Line",V.DataTable.Order(V.DataTable.Order.RowCount--).Order_Line!FieldValTrim)
+	F.Data.DataTable.SetValue("LabelData",-1,"Order_No",V.DataTable.Order(V.DataTable.Order.RowCount--).Order_No!FieldValTrim,"Order_Line",V.DataTable.Order(V.DataTable.Order.RowCount--).Order_Line!FieldValTrim)
+F.Intrinsic.Control.EndIf
+F.Data.DataTable.Close("Order")
+
+F.Intrinsic.String.Build("Select Qty_Order, Description, Date_Due From V_Job_Header Where Job = '{0}' and Suffix = '{1}'",V.Datatable.Job(V.Args.RowIndex).Job!FieldValTrim,V.Datatable.Job(V.Args.RowIndex).Suffix!FieldValTrim,V.Local.sSql)
+F.Data.DataTable.CreateFromSQL("JobH","con",V.Local.sSql)
+F.Intrinsic.Control.If(V.DataTable.JobH.RowCount--,<>,-1)
+	F.Intrinsic.Control.If(V.Local.sPL.UCase,=,"ND")
+		F.Intrinsic.Control.If(V.DataView.ReWork!VReWork.RowCount--,<>,-1)
+			F.Data.DataTable.SetValue("Label",-1,"Due_Date",V.DataTable.JobH(V.DataTable.JobH.RowCount--).Date_Due!FieldVal)
+		F.Intrinsic.Control.Else
+			F.Data.DataTable.SetValue("Label",-1,"Due_Date",V.DataTable.JobH(V.DataTable.JobH.RowCount--).Date_Due!FieldVal)
+		F.Intrinsic.Control.EndIf
+		F.Data.DataTable.SetValue("LabelData",-1,"Due_Date",V.DataTable.JobH(V.DataTable.JobH.RowCount--).Date_Due!FieldVal)
+	F.Intrinsic.Control.Else
+		F.Intrinsic.Control.If(V.DataView.ReWork!VReWork.RowCount--,<>,-1)
+			F.Data.DataTable.SetValue("Label",-1,"Qty",V.DataView.ReWork!VReWork(V.DataView.ReWork!VReWork.RowCount--).ReWork_Qty!FieldVal,"Due_Date",V.DataTable.JobH(V.DataTable.JobH.RowCount--).Date_Due!FieldVal)
+		F.Intrinsic.Control.Else
+			F.Data.DataTable.SetValue("Label",-1,"Qty",V.DataTable.JobH(V.DataTable.JobH.RowCount--).Qty_Order!FieldVal,"Due_Date",V.DataTable.JobH(V.DataTable.JobH.RowCount--).Date_Due!FieldVal)
+		F.Intrinsic.Control.EndIf
+		F.Data.DataTable.SetValue("LabelData",-1,"Qty",V.DataTable.JobH(V.DataTable.JobH.RowCount--).Qty_Order!FieldVal,"Due_Date",V.DataTable.JobH(V.DataTable.JobH.RowCount--).Date_Due!FieldVal)
+	F.Intrinsic.Control.EndIf
+F.Intrinsic.Control.EndIf
+F.Data.DataTable.Close("JobH")
+
+F.Intrinsic.String.Build("Select Length, Width, Drill_Code, Finish, Fin_Desc, Matl, Matl_Desc,Description,Notes From GCG_5364_OE_LINES Where Order_No = '{0}' and Record_No = '{1}'",V.DataTable.Label(V.DataTable.Label.RowCount--).Order_No!FieldValTrim,V.DataTable.Label(V.DataTable.Label.RowCount--).Order_Line!FieldValTrim,V.Local.sSql)
+F.Data.DataTable.CreateFromSQL("OELINES","con",V.Local.sSql)
+F.Intrinsic.Control.If(V.DataTable.OELINES.RowCount--,<>,-1)
+	F.Data.DataTable.SetValue("Label",-1,"TotalLength",V.DataTable.OELINES(V.DataTable.OELINES.RowCount--).Length!FieldVal,"TotalWidth",V.DataTable.OELINES(V.DataTable.OELINES.RowCount--).Width!FieldVal,"Drill_Code",V.DataTable.OELINES(V.DataTable.OELINES.RowCount--).Drill_Code!FieldValTrim,"MATL",V.DataTable.OELINES(V.DataTable.OELINES.RowCount--).MATL!FieldValTrim,"MAT_DESC",V.DataTable.OELINES(V.DataTable.OELINES.RowCount--).Matl_Desc!FieldValTrim,"FINISH",V.DataTable.OELINES(V.DataTable.OELINES.RowCount--).Finish!FieldValTrim,"FIN_DESC",V.DataTable.OELINES(V.DataTable.OELINES.RowCount--).Fin_Desc!FieldValTrim,"Description",V.DataTable.OELINES(V.DataTable.OELINES.RowCount--).Description!FieldValTrim,"TEXT",V.DataTable.OELINES(V.DataTable.OELINES.RowCount--).Notes!FieldValTrim)
+	F.Data.DataTable.SetValue("LabelData",-1,"TotalLength",V.DataTable.OELINES(V.DataTable.OELINES.RowCount--).Length!FieldVal,"TotalWidth",V.DataTable.OELINES(V.DataTable.OELINES.RowCount--).Width!FieldVal,"Drill_Code",V.DataTable.OELINES(V.DataTable.OELINES.RowCount--).Drill_Code!FieldValTrim,"MATL",V.DataTable.OELINES(V.DataTable.OELINES.RowCount--).MATL!FieldValTrim,"MAT_DESC",V.DataTable.OELINES(V.DataTable.OELINES.RowCount--).Matl_Desc!FieldValTrim,"FINISH",V.DataTable.OELINES(V.DataTable.OELINES.RowCount--).Finish!FieldValTrim,"FIN_DESC",V.DataTable.OELINES(V.DataTable.OELINES.RowCount--).Fin_Desc!FieldValTrim,"Description",V.DataTable.OELINES(V.DataTable.OELINES.RowCount--).Description!FieldValTrim,"TEXT",V.DataTable.OELINES(V.DataTable.OELINES.RowCount--).Notes!FieldValTrim)
+F.Intrinsic.Control.EndIf
+F.Data.DataTable.Close("OELINES")
+
+F.Intrinsic.String.Build("SELECT PART FROM V_JOB_OPERATIONS WHERE JOB ='{0}' AND SUFFIX = '{1}' AND LMO = 'L'  AND SEQ < '990000' ORDER BY SEQ",V.Datatable.Job(V.Args.RowIndex).Job!FieldValTrim,V.Datatable.Job(V.Args.RowIndex).Suffix!FieldValTrim,V.Local.sSQL)
+F.ODBC.Connection!con.ExecuteAndReturn(V.Local.sSQL,V.Local.sLaborRet)
+F.Intrinsic.Control.If(V.Local.sLaborRet.Trim,>,"")
+	F.Intrinsic.String.Split(V.Local.sLaborRet,"#$#",V.Local.sLaborRet)
+	v.Local.sLaborRet.RedimPreserve(0,4)
+	
+	F.Data.DataTable.SetValue("Label",-1,"WKG1",V.Local.sLaborRet(0).Trim,"WKG2",V.Local.sLaborRet(1).Trim,"WKG3",V.Local.sLaborRet(2).Trim,"WKG4",V.Local.sLaborRet(3).Trim,"WKG5",V.Local.sLaborRet(4).Trim)
+	F.Data.DataTable.SetValue("LabelData",-1,"WKG1",V.Local.sLaborRet(0).Trim,"WKG2",V.Local.sLaborRet(1).Trim,"WKG3",V.Local.sLaborRet(2).Trim,"WKG4",V.Local.sLaborRet(3).Trim,"WKG5",V.Local.sLaborRet(4).Trim)
+F.Intrinsic.Control.EndIf
+
+F.Intrinsic.Control.For(V.Local.iIns,0,V.DataTable.Label.RowCount--,1)
+'	F.Intrinsic.Math.Add(V.Local.iIns,1,V.Local.iQty)
+	V.Local.sSerial.Redim(0,1)
+	F.Intrinsic.String.RPad(V.DataTable.Label(V.DataTable.Label.RowCount--).Order_No!FieldVal," ",7,V.Local.sSerial(0))
+	F.Intrinsic.String.RPad(V.DataTable.Label(V.DataTable.Label.RowCount--).Order_Line!FieldVal," ",4,V.Local.sSerial(1))
+	F.Intrinsic.Control.If(V.DataTable.Label(V.Local.iIns).Jssi!FieldValTrim,=,"Y")
+		F.Intrinsic.String.Build("R{0}{1}{2}",V.Local.sSerial(0),V.Local.sSerial(1),V.DataTable.Label(V.Local.iIns).Instance!FieldValLong,V.Local.sSerial)
+	F.Intrinsic.Control.Else
+		F.Intrinsic.String.Build("{0}{1}{2}",V.Local.sSerial(0),V.Local.sSerial(1),V.DataTable.Label(V.Local.iIns).Instance!FieldValLong,V.Local.sSerial)
+	F.Intrinsic.Control.EndIf
+	F.Data.DataTable.SetValue("Label",V.Local.iIns,"Jssi",V.Local.sSerial)
+	F.Data.DataTable.SetValue("LabelData",V.Local.iIns,"Jssi",V.Local.sSerial)
+F.Intrinsic.Control.Next(V.Local.iIns)
+
+'adding po, customer name and text to label data
+F.Data.DataTable.AddColumn("Label","PO","String")
+F.Data.DataTable.AddColumn("Label","SO_QTY","String")
+
+'populating po
+F.Intrinsic.String.Build("Select Order_No, Customer_Po as PO From V_Order_Header Where Order_No = '{0}'",V.DataTable.Label(V.DataTable.Label.RowCount--).Order_No!FieldValTrim,V.Local.sSql)
+F.Data.Dictionary.CreateFromSQL("PO","con",V.Local.sSql)
+F.Data.Dictionary.SetDefaultReturn("PO"," ")
+F.Data.DataTable.FillFromDictionary("Label","PO","Order_No","PO")
+
+F.Data.Dictionary.Close("PO")
+
+'populating customer name
+F.Intrinsic.String.Build("Select Order_No, Name_Customer From V_Order_Header A Left Join V_Customer_Master B on A.Customer = B.Customer Where Order_No = '{0}'",V.DataTable.Label(V.DataTable.Label.RowCount--).Order_No!FieldValTrim,V.Local.sSql)
+F.Data.Dictionary.CreateFromSQL("Cust","con",V.Local.sSql)
+F.Data.Dictionary.SetDefaultReturn("Cust"," ")
+F.Data.DataTable.FillFromDictionary("Label","Cust","Order_No","Name_Customer")
+F.Data.DataTable.FillFromDictionary("LabelData","Cust","Order_No","Name_Customer")
+
+F.Data.Dictionary.Close("Cust")
+
+'populating customer name
+F.Intrinsic.String.Build("Select Order_No, Name_Customer_Ship from V_ORDER_SHIP_TO Where Order_No = '{0}'",V.DataTable.Label(V.DataTable.Label.RowCount--).Order_No!FieldValTrim,V.Local.sSql)
+F.Data.Dictionary.CreateFromSQL("SHIPNAME","con",V.Local.sSql)
+F.Data.Dictionary.SetDefaultReturn("SHIPNAME"," ")
+F.Data.DataTable.FillFromDictionary("Label","SHIPNAME","Order_No","SHIP_NAME")
+F.Data.DataTable.FillFromDictionary("LabelData","SHIPNAME","Order_No","SHIP_NAME")
+
+F.Data.Dictionary.Close("SHIPNAME")
+
+'populating notes from custom oe lines table
+F.Intrinsic.String.Build("Select Order_No, Notes as Text From GCG_5364_OE_LINES Where Order_No = '{0}' and Record_No = '{1}'",V.DataTable.Label(V.DataTable.Label.RowCount--).Order_No!FieldValTrim,V.DataTable.Label(V.DataTable.Label.RowCount--).Order_Line!FieldValTrim,V.Local.sSql)
+F.Data.Dictionary.CreateFromSQL("Notes","con",V.Local.sSql)
+F.Data.Dictionary.SetDefaultReturn("Notes"," ")
+F.Data.DataTable.FillFromDictionary("Label","Notes","Order_No","Text")
+F.Data.DataTable.FillFromDictionary("LabelData","Notes","Order_No","Text")
+
+F.Data.Dictionary.Close("Notes")
+
+'populating Material from custom oe lines table
+F.Intrinsic.String.Build("Select Order_No, Matl as Material From GCG_5364_OE_LINES Where Order_No = '{0}' and Record_No = '{1}'",V.DataTable.Label(V.DataTable.Label.RowCount--).Order_No!FieldValTrim,V.DataTable.Label(V.DataTable.Label.RowCount--).Order_Line!FieldValTrim,V.Local.sSql)
+F.Data.Dictionary.CreateFromSQL("Mat","con",V.Local.sSql)
+F.Data.Dictionary.SetDefaultReturn("Mat"," ")
+F.Data.DataTable.FillFromDictionary("Label","Mat","Order_No","Matl")
+F.Data.DataTable.FillFromDictionary("LabelData","Mat","Order_No","Matl")
+
+F.Data.Dictionary.Close("Mat")
+
+V.Local.sSql.Set("select Part,Description From V_Inventory_Mstr")
+F.Data.Dictionary.CreateFromSQL("Desc","con",V.Local.sSql)
+F.Data.Dictionary.SetDefaultReturn("Desc"," ")
+F.Data.DataTable.FillFromDictionary("Label","Desc","Matl","mat_desc")
+F.Data.DataTable.FillFromDictionary("LabelData","Desc","Matl","mat_desc")
+
+'populating Finish from custom oe lines table
+F.Intrinsic.String.Build("Select Order_No, Finish From GCG_5364_OE_LINES Where Order_No = '{0}' and Record_No = '{1}'",V.DataTable.Label(V.DataTable.Label.RowCount--).Order_No!FieldValTrim,V.DataTable.Label(V.DataTable.Label.RowCount--).Order_Line!FieldValTrim,V.Local.sSql)
+F.Data.Dictionary.CreateFromSQL("Fin","con",V.Local.sSql)
+F.Data.Dictionary.SetDefaultReturn("Fin"," ")
+F.Data.DataTable.FillFromDictionary("Label","Fin","Order_No","Finish")
+F.Data.DataTable.FillFromDictionary("LabelData","Fin","Order_No","Finish")
+
+F.Data.Dictionary.Close("Fin")
+
+F.Data.DataTable.FillFromDictionary("Label","Desc","Finish","Fin_desc")
+F.Data.DataTable.FillFromDictionary("LabelData","Desc","Finish","Fin_desc")
+
+F.Data.Dictionary.Close("Desc")
+
+'populating Qty from custom oe lines table
+F.Intrinsic.String.Build("Select Order_No, Qty_Order From GCG_5364_OE_LINES Where Order_No = '{0}' and Record_No = '{1}'",V.DataTable.Label(V.DataTable.Label.RowCount--).Order_No!FieldValTrim,V.DataTable.Label(V.DataTable.Label.RowCount--).Order_Line!FieldValTrim,V.Local.sSql)
+F.Data.Dictionary.CreateFromSQL("Qty","con",V.Local.sSql)
+F.Data.Dictionary.SetDefaultReturn("Qty"," ")
+F.Data.DataTable.FillFromDictionary("Label","Qty","Order_No","SO_Qty")
+
+F.Data.Dictionary.Close("Qty")
+
+'printing codesoft label
+F.Global.BI.GetRunID(V.Local.iBiRunID)
+F.Global.BI.GetIDFromName("GCG_5364_Cutrite.lab",V.Local.iRptID)
+F.Global.BI.StartLogging(V.Local.iBiRunID,V.Local.iRptID,-1,"GCG_5364_Cutrite",V.Local.iLogID)
+
+F.Global.BI.StopLogging(V.Local.iLogID)
+
+F.Global.BI.PrintCodesoftLabelFromDataTable(V.Local.iBiRunID,V.Local.iLogID,"Label",V.Local.sPrinter.Trim,True)
+
+F.Data.DataTable.SaveToDB("LabelData","con","GCG_5364_Label_Data","JSSI",256)
+
+F.Data.DataTable.Close("Label")
+F.Data.DataTable.Close("LabelData")
+
+F.ODBC.Connection!Con.Close
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("Print_Labels_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_5364_WO_Non_Door.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(FormNonDoor_Unload)
+	F.Intrinsic.Control.End
+Function.Intrinsic.Control.EndIf
+Program.Sub.Print_Labels.End
+
+Program.Sub.Print_Barcode_WO.Start
+F.Intrinsic.Control.SetErrorHandler("Print_Barcode_WO_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+
+'printing barcode wo ext report id 1811
+F.Data.DataTable.AddRow("900100","WO_Num",V.DataTable.Job(V.Args.RowIndex).Job!FieldValTrim,"WO_Suf",V.DataTable.Job(V.Args.RowIndex).Suffix!FieldValTrim,"WO_RPTID","1811")
+
+F.Intrinsic.Control.CallSub(900100Sync)
+
+F.Data.DataTable.DeleteRow("900100")
+F.Data.DataTable.AcceptChanges("900100")
+
+F.Intrinsic.UI.Sleep(6)
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("Print_Barcode_WO_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_5364_WO_Non_Door.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(FormNonDoor_Unload)
+	F.Intrinsic.Control.End
+Function.Intrinsic.Control.EndIf
+Program.Sub.Print_Barcode_WO.End
+
+Program.Sub.cmdRelease_Click.Start
+F.Intrinsic.Control.SetErrorHandler("cmdRelease_Click_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+V.Local.i.Declare(Long,0)
+V.Local.iIndex.Declare(Long,0)
+V.Local.sFilter.Declare(String,"")
+V.Local.sSql.Declare(String,"")
+
+'printing labels for selected rows
+Gui.FormNonDoor..Enabled(False)
+F.ODBC.Connection!Conx.OpenCompanyConnection(999)
+
+F.Data.DataView.Create("Job","Released",22,"Selection = TRUE","")
+
+F.Intrinsic.Control.For(V.Local.i,0,V.DataView.Job!Released.RowCount--,1)
+	V.Local.iIndex.Set(V.DataView.Job!Released(V.Local.i).DataTableIndex)
+	
+	F.Intrinsic.String.Build("JS = '{0}'",V.DataView.Job!Released(V.Local.i).JS!FieldValTrim,V.Local.sFilter)
+	F.Data.DataView.Create("ReWork","VReWork",22,V.Local.sFilter,"")
+	
+	F.Intrinsic.String.Build("select Part from V_INVENTORY_ALL where PART = '{0}' and UCASE(CODE_SORT) IN (Select UCase(Sort_Code) From GCG_5364_SORT_MAINT Where UCASE(Status) = 'DOOR' OR UCASE(Status) like 'NON-DOOR%') and (PRODUCT_LINE = 'MM' OR PRODUCT_LINE = 'ND')",V.DataView.Job!Released(V.Local.i).Part!FieldValTrim,V.Local.sSql)
+	F.ODBC.Connection!conx.OpenLocalRecordsetRO("rstPart",V.Local.sSQL)
+	F.Intrinsic.Control.If(V.ODBC.conx!rstPart.EOF,=,False)
+		F.Intrinsic.Control.CallSub(Print_Labels,"RowIndex",V.Local.iIndex,"Part",V.DataView.Job!Released(V.Local.i).Part!FieldValTrim)
+	F.Intrinsic.Control.Else
+		'printing barcode wo report 1811
+		F.Intrinsic.Control.CallSub(Print_Barcode_WO,"RowIndex",V.Local.iIndex)
+	F.Intrinsic.Control.EndIf
+	F.ODBC.conx!rstPart.Close
+	
+	F.Intrinsic.Control.If(V.DataView.ReWork!VReWork.RowCount--,<>,-1)
+		F.Data.DataTable.DeleteRow("ReWork",V.DataView.ReWork!VReWork(V.DataView.ReWork!VReWork.RowCount--).DataTableIndex)
+		F.Data.DataTable.SaveToDB("ReWork","conx","GCG_5364_Rework","Job*!*Suffix",7,"Job@!@Job*!*Suffix@!@Suffix*!*ReWork_Qty@!@ReWork_Qty")
+		F.Data.DataTable.AcceptChanges("ReWork")
+	F.Intrinsic.Control.EndIf
+	
+	F.Data.DataView.Close("ReWork","VReWork")
+	
+	F.Data.DataTable.SetValue("Job",V.Local.iIndex,"JOB_RELEASED",True)
+F.Intrinsic.Control.Next(V.Local.i)
+
+F.Data.DataView.Close("Job","Released")
+
+F.Data.DataTable.SaveToDB("Job","Conx","GCG_5364_NON_DOOR_WO","Job*!*Suffix",256,"Job@!@Job*!*Suffix@!@Suffix*!*Part@!@Part*!*JOB_RELEASED@!@JOB_RELEASED")
+
+F.ODBC.Connection!Conx.Close
+
+F.Intrinsic.Control.CallSub(cmdRefresh_Click)
+
+Gui.FormNonDoor..Enabled(True)
+	
+Gui.FormNonDoor..AlwaysOnTop(True)
+Gui.FormNonDoor..AlwaysOnTop(False)
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("cmdRelease_Click_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_5364_WO_Non_Door.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(FormNonDoor_Unload)
+	F.Intrinsic.Control.End
+Function.Intrinsic.Control.EndIf
+Program.Sub.cmdRelease_Click.End
