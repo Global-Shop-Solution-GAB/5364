@@ -1,0 +1,680 @@
+Program.Sub.ScreenSU.Start
+Gui.FormSerial..Create
+Gui.FormSerial..Size(15675,9525)
+Gui.FormSerial..MinX(0)
+Gui.FormSerial..MinY(0)
+Gui.FormSerial..Position(0,0)
+Gui.FormSerial..BackColor(-2147483633)
+Gui.FormSerial..MousePointer(0)
+Gui.FormSerial..Caption("Serial Number Location View")
+Gui.FormSerial..Event(UnLoad,FormSerial_UnLoad)
+Gui.FormSerial.lblJob.Create(Label,"Job",True,1590,255,0,105,135,True,0,"Arial",8,-2147483633,0)
+Gui.FormSerial.lblSuffix.Create(Label,"Suffix",True,765,255,0,1710,135,True,0,"Arial",8,-2147483633,0)
+Gui.FormSerial.txtJob.Create(TextBox,"",True,1440,300,0,105,360,True,0,"Arial",8,-2147483643,1)
+Gui.FormSerial.txtJob.Event(GotFocus,txtJob_GotFocus)
+Gui.FormSerial.txtSuffix.Create(TextBox,"",True,735,300,0,1710,360,True,0,"Arial",8,-2147483643,1)
+Gui.FormSerial.txtSuffix.Event(GotFocus,txtSuffix_GotFocus)
+Gui.FormSerial.txtSuffix.Event(LostFocus,txtSuffix_LostFocus)
+Gui.FormSerial.cmdJSBrowser.Create(Button)
+Gui.FormSerial.cmdJSBrowser.Size(450,375)
+Gui.FormSerial.cmdJSBrowser.Position(2610,330)
+Gui.FormSerial.cmdJSBrowser.Caption("^")
+Gui.FormSerial.cmdJSBrowser.Event(Click,cmdJSBrowser_Click)
+Gui.FormSerial.cmdSOBrowser.Create(Button)
+Gui.FormSerial.cmdSOBrowser.Size(450,375)
+Gui.FormSerial.cmdSOBrowser.Position(5865,330)
+Gui.FormSerial.cmdSOBrowser.Caption("^")
+Gui.FormSerial.cmdSOBrowser.Event(Click,cmdSOBrowser_Click)
+Gui.FormSerial.txtSOLine.Create(TextBox,"",True,735,300,0,4950,360,True,0,"Arial",8,-2147483643,1)
+Gui.FormSerial.txtSOLine.Event(GotFocus,txtSOLine_GotFocus)
+Gui.FormSerial.txtSOLine.Event(LostFocus,txtSOLine_LostFocus)
+Gui.FormSerial.lblSOLine.Create(Label,"SO Line",True,855,255,0,4950,135,True,0,"Arial",8,-2147483633,0)
+Gui.FormSerial.txtSalesOrder.Create(TextBox,"",True,1440,300,0,3330,360,True,0,"Arial",8,-2147483643,1)
+Gui.FormSerial.txtSalesOrder.Event(GotFocus,txtSalesOrder_GotFocus)
+Gui.FormSerial.lblSalesOrder.Create(Label,"Sales Order",True,1455,255,0,3330,135,True,0,"Arial",8,-2147483633,0)
+Gui.FormSerial.lblSerial.Create(Label,"Serial #",True,1455,255,0,6555,150,True,0,"Arial",8,-2147483633,0)
+Gui.FormSerial.txtSerial.Create(TextBox,"",True,2400,300,0,6555,375,True,0,"Arial",8,-2147483643,1)
+Gui.FormSerial.txtSerial.Event(GotFocus,txtSerial_GotFocus)
+Gui.FormSerial.txtSerial.Event(LostFocus,txtSerial_LostFocus)
+Gui.FormSerial.txtSerial.Event(KeyPressEnter,txtSerial_KeyPressEnter)
+Gui.FormSerial.GsGridControlSerial.Create(GsGridControl)
+Gui.FormSerial.GsGridControlSerial.Size(15225,3915)
+Gui.FormSerial.GsGridControlSerial.Position(120,735)
+Gui.FormSerial.GsGridControlSerial.Anchor(15)
+Gui.FormSerial.lblStatus.Create(Label,"Job Not Exported",True,5520,480,0,9225,210,True,0,"Arial",12,-2147483633,0)
+Gui.FormSerial.GsGridDetail.Create(GsGridControl)
+Gui.FormSerial.GsGridDetail.Size(15225,3915)
+Gui.FormSerial.GsGridDetail.Position(120,4710)
+Gui.FormSerial.GsGridDetail.Anchor(14)
+Program.Sub.ScreenSU.End
+
+Program.Sub.Preflight.Start
+Program.Sub.Preflight.End
+
+Program.Sub.Main.Start
+F.Intrinsic.Control.SetErrorHandler("Main_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+V.Local.bRet.Declare(Boolean,False)
+
+Gui.FormSerial.lblStatus.Caption("")
+
+F.Intrinsic.Control.CallSub(Get_Data)
+F.Intrinsic.Control.CallSub(Set_Properties)
+
+'populating grid if the script is called by another program and is passed the following arguments
+'Type, Job, Suffix, Order, Line, Serial
+'If Type = Job the following Varialbes need to be passed: Job, Suffix
+'If Type = Order the following Varialbes need to be passed: Order, Line
+'If Type = Serial the following Varialbes need to be passed: Serial
+F.Intrinsic.Variable.PassedExists("TYPE",V.Local.bRet)
+F.Intrinsic.Control.If(V.Local.bRet)
+	Gui.FormSerial.txtJob.Visible(False)
+	Gui.FormSerial.txtSuffix.Visible(False)
+	Gui.FormSerial.txtSalesOrder.Visible(False)
+	Gui.FormSerial.txtSOLine.Visible(False)
+	Gui.FormSerial.txtSerial.Visible(False)
+	Gui.FormSerial.lblJob.Visible(False)
+	Gui.FormSerial.lblSuffix.Visible(False)
+	Gui.FormSerial.lblSalesOrder.Visible(False)
+	Gui.FormSerial.lblSerial.Visible(False)
+	Gui.FormSerial.lblSOLine.Visible(False)
+	Gui.FormSerial.cmdJSBrowser.Visible(False)
+	Gui.FormSerial.cmdSOBrowser.Visible(False)
+	
+	F.Intrinsic.Control.BlockEvents
+	F.Intrinsic.Control.SelectCase(V.Passed.Type.UCase)
+		'loading grid with passed Job Suffix
+		F.Intrinsic.Control.Case("JOB")
+			F.Intrinsic.Variable.PassedExists("Job",V.Local.bRet)
+			F.Intrinsic.Control.If(V.Local.bRet)
+				Gui.FormSerial.txtJob.Text(V.Passed.Job.Trim)
+			F.Intrinsic.Control.Else
+				Gui.FormSerial.txtJob.Text("-1")
+			F.Intrinsic.Control.EndIf
+			F.Intrinsic.Variable.PassedExists("Suffix",V.Local.bRet)
+			F.Intrinsic.Control.If(V.Local.bRet)
+				GUi.FormSerial.txtSuffix.Text(V.Passed.Suffix.Trim)
+			F.Intrinsic.Control.EndIf
+			
+			F.Intrinsic.Control.UnBlockEvents
+			F.Intrinsic.Control.CallSub(Get_Data)
+		
+		'loading grid with passed Order and Order Line
+		F.Intrinsic.Control.Case("ORDER")
+			F.Intrinsic.Variable.PassedExists("Order",V.Local.bRet)
+			F.Intrinsic.Control.If(V.Local.bRet)
+				Gui.FormSerial.txtSalesOrder.Text(V.Passed.Order.Trim)
+			F.Intrinsic.Control.Else
+				Gui.FormSerial.txtSalesOrder.Text("-1")
+			F.Intrinsic.Control.EndIf
+			F.Intrinsic.Variable.PassedExists("Line",V.Local.bRet)
+			F.Intrinsic.Control.If(V.Local.bRet)
+				Gui.FormSerial.txtSOLine.Text(V.Passed.Line.Trim)
+			F.Intrinsic.Control.EndIf
+			
+			F.Intrinsic.Control.UnBlockEvents
+			F.Intrinsic.Control.CallSub(Get_Data)
+		
+		'loading grid with passed Serial
+		F.Intrinsic.Control.Case("SERIAL")
+			F.Intrinsic.Variable.PassedExists("Serial",V.Local.bRet)
+			F.Intrinsic.Control.If(V.Local.bRet)
+				Gui.FormSerial.txtSerial.Text(V.Passed.Serial.Trim)
+			F.Intrinsic.Control.Else
+				Gui.FormSerial.txtSerial.Text("-1")
+			F.Intrinsic.Control.EndIf
+			
+			F.Intrinsic.Control.UnBlockEvents
+			F.Intrinsic.Control.CallSub(Get_Data)
+			
+	F.Intrinsic.Control.EndSelect
+F.Intrinsic.Control.EndIf
+
+Gui.FormSerial..Show
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("Main_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_5364_Serial_View.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(FormSerial_UnLoad)
+Function.Intrinsic.Control.EndIf
+Program.Sub.Main.End
+
+Program.Sub.txtJob_GotFocus.Start
+F.Intrinsic.Control.SetErrorHandler("txtJob_GotFocus_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+
+Gui.FormSerial.txtJob.SelectAll
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("txtJob_GotFocus_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_5364_Serial_View.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(FormSerial_UnLoad)
+Function.Intrinsic.Control.EndIf
+Program.Sub.txtJob_GotFocus.End
+
+Program.Sub.txtSuffix_GotFocus.Start
+F.Intrinsic.Control.SetErrorHandler("txtSuffix_GotFocus_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+
+Gui.FormSerial.txtSuffix.SelectAll
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("txtSuffix_GotFocus_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_5364_Serial_View.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(FormSerial_UnLoad)
+Function.Intrinsic.Control.EndIf
+Program.Sub.txtSuffix_GotFocus.End
+
+Program.Sub.txtSuffix_LostFocus.Start
+F.Intrinsic.Control.SetErrorHandler("txtSuffix_LostFocus_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+
+F.Intrinsic.Control.BlockEvents
+Gui.FormSerial.txtSalesOrder.Text("")
+Gui.FormSerial.txtSOLine.Text("")
+Gui.FormSerial.txtSerial.Text("")
+F.Intrinsic.Control.UnBlockEvents
+F.Intrinsic.Control.CallSub(Get_Data)
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("txtSuffix_LostFocus_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_5364_Serial_View.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(FormSerial_UnLoad)
+Function.Intrinsic.Control.EndIf
+Program.Sub.txtSuffix_LostFocus.End
+
+Program.Sub.cmdJSBrowser_Click.Start
+F.Intrinsic.Control.SetErrorHandler("cmdJSBrowser_Click_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+V.Local.sSql.Declare(String,"")
+V.Local.sTitles.Declare(String,"")
+V.Local.sWidths.Declare(String,"")
+V.Local.sRet.Declare(String,"")
+
+F.Intrinsic.UI.SetBrowserHotTypeAhead(True)
+
+'custom browswer to select sales order
+V.Local.sSql.Set("Select Distinct Job, Suffix, Part From V_Job_Header Order by Job,Suffix") 
+V.Local.sTitles.Set("Job*!*Suffix*!*Part")
+V.Local.sWidths.Set("1800*!*1800*!*1800")
+
+F.Intrinsic.String.Split(V.Local.sTitles,"*!*",V.Local.sTitles)
+F.Intrinsic.String.Split(V.Local.sWidths,"*!*",V.Local.sWidths)
+
+F.ODBC.Connection!Con.OpenCompanyConnection
+
+F.Intrinsic.UI.Browser("Select Work Order","con",V.Local.sSql,V.Local.sTitles,V.Local.sWidths,10200,9000,V.Local.sRet)
+
+F.ODBC.Connection!Con.Close
+
+F.Intrinsic.Control.If(V.Local.sRet,<>,V.Ambient.Cancel)
+	F.Intrinsic.String.Split(V.Local.sRet,"*!*",V.Local.sRet)
+	V.Local.sRet.RedimPreserve(0,2)
+	F.Intrinsic.Control.BlockEvents
+	Gui.FormSerial.txtJob.Text(V.Local.sRet(0).Trim)
+	Gui.FormSerial.txtSuffix.Text(V.Local.sRet(1).Trim)
+	F.Intrinsic.Control.UnBlockEvents
+	
+	F.Intrinsic.Control.CallSub(txtSuffix_LostFocus)
+F.Intrinsic.Control.EndIf
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("cmdJSBrowser_Click_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_5364_Serial_View.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(FormSerial_UnLoad)
+Function.Intrinsic.Control.EndIf
+Program.Sub.cmdJSBrowser_Click.End
+
+Program.Sub.txtSalesOrder_GotFocus.Start
+F.Intrinsic.Control.SetErrorHandler("txtSalesOrder_GotFocus_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+
+Gui.FormSerial.txtSalesOrder.SelectAll
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("txtSalesOrder_GotFocus_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_5364_Serial_View.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(FormSerial_UnLoad)
+Function.Intrinsic.Control.EndIf
+Program.Sub.txtSalesOrder_GotFocus.End
+
+Program.Sub.txtSOLine_GotFocus.Start
+F.Intrinsic.Control.SetErrorHandler("txtSOLine_GotFocus_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+
+Gui.FormSerial.txtSOLine.SelectAll
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("txtSOLine_GotFocus_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_5364_Serial_View.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(FormSerial_UnLoad)
+Function.Intrinsic.Control.EndIf
+Program.Sub.txtSOLine_GotFocus.End
+
+Program.Sub.txtSOLine_LostFocus.Start
+F.Intrinsic.Control.SetErrorHandler("txtSOLine_LostFocus_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+
+F.Intrinsic.Control.BlockEvents
+Gui.FormSerial.txtJob.Text("")
+Gui.FormSerial.txtSuffix.Text("")
+Gui.FormSerial.txtSerial.Text("")
+F.Intrinsic.Control.UnBlockEvents
+F.Intrinsic.Control.CallSub(Get_Data)
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("txtSOLine_LostFocus_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_5364_Serial_View.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(FormSerial_UnLoad)
+Function.Intrinsic.Control.EndIf
+Program.Sub.txtSOLine_LostFocus.End
+
+Program.Sub.cmdSOBrowser_Click.Start
+F.Intrinsic.Control.SetErrorHandler("cmdSOBrowser_Click_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+V.Local.sSql.Declare(String,"")
+V.Local.sTitles.Declare(String,"")
+V.Local.sWidths.Declare(String,"")
+V.Local.sRet.Declare(String,"")
+
+F.Intrinsic.UI.SetBrowserHotTypeAhead(True)
+
+'custom browswer to select sales order
+V.Local.sSql.Set("Select Distinct Order_No, Order_Line, Part From GCG_5364_LABEL_DATA Where Order_No <> '' Order by Order_No,Order_Line") 
+V.Local.sTitles.Set("Order No*!*Line*!*Part")
+V.Local.sWidths.Set("1800*!*1800*!*1800")
+
+F.Intrinsic.String.Split(V.Local.sTitles,"*!*",V.Local.sTitles)
+F.Intrinsic.String.Split(V.Local.sWidths,"*!*",V.Local.sWidths)
+
+F.ODBC.Connection!Con.OpenCompanyConnection
+
+'F.Intrinsic.UI.Browser("Select Sales Order Line","con",V.Local.sSql,V.Local.sTitles,V.Local.sWidths,10200,9000,V.Local.sRet)
+
+F.Data.DataTable.CreateFromSQL("SO","con",V.Local.sSql,True)
+
+V.Local.sSql.Set("Select Distinct Order_No, '' as Order_Line, '' as Part From GCG_5364_LABEL_DATA Where Order_No <> '' Order by Order_No") 
+F.Data.DataTable.CreateFromSQL("SOTemp","con",V.Local.sSql,True)
+
+F.Data.DataTable.Merge("SOTemp","SO",False,4)
+
+F.Data.DataTable.Close("SOTemp")
+
+F.Data.DataView.Create("SO","VSO",22,"","Order_No,Order_Line")
+
+F.Data.DataView.ToString("SO","VSO","Order_No*!*Order_Line*!*Part","*!*","|~|",V.Local.sSql)
+F.Data.DataView.Close("SO","VSO")
+F.Data.DataTable.Close("SO")
+
+F.Intrinsic.Control.If(V.Local.sSql.Trim,<>,"")
+	F.Intrinsic.UI.BrowserFromString("Select Order",v.Local.sSql,"*!*","|~|",V.Local.sTitles,V.Local.sWidths,V.Local.sRet)
+	
+	F.Intrinsic.Control.If(V.Local.sRet,<>,V.Ambient.Cancel)
+		F.Intrinsic.String.Split(V.Local.sRet,"*!*",V.Local.sRet)
+		V.Local.sRet.RedimPreserve(0,2)
+		F.Intrinsic.Control.BlockEvents
+		Gui.FormSerial.txtSalesOrder.Text(V.Local.sRet(0).Trim)
+		Gui.FormSerial.txtSOLine.Text(V.Local.sRet(1).Trim)
+		F.Intrinsic.Control.UnBlockEvents
+		F.ODBC.Connection!Con.Close
+		F.Intrinsic.Control.CallSub(txtSOLine_LostFocus)
+	F.Intrinsic.Control.EndIf
+F.Intrinsic.Control.Else
+	F.ODBC.Connection!Con.Close
+	F.Intrinsic.UI.Msgbox("No records matched the basis criteria")
+F.Intrinsic.Control.EndIf
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("cmdSOBrowser_Click_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_5364_Serial_View.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(FormSerial_UnLoad)
+Function.Intrinsic.Control.EndIf
+Program.Sub.cmdSOBrowser_Click.End
+
+Program.Sub.txtSerial_LostFocus.Start
+F.Intrinsic.Control.SetErrorHandler("txtSerial_LostFocus_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+
+F.Intrinsic.Control.BlockEvents
+Gui.FormSerial.txtSalesOrder.Text("")
+Gui.FormSerial.txtSOLine.Text("")
+Gui.FormSerial.txtJob.Text("")
+Gui.FormSerial.txtSuffix.Text("")
+F.Intrinsic.Control.UnBlockEvents
+F.Intrinsic.Control.CallSub(Get_Data)
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("txtSerial_LostFocus_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_5364_Serial_View.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(FormSerial_UnLoad)
+Function.Intrinsic.Control.EndIf
+Program.Sub.txtSerial_LostFocus.End
+
+Program.Sub.txtSerial_KeyPressEnter.Start
+F.Intrinsic.Control.SetErrorHandler("txtSerial_KeyPressEnter_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+
+F.Intrinsic.Control.BlockEvents
+Gui.FormSerial.txtJob.Text("")
+Gui.FormSerial.txtSuffix.Text("")
+Gui.FormSerial.txtSalesOrder.Text("")
+Gui.FormSerial.txtSOLine.Text("")
+F.Intrinsic.Control.UnBlockEvents
+'loading grid on scanned Serial
+F.Intrinsic.Control.CallSub(Get_Data)
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("txtSerial_KeyPressEnter_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_5364_Serial_View.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(FormSerial_UnLoad)
+Function.Intrinsic.Control.EndIf
+Program.Sub.txtSerial_KeyPressEnter.End
+
+Program.Sub.txtSerial_GotFocus.Start
+F.Intrinsic.Control.SetErrorHandler("txtSerial_GotFocus_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+
+Gui.FormSerial.txtSerial.SelectAll
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("txtSerial_GotFocus_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_5364_Serial_View.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(FormSerial_UnLoad)
+Function.Intrinsic.Control.EndIf
+Program.Sub.txtSerial_GotFocus.End
+
+Program.Sub.FormSerial_UnLoad.Start
+F.Intrinsic.Control.SetErrorHandler("FormSerial_UnLoad_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+V.Local.sFile.Declare(String,"")
+V.Local.sSerialize.Declare(String,"")
+
+Gui.FormSerial.GsGridControlSerial.Serialize("GSerialLoc",V.Local.sSerialize)
+F.Global.Registry.AddValue(V.Caller.User,V.Caller.CompanyCode,"GSerialLoc",5364,1000,False,"Serialize",False,0,-999.0,1/1/1980,12:00:00 AM,V.Local.sSerialize)
+	
+F.Intrinsic.Control.End
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("FormSerial_UnLoad_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.Control.End
+Function.Intrinsic.Control.EndIf
+Program.Sub.FormSerial_UnLoad.End
+
+Program.Sub.Get_Data.Start
+F.Intrinsic.Control.SetErrorHandler("Get_Data_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+V.Local.sJob.Declare(String,"")
+V.Local.sSuffix.Declare(String,"")
+V.Local.sOrder.Declare(String,"")
+V.Local.sLine.Declare(String,"")
+V.Local.sSerial.Declare(String,"")
+V.Local.sSql.Declare(String,"")
+V.Local.bStatus.Declare(Boolean,False)
+
+V.Local.sJob.Set(V.Screen.FormSerial!txtJob.Text)
+V.Local.sSuffix.Set(V.Screen.FormSerial!txtSuffix.Text)
+V.Local.sOrder.Set(V.Screen.FormSerial!txtSalesOrder.Text)
+V.Local.sLine.Set(V.Screen.FormSerial!txtSOLine.Text)
+V.Local.sSerial.Set(V.Screen.FormSerial!txtSerial.Text)
+
+Gui.FormSerial.lblStatus.Caption("")
+
+F.Intrinsic.Control.If(V.DataTable.SerialLoc.Exists)
+	F.ODBC.Connection!Con.OpencompanyConnection
+	F.Intrinsic.Control.If(V.Local.sJob.Trim,<>,"")
+		F.Intrinsic.String.Build("Select Top 1 batched From GCG_5364_Batch Where job = '{0}' and Suffix = '{1}'",V.Local.sJob.Trim,V.Local.sSuffix.Trim,V.Local.sSql)
+		F.ODBC.Connection!Con.ExecuteAndReturn(V.Local.sSql,V.Local.bStatus)
+		F.Intrinsic.Control.If(V.Local.bStatus)
+			Gui.FormSerial.lblStatus.Caption("Job has been Exported")
+		F.Intrinsic.Control.Else
+			Gui.FormSerial.lblStatus.Caption("Job has not been Exported")
+		F.Intrinsic.Control.EndIf
+		'getting remaing Serial Numbers not in the Wip Table
+		F.Intrinsic.String.Build("Select A.Job, A.Suffix, A.Seq, if(B.Part is null,'WIPFG',B.Part) as WC, A.Part, A.Description, JSSI as Serial, A.Order_No, A.Order_Line, Start_Date, Start_Time, End_Date, End_Time, Employee, Scrap, Scrap_Reason From GCG_5364_Job_Dtl A Left Join V_Job_Operations B on A.Job = B.Job and A.Suffix = B.Suffix and A.Seq = B.Seq Where A.Job = '{0}' and A.Suffix = '{1}' Order by A.Job,A.Suffix,A.Seq,Start_Date,Start_Time,End_Date,End_Time",V.Local.sJob.Trim,V.Local.sSuffix.Trim,V.Local.sSql)
+		F.Data.DataTable.CreateFromSQL("TempDTL","Con",V.Local.sSql,True)
+		
+		F.Data.DataTable.DeleteRow("SerialLoc")
+		F.Data.DataTable.AcceptChanges("SerialLoc")
+		F.Data.DataTable.Merge("TempDTL","SerialLoc",False,4)
+		F.Data.DataTable.Close("TempDTL")
+		
+	F.Intrinsic.Control.ElseIf(V.Local.sOrder.Trim,<>,"")
+		'getting list of serials from WIP Table
+		F.Intrinsic.Control.If(V.Local.sLine.Trim,<>,"")
+			F.Intrinsic.String.Build("Select A.Job, A.Suffix, A.Seq, if(B.Part is null,'WIPFG',B.Part) as WC, A.Part, A.Description, JSSI as Serial, A.Order_No, A.Order_Line, Start_Date, Start_Time, End_Date, End_Time, Employee, Scrap, Scrap_Reason From GCG_5364_Job_Dtl A Left Join V_Job_Operations B on A.Job = B.Job and A.Suffix = B.Suffix and A.Seq = B.Seq Where A.Order_No = '{0}' and A.Order_Line = '{1}' Order by A.Job,A.Suffix,A.Seq,Start_Date,Start_Time,End_Date,End_Time",V.Local.sOrder.Trim,V.Local.sLine.Trim,V.Local.sSql)
+		F.Intrinsic.Control.Else
+			F.Intrinsic.String.Build("Select A.Job, A.Suffix, A.Seq, if(B.Part is null,'WIPFG',B.Part) as WC, A.Part, A.Description, JSSI as Serial, A.Order_No, A.Order_Line, Start_Date, Start_Time, End_Date, End_Time, Employee, Scrap, Scrap_Reason From GCG_5364_Job_Dtl A Left Join V_Job_Operations B on A.Job = B.Job and A.Suffix = B.Suffix and A.Seq = B.Seq Where A.Order_No = '{0}' Order by A.Job,A.Suffix,A.Seq,Start_Date,Start_Time,End_Date,End_Time",V.Local.sOrder.Trim,V.Local.sSql)
+		F.Intrinsic.Control.EndIf
+		
+		F.Data.DataTable.CreateFromSQL("TempDTL","Con",V.Local.sSql,True)
+		
+		F.Data.DataTable.DeleteRow("SerialLoc")
+		F.Data.DataTable.AcceptChanges("SerialLoc")
+		F.Data.DataTable.Merge("TempDTL","SerialLoc",False,4)
+		F.Data.DataTable.Close("TempDTL")
+		
+	F.Intrinsic.Control.ElseIf(V.Local.sSerial.Trim,<>,"")
+		F.Intrinsic.String.Build("Select A.Job, A.Suffix, A.Seq, if(B.Part is null,'WIPFG',B.Part) as WC, A.Part, A.Description, JSSI as Serial, A.Order_No, A.Order_Line, Start_Date, Start_Time, End_Date, End_Time, Employee, Scrap, Scrap_Reason From GCG_5364_Job_Dtl A Left Join V_Job_Operations B on A.Job = B.Job and A.Suffix = B.Suffix and A.Seq = B.Seq Where Jssi = '{0}' Order by A.Job,A.Suffix,A.Seq,Start_Date,Start_Time,End_Date,End_Time",V.Local.sSerial.Trim,V.Local.sSql)
+		F.Data.DataTable.CreateFromSQL("TempDTL","Con",V.Local.sSql,True)
+		
+		F.Data.DataTable.DeleteRow("SerialLoc")
+		F.Data.DataTable.AcceptChanges("SerialLoc")
+		F.Data.DataTable.Merge("TempDTL","SerialLoc",False,4)
+		F.Data.DataTable.Close("TempDTL")
+		
+	F.Intrinsic.Control.EndIf
+	
+	F.ODBC.Connection!Con.Close
+F.Intrinsic.Control.Else
+	F.ODBC.Connection!Con.OpenCompanyConnection
+	'Building Table to use for show info all Info will get merged into this table
+	F.Data.DataTable.CreateFromSQL("SerialLoc","Con","Select A.Job, A.Suffix, A.Seq, if(B.Part is null,'WIPFG',B.Part) as WC, A.Part, A.Description, JSSI as Serial, A.Order_No, A.Order_Line, Start_Date, Start_Time, End_Date, End_Time, Employee, Scrap, Scrap_Reason From GCG_5364_Job_Dtl A Left Join V_Job_Operations B on A.Job = B.Job and A.Suffix = B.Suffix and A.Seq = B.Seq Where A.Job = '-1xxxs'",True)
+	F.ODBC.Connection!Con.Close
+F.Intrinsic.Control.EndIf
+
+F.Intrinsic.Control.If(V.DataTable.Detail.Exists)
+	F.ODBC.Connection!Con.OpenCompanyConnection
+	F.Intrinsic.String.Build("Select A.Job, A.Suffix, A.Seq, Machine as WC, B.Part, B.Description, A.Charge_Date, A.Hours_Worked, A.Employee From V_Job_Detail A Left Join V_Job_Header B on A.Job = B.Job Where A.Job = '{0}' and A.Suffix = '{1}' and A.LMO = 'L'",V.Local.sJob,V.Local.sSuffix,V.Local.sSql)
+	F.Data.DataTable.CreateFromSQL("Temp","Con",V.Local.sSql,True)
+	F.ODBC.Connection!Con.Close
+	F.Data.DataTable.DeleteRow("Detail")
+	F.Data.DataTable.AcceptChanges("Detail")
+	F.Data.DataTable.Merge("Temp","Detail",False,4)
+	F.Data.DataTable.Close("Temp")
+F.Intrinsic.Control.Else
+	F.ODBC.Connection!Con.OpenCompanyConnection
+	'Building Table to use for show info all Info will get merged into this table
+	F.Data.DataTable.CreateFromSQL("Detail","Con","Select A.Job, A.Suffix, A.Seq, Machine as WC, B.Part, B.Description, A.Charge_Date, A.Hours_Worked, A.Employee From V_Job_Detail A Left Join V_Job_Header B on A.Job = B.Job Where A.Job = '-1xxx' and A.Suffix = '' and A.LMO = 'L'",True)
+	F.ODBC.Connection!Con.Close
+F.Intrinsic.Control.EndIf
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("Get_Data_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_5364_Serial_View.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(FormSerial_UnLoad)
+Function.Intrinsic.Control.EndIf
+Program.Sub.Get_Data.End
+
+Program.Sub.Set_Properties.Start
+F.Intrinsic.Control.SetErrorHandler("Set_Properties_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+V.Local.sFile.Declare(String,"")
+V.Local.sReturn.Declare(String,"")
+V.Local.bRet.Declare(Boolean,False)
+V.Local.sSerialize.Declare(String,"")
+	
+'setting properties of the grid
+Gui.FormSerial.GsGridControlSerial.AddGridviewFromDatatable("GSerialLoc","SerialLoc")
+Gui.FormSerial.GsGridControlSerial.SetGridviewProperty("GSerialLoc","Editable",False)
+Gui.FormSerial.GsGridControlSerial.SetGridviewProperty("GSerialLoc","ReadOnly",True)
+Gui.FormSerial.GsGridControlSerial.SetGridviewProperty("GSerialLoc","AllowColumnMoving",True)
+Gui.FormSerial.GsGridControlSerial.SetGridviewProperty("GSerialLoc","OptionsSelectionEnableAppearanceFocusedRow",False)
+Gui.FormSerial.GsGridControlSerial.SetGridviewProperty("GSerialLoc","ShowGroupPanel",True)
+Gui.FormSerial.GsGridControlSerial.SetGridviewProperty("GSerialLoc","OptionsViewShowAutoFilterRow",True)
+GUI.FormSerial.GsGridControlSerial.SetGridviewProperty("GSerialLoc", "OptionsViewColumnAutoWidth", False)
+
+Gui.FormSerial.GsGridControlSerial.BestFitColumns("GSerialLoc")
+
+'Select Job, Suffix, Seq, Part, Description, JSSI as Serial, Order_No, Order_Line, Start_Date, Start_Time, End_Date, End_Time, Employee, Scrap, Scrap_Reason
+
+Gui.FormSerial.GsGridControlSerial.SetColumnProperty("GSerialLoc","Job","HeaderBackColor","MediumSeaGreen")
+Gui.FormSerial.GsGridControlSerial.SetColumnProperty("GSerialLoc","Job","HeaderFontBold",True)
+Gui.FormSerial.GsGridControlSerial.SetColumnProperty("GSerialLoc","Job","Caption","JOB")
+
+Gui.FormSerial.GsGridControlSerial.SetColumnProperty("GSerialLoc","Suffix","HeaderBackColor","MediumSeaGreen")
+Gui.FormSerial.GsGridControlSerial.SetColumnProperty("GSerialLoc","Suffix","HeaderFontBold",True)
+Gui.FormSerial.GsGridControlSerial.SetColumnProperty("GSerialLoc","Suffix","Caption","SUFFIX")
+
+Gui.FormSerial.GsGridControlSerial.SetColumnProperty("GSerialLoc","Seq","HeaderBackColor","MediumSeaGreen")
+Gui.FormSerial.GsGridControlSerial.SetColumnProperty("GSerialLoc","Seq","HeaderFontBold",True)
+Gui.FormSerial.GsGridControlSerial.SetColumnProperty("GSerialLoc","Seq","Caption","SEQ")
+
+Gui.FormSerial.GsGridControlSerial.SetColumnProperty("GSerialLoc","WC","HeaderBackColor","MediumSeaGreen")
+Gui.FormSerial.GsGridControlSerial.SetColumnProperty("GSerialLoc","WC","HeaderFontBold",True)
+Gui.FormSerial.GsGridControlSerial.SetColumnProperty("GSerialLoc","WC","Caption","Work Center")
+
+Gui.FormSerial.GsGridControlSerial.SetColumnProperty("GSerialLoc","Part","HeaderBackColor","MediumSeaGreen")
+Gui.FormSerial.GsGridControlSerial.SetColumnProperty("GSerialLoc","Part","HeaderFontBold",True)
+Gui.FormSerial.GsGridControlSerial.SetColumnProperty("GSerialLoc","Part","Caption","PART")
+
+Gui.FormSerial.GsGridControlSerial.SetColumnProperty("GSerialLoc","Description","HeaderBackColor","MediumSeaGreen")
+Gui.FormSerial.GsGridControlSerial.SetColumnProperty("GSerialLoc","Description","HeaderFontBold",True)
+Gui.FormSerial.GsGridControlSerial.SetColumnProperty("GSerialLoc","Description","Caption","DESCRIPTION")
+
+Gui.FormSerial.GsGridControlSerial.SetColumnProperty("GSerialLoc","Serial","HeaderBackColor","MediumSeaGreen")
+Gui.FormSerial.GsGridControlSerial.SetColumnProperty("GSerialLoc","Serial","HeaderFontBold",True)
+Gui.FormSerial.GsGridControlSerial.SetColumnProperty("GSerialLoc","Serial","Caption","SERIAL")
+
+Gui.FormSerial.GsGridControlSerial.SetColumnProperty("GSerialLoc","Order_No","HeaderBackColor","MediumSeaGreen")
+Gui.FormSerial.GsGridControlSerial.SetColumnProperty("GSerialLoc","Order_No","HeaderFontBold",True)
+Gui.FormSerial.GsGridControlSerial.SetColumnProperty("GSerialLoc","Order_No","Caption","SALES ORDER #")
+
+Gui.FormSerial.GsGridControlSerial.SetColumnProperty("GSerialLoc","Order_Line","HeaderBackColor","MediumSeaGreen")
+Gui.FormSerial.GsGridControlSerial.SetColumnProperty("GSerialLoc","Order_Line","HeaderFontBold",True)
+Gui.FormSerial.GsGridControlSerial.SetColumnProperty("GSerialLoc","Order_Line","Caption","SO LINE")
+
+Gui.FormSerial.GsGridControlSerial.SetColumnProperty("GSerialLoc","Start_Date","HeaderBackColor","MediumSeaGreen")
+Gui.FormSerial.GsGridControlSerial.SetColumnProperty("GSerialLoc","Start_Date","HeaderFontBold",True)
+Gui.FormSerial.GsGridControlSerial.SetColumnProperty("GSerialLoc","Start_Date","Caption","START DATE")
+
+Gui.FormSerial.GsGridControlSerial.SetColumnProperty("GSerialLoc","Start_Time","HeaderBackColor","MediumSeaGreen")
+Gui.FormSerial.GsGridControlSerial.SetColumnProperty("GSerialLoc","Start_Time","HeaderFontBold",True)
+Gui.FormSerial.GsGridControlSerial.SetColumnProperty("GSerialLoc","Start_Time","Caption","START TIME")
+
+Gui.FormSerial.GsGridControlSerial.SetColumnProperty("GSerialLoc","End_Date","HeaderBackColor","MediumSeaGreen")
+Gui.FormSerial.GsGridControlSerial.SetColumnProperty("GSerialLoc","End_Date","HeaderFontBold",True)
+Gui.FormSerial.GsGridControlSerial.SetColumnProperty("GSerialLoc","End_Date","Caption","END DATE")
+
+Gui.FormSerial.GsGridControlSerial.SetColumnProperty("GSerialLoc","End_Time","HeaderBackColor","MediumSeaGreen")
+Gui.FormSerial.GsGridControlSerial.SetColumnProperty("GSerialLoc","End_Time","HeaderFontBold",True)
+Gui.FormSerial.GsGridControlSerial.SetColumnProperty("GSerialLoc","End_Time","Caption","END TIME")
+
+Gui.FormSerial.GsGridControlSerial.SetColumnProperty("GSerialLoc","Employee","HeaderBackColor","MediumSeaGreen")
+Gui.FormSerial.GsGridControlSerial.SetColumnProperty("GSerialLoc","Employee","HeaderFontBold",True)
+Gui.FormSerial.GsGridControlSerial.SetColumnProperty("GSerialLoc","Employee","Caption","EMPLOYEE")
+
+Gui.FormSerial.GsGridControlSerial.SetColumnProperty("GSerialLoc","Scrap","HeaderBackColor","MediumSeaGreen")
+Gui.FormSerial.GsGridControlSerial.SetColumnProperty("GSerialLoc","Scrap","HeaderFontBold",True)
+Gui.FormSerial.GsGridControlSerial.SetColumnProperty("GSerialLoc","Scrap","Caption","SCRAP")
+
+Gui.FormSerial.GsGridControlSerial.SetColumnProperty("GSerialLoc","Scrap_Reason","HeaderBackColor","MediumSeaGreen")
+Gui.FormSerial.GsGridControlSerial.SetColumnProperty("GSerialLoc","Scrap_Reason","HeaderFontBold",True)
+Gui.FormSerial.GsGridControlSerial.SetColumnProperty("GSerialLoc","Scrap_Reason","Caption","SCRAP REASON")
+
+'red hex value #ff4d4d
+Gui.FormSerial.GsGridControlSerial.AddStyleFormatCondition("GSerialLoc","Scrap","ParentCRed","Equal","Y")
+Gui.FormSerial.GsGridControlSerial.SetStyleFormatConditionProperty("GSerialLoc","Scrap","ParentCRed","BackColor","#ff4d4d")
+Gui.FormSerial.GsGridControlSerial.SetStyleFormatConditionProperty("GSerialLoc","Scrap","ParentCRed","ApplyToRow",True)
+	
+F.Global.Registry.ReadValue(V.Caller.User, V.Caller.CompanyCode, "GSerialLoc", 5364, 1000, 6, "", V.Local.sSerialize)
+
+F.Intrinsic.Control.If(V.Local.sSerialize.Trim,<>,"")
+	Gui.FormSerial.GsGridControlSerial.Deserialize(V.Local.sSerialize)
+F.Intrinsic.Control.EndIf
+	
+Gui.FormSerial.GsGridControlSerial.MainView("GSerialLoc")
+
+Gui.FormSerial.GsGridDetail.AddGridviewFromDatatable("GDetail","Detail")
+
+Gui.FormSerial.GsGridDetail.MainView("GDetail")
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("Set_Properties_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_5364_Serial_View.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(FormSerial_UnLoad)
+Function.Intrinsic.Control.EndIf
+Program.Sub.Set_Properties.End
