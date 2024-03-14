@@ -1,0 +1,145 @@
+Program.Sub.ScreenSU.Start
+Gui.AutoWOGenIssues..Create
+Gui.AutoWOGenIssues..Caption("Auto WO Gen Issues")
+Gui.AutoWOGenIssues..Size(10035,10245)
+Gui.AutoWOGenIssues..MinX(0)
+Gui.AutoWOGenIssues..MinY(0)
+Gui.AutoWOGenIssues..Position(0,0)
+Gui.AutoWOGenIssues..BackColor(-2147483633)
+Gui.AutoWOGenIssues..MousePointer(0)
+Gui.AutoWOGenIssues..Event(UnLoad,AutoWOGenIssues_UnLoad)
+Gui.AutoWOGenIssues.GsGridControlIssue.Create(GsGridControl)
+Gui.AutoWOGenIssues.GsGridControlIssue.Size(9705,9750)
+Gui.AutoWOGenIssues.GsGridControlIssue.Position(105,105)
+Gui.AutoWOGenIssues.GsGridControlIssue.Event(RowCellClick,GsGridControlIssue_RowCellClick)
+Program.Sub.ScreenSU.End
+
+Program.Sub.Preflight.Start
+Program.Sub.Preflight.End
+
+Program.Sub.Main.Start
+F.Intrinsic.Control.SetErrorHandler("Main_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+
+'getting list of issues
+F.Intrinsic.Control.CallSub(Get_Data)
+'setting grid properties
+F.Intrinsic.Control.CallSub(Set_Properties)
+
+Gui.AutoWOGenIssues..Show
+
+Gui.AutoWOGenIssues.GsGridControlIssue.Anchor(15)
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("Main_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_5364_WO_Gen_Issues.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(AutoWOGenIssues_UnLoad)
+Function.Intrinsic.Control.EndIf
+Program.Sub.Main.End
+
+Program.Sub.GsGridControlIssue_RowCellClick.Start
+F.Intrinsic.Control.SetErrorHandler("GsGridControlIssue_RowCellClick_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+
+'deleting selected Row
+F.Intrinsic.Control.If(V.Args.Column.UCase,=,"DELETE")
+	F.Data.DataTable.DeleteRow("Issue",V.Args.RowIndex)
+	F.ODBC.Connection!Con.OpenCompanyConnection
+	F.Data.DataTable.SaveToDB("Issue","con","GCG_5364_WO_ISSUE","Part",7)
+	F.ODBC.Connection!Con.Close
+	F.Data.DataTable.AcceptChanges("Issue")
+F.Intrinsic.Control.EndIf
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("GsGridControlIssue_RowCellClick_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_5364_WO_Gen_Issues.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(AutoWOGenIssues_UnLoad)
+Function.Intrinsic.Control.EndIf
+Program.Sub.GsGridControlIssue_RowCellClick.End
+
+Program.Sub.AutoWOGenIssues_UnLoad.Start
+F.Intrinsic.Control.SetErrorHandler("AutoWOGenIssues_UnLoad_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+
+F.Intrinsic.Control.End
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("AutoWOGenIssues_UnLoad_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_5364_WO_Gen_Issues.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.End
+Function.Intrinsic.Control.EndIf
+Program.Sub.AutoWOGenIssues_UnLoad.End
+
+Program.Sub.Get_Data.Start
+F.Intrinsic.Control.SetErrorHandler("Get_Data_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+
+F.ODBC.Connection!Con.OpenCompanyConnection
+
+F.Data.DataTable.CreateFromSQL("Issue","con","Select Part, Issue From GCG_5364_WO_Issue Order By Part",True)
+
+F.ODBC.Connection!Con.Close
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("Get_Data_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_5364_WO_Gen_Issues.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(AutoWOGenIssues_UnLoad)
+Function.Intrinsic.Control.EndIf
+Program.Sub.Get_Data.End
+
+Program.Sub.Set_Properties.Start
+F.Intrinsic.Control.SetErrorHandler("Set_Properties_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+
+F.Data.DataTable.AddColumn("Issue","DELETE","String")
+
+Gui.AutoWOGenIssues.GsGridControlIssue.AddGridviewFromDatatable("GIss","Issue")
+Gui.AutoWOGenIssues.GsGridControlIssue.SetGridviewProperty("GIss","Editable",False)
+Gui.AutoWOGenIssues.GsGridControlIssue.SetGridviewProperty("GIss","ReadOnly",True)
+Gui.AutoWOGenIssues.GsGridControlIssue.SetGridviewProperty("GIss","AllowColumnMoving",False)
+
+Gui.AutoWOGenIssues.GsGridControlIssue.SetColumnProperty("GIss","Part","MaxWidth",160)
+Gui.AutoWOGenIssues.GsGridControlIssue.SetColumnProperty("GIss","Part","HeaderBackColor","MediumSeaGreen")
+Gui.AutoWOGenIssues.GsGridControlIssue.SetColumnProperty("GIss","Issue","HeaderBackColor","MediumSeaGreen")
+Gui.AutoWOGenIssues.GsGridControlIssue.SetColumnProperty("GIss","Delete","HeaderBackColor","MediumSeaGreen")
+Gui.AutoWOGenIssues.GsGridControlIssue.SetColumnProperty("GIss","Part","HeaderFontBold",True)
+Gui.AutoWOGenIssues.GsGridControlIssue.SetColumnProperty("GIss","Issue","HeaderFontBold",True)
+Gui.AutoWOGenIssues.GsGridControlIssue.SetColumnProperty("GIss","Delete","HeaderFontBold",True)
+Gui.AutoWOGenIssues.GsGridControlIssue.SetColumnProperty("GIss","Delete","Caption"," ")
+Gui.AutoWOGenIssues.GsGridControlIssue.ColumnEdit("GIss","Delete","EditorButton","Delete")
+Gui.AutoWOGenIssues.GsGridControlIssue.SetColumnProperty("GIss","Delete","MaxWidth",100)
+Gui.AutoWOGenIssues.GsGridControlIssue.SetColumnProperty("GIss","Delete","MinWidth",100)
+
+Gui.AutoWOGenIssues.GsGridControlIssue.MainView("GIss")
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("Set_Properties_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_5364_WO_Gen_Issues.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(AutoWOGenIssues_UnLoad)
+Function.Intrinsic.Control.EndIf
+Program.Sub.Set_Properties.End
