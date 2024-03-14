@@ -1,0 +1,176 @@
+Program.Sub.ScreenSU.Start
+Gui.FormSortMaint..Create
+Gui.FormSortMaint..Caption("Sort Code Maintenance")
+Gui.FormSortMaint..Size(11310,9840)
+Gui.FormSortMaint..MinX(0)
+Gui.FormSortMaint..MinY(0)
+Gui.FormSortMaint..Position(0,0)
+Gui.FormSortMaint..BackColor(-2147483633)
+Gui.FormSortMaint..MousePointer(0)
+Gui.FormSortMaint..Event(UnLoad,FormSortMaint_UnLoad)
+Gui.FormSortMaint.GsGridControlSort.Create(GsGridControl)
+Gui.FormSortMaint.GsGridControlSort.Size(10950,8835)
+Gui.FormSortMaint.GsGridControlSort.Position(105,105)
+Gui.FormSortMaint.cmdSave.Create(Button)
+Gui.FormSortMaint.cmdSave.Size(855,375)
+Gui.FormSortMaint.cmdSave.Position(105,9060)
+Gui.FormSortMaint.cmdSave.Caption("Save")
+Gui.FormSortMaint.cmdSave.Event(Click,cmdSave_Click)
+Program.Sub.ScreenSU.End
+
+Program.Sub.Preflight.Start
+Program.Sub.Preflight.End
+
+Program.Sub.Main.Start
+F.Intrinsic.Control.SetErrorHandler("Main_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+
+'getting sort codes
+F.Intrinsic.Control.CallSub(Get_Data)
+'setting properities of the grid
+F.Intrinsic.Control.CallSub(Set_Properties)
+
+Gui.FormSortMaint..Show
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("Main_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_5364_Sort_Code_Maint.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(FormSortMaint_UnLoad)
+Function.Intrinsic.Control.EndIf
+Program.Sub.Main.End
+
+Program.Sub.Get_Data.Start
+F.Intrinsic.Control.SetErrorHandler("Get_Data_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+
+F.ODBC.Connection!Con.OpenCompanyConnection
+
+'getting sort codes from GSS and custom table
+F.Data.DataTable.CreateFromSQL("Sort","Con","Select Sort_Code, Descr, 'NON-WORK ORDER' as Status From V_Inv_Sort Order by Sort_Code",True)
+F.Data.DataTable.CreateFromSQL("SortGCG","Con","Select Sort_Code, Status From GCG_5364_Sort_Maint Order by Sort_Code",True)
+F.Data.DataTable.SetPK("Sort","Sort_Code")
+F.Data.DataTable.SetPK("SortGCG","Sort_Code")
+
+F.Data.DataTable.Merge("SortGCG","Sort",False,2)
+
+F.Data.DataTable.Close("SortGCG")
+'adding or setting for a blank sort code.  
+F.Data.DataView.Create("Sort","VSort",22,"Sort_Code = ''","")
+F.Intrinsic.Control.If(V.DataView.Sort!VSort.RowCount--,=,-1)
+	F.Data.DataTable.AddRow("Sort","Sort_Code","","Descr","BLANK SORT CODE","Status","NON-WORK ORDER")
+F.Intrinsic.Control.Else
+	F.Intrinsic.Control.If(V.DataView.Sort!VSort(V.DataView.Sort!VSort.RowCount--).Descr!FieldValTrim,=,"")
+		F.Data.DataView.SetValue("Sort","VSort",V.DataView.Sort!VSort.RowCount--,"Descr","BLANK SORT CODE")'
+	F.Intrinsic.Control.EndIf
+F.Intrinsic.Control.EndIf
+
+F.Data.DataView.SetFilter("Sort","VSort","")
+F.Data.DataView.SetSort("Sort","VSort","Sort_Code")
+
+F.ODBC.Connection!Con.Close
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("Get_Data_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_5364_Sort_Code_Maint.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(FormSortMaint_UnLoad)
+Function.Intrinsic.Control.EndIf
+Program.Sub.Get_Data.End
+
+Program.Sub.Set_Properties.Start
+F.Intrinsic.Control.SetErrorHandler("Set_Properties_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+
+Gui.FormSortMaint.cmdSave.Anchor(6)
+Gui.FormSortMaint.GsGridControlSort.Anchor(15)
+
+Gui.FormSortMaint.GsGridControlSort.AddGridviewFromDataview("GSort","Sort","VSort")
+Gui.FormSortMaint.GsGridControlSort.SetGridviewProperty("GSort","AllowColumnMoving",False)
+
+Gui.FormSortMaint.GsGridControlSort.SetColumnProperty("GSort","Sort_Code","HeaderBackColor","MediumSeaGreen")
+Gui.FormSortMaint.GsGridControlSort.SetColumnProperty("GSort","Sort_Code","HeaderFontBold",True)
+Gui.FormSortMaint.GsGridControlSort.SetColumnProperty("GSort","Descr","HeaderBackColor","MediumSeaGreen")
+Gui.FormSortMaint.GsGridControlSort.SetColumnProperty("GSort","Descr","HeaderFontBold",True)
+Gui.FormSortMaint.GsGridControlSort.SetColumnProperty("GSort","Status","HeaderBackColor","MediumSeaGreen")
+Gui.FormSortMaint.GsGridControlSort.SetColumnProperty("GSort","Status","HeaderFontBold",True)
+
+Gui.FormSortMaint.GsGridControlSort.SetColumnProperty("GSort","Sort_Code","ReadOnly",True)
+Gui.FormSortMaint.GsGridControlSort.SetColumnProperty("GSort","Sort_Code","AllowEdit",False)
+Gui.FormSortMaint.GsGridControlSort.SetColumnProperty("GSort","Descr","ReadOnly",True)
+Gui.FormSortMaint.GsGridControlSort.SetColumnProperty("GSort","Descr","AllowEdit",False)
+Gui.FormSortMaint.GsGridControlSort.SetColumnProperty("GSort","Status","ReadOnly",False)
+Gui.FormSortMaint.GsGridControlSort.SetColumnProperty("GSort","Status","AllowEdit",True)
+
+Gui.FormSortMaint.GsGridControlSort.SetColumnProperty("GSort","Sort_Code","Caption","Sort Code")
+Gui.FormSortMaint.GsGridControlSort.SetColumnProperty("GSort","Descr","Caption","Description")
+Gui.FormSortMaint.GsGridControlSort.SetColumnProperty("GSort","Status","Caption","Status")
+
+Gui.FormSortMaint.GsGridControlSort.SetColumnProperty("GSort","Sort_Code","MaxWidth","150")
+Gui.FormSortMaint.GsGridControlSort.SetColumnProperty("GSort","Status","MaxWidth","150")
+
+Gui.FormSortMaint.GsGridControlSort.ColumnEdit("GSort","Status","Dropdownlist","NON-WORK ORDER*!*NON-WORK ORDER MATERIAL*!*NON-WORK ORDER FINISH*!*NON-WORK ORDER DRILL*!*DOOR*!*NON-DOOR*!*NON-DOOR MOLDING")
+
+Gui.FormSortMaint.GsGridControlSort.MainView("GSort")
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("Set_Properties_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_5364_Sort_Code_Maint.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(FormSortMaint_UnLoad)
+Function.Intrinsic.Control.EndIf
+Program.Sub.Set_Properties.End
+
+Program.Sub.FormSortMaint_UnLoad.Start
+F.Intrinsic.Control.SetErrorHandler("FormSortMaint_UnLoad_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+
+F.Intrinsic.Control.End
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("FormSortMaint_UnLoad_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_5364_Sort_Code_Maint.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.End
+Function.Intrinsic.Control.EndIf
+Program.Sub.FormSortMaint_UnLoad.End
+
+Program.Sub.cmdSave_Click.Start
+F.Intrinsic.Control.SetErrorHandler("FormSortMaint_UnLoad_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+
+F.ODBC.Connection!Con.OpenCompanyConnection
+'saving status to custom table.
+F.Data.DataTable.SaveToDB("Sort","Con","GCG_5364_Sort_Maint","Sort_Code",256,"Sort_Code@!@Sort_Code*!*Status@!@Status")
+
+F.ODBC.Connection!Con.Close
+
+F.Intrinsic.UI.Msgbox("Sort Code Status Saved.............","Attention")
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("FormSortMaint_UnLoad_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_5364_Sort_Code_Maint.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(FormSortMaint_UnLoad)
+Function.Intrinsic.Control.EndIf
+Program.Sub.cmdSave_Click.End
