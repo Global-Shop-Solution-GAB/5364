@@ -1,0 +1,420 @@
+﻿Program.Sub.ScreenSU.Start
+Gui.frmMaint..Create
+Gui.frmMaint..Caption("GUI Script Maintenance")
+Gui.frmMaint..Size(8475,11205)
+Gui.frmMaint..MinX(0)
+Gui.frmMaint..MinY(0)
+Gui.frmMaint..Position(0,0)
+Gui.frmMaint..BackColor(-2147483633)
+Gui.frmMaint..MaxButton(False)
+Gui.frmMaint..MousePointer(0)
+Gui.frmMaint..Event(UnLoad,frmMaint_UnLoad)
+Gui.frmMaint.GsGridMaint.Create(GsGridControl)
+Gui.frmMaint.GsGridMaint.Size(7815,9645)
+Gui.frmMaint.GsGridMaint.Position(150,495)
+Gui.frmMaint.GsGridMaint.Event(RowCellClick,GsGridMaint_RowCellClick)
+Gui.frmMaint.GsGridMaint.Event(CellValueChanged,GsGridMaint_CellValueChanged)
+Gui.frmMaint.cmdsave.Create(Button)
+Gui.frmMaint.cmdsave.Size(855,375)
+Gui.frmMaint.cmdsave.Position(165,10230)
+Gui.frmMaint.cmdsave.Caption("Save")
+Gui.frmMaint.cmdsave.Event(Click,cmdsave_Click)
+Gui.frmMaint.txtHook.Create(TextBox,"",True,2580,300,0,150,105,True,0,"Arial",8,-2147483643,1)
+Gui.frmMaint.txtHook.Locked(True)
+Gui.frmMaint.txtHook.Event(Click,txtHook_Click)
+Gui.frmMaint.cmdAdd.Create(Button)
+Gui.frmMaint.cmdAdd.Size(855,375)
+Gui.frmMaint.cmdAdd.Position(2775,60)
+Gui.frmMaint.cmdAdd.Caption("Add")
+Gui.frmMaint.cmdAdd.Event(Click,cmdAdd_Click)
+Program.Sub.ScreenSU.End
+
+Program.Sub.Preflight.Start
+V.Global.sScriptPath.Declare(String,"")
+V.Global.bSave.Declare(Boolean,False)
+Program.Sub.Preflight.End
+
+Program.Sub.Main.Start
+F.Intrinsic.Control.SetErrorHandler("Main_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String)
+
+	F.Intrinsic.Control.If(V.Caller.GASDir.Right1,=,"\")
+		V.Global.sScriptPath.Set(V.Caller.GasDir)
+	F.Intrinsic.Control.Else
+		F.Intrinsic.String.Build("{0}\",V.Caller.GasDir,V.Global.sScriptPath)
+	F.Intrinsic.Control.EndIf
+	
+	'maintenance
+	F.Intrinsic.Control.SelectCase(V.Caller.Hook)
+		F.Intrinsic.Control.Case(15710)
+			V.Passed.000021.Set("Load GAB")
+		F.Intrinsic.Control.Case(15780)
+			f.Intrinsic.Control.CallSub(launchscript)
+			Gui.frmMaint..Size(3285,10655)
+			Gui.frmMaint.GsGridMaint.Size(2915,9645)
+			Gui.frmMaint.cmdsave.Visible(False)
+			Gui.frmMaint.txtHook.Visible(False)
+			Gui.frmMaint.cmdAdd.Visible(False)
+			gui.frmMaint..Show 
+		F.Intrinsic.Control.CaseElse
+			f.Intrinsic.Control.CallSub(launchmaint)
+			gui.frmMaint..Show 
+			
+	F.Intrinsic.Control.EndSelect
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("Main_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	Function.Intrinsic.String.Concat("Project: GCG_5364_GUIScriptMaint.g2u",V.Ambient.Newline,V.Ambient.Newline,"Subroutine: ",V.Ambient.CurrentSubroutine,V.Ambient.NewLine,"Error Occurred ",V.Ambient.ErrorNumber," with description ",V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(frmMaint_UnLoad)
+Function.Intrinsic.Control.EndIf
+Program.Sub.Main.End
+
+Program.Sub.frmMaint_UnLoad.Start
+F.Intrinsic.Control.SetErrorHandler("GsGridMaint_RowCellClick_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String)
+variable.local.returnvalue.Declare(String)
+
+F.Intrinsic.Control.If(V.Global.bSave,=,True)
+	Function.Intrinsic.UI.MsgBox("Changes not saved, Do you want to save the changes ?", "Confirm", 4, variable.local.returnvalue)
+	F.Intrinsic.Control.If(variable.local.returnvalue,=,6)
+		f.Intrinsic.Control.CallSub(cmdsave_click)
+	f.Intrinsic.Control.EndIf 
+f.Intrinsic.Control.EndIf 
+
+F.Intrinsic.Control.If(V.ODBC.Con.state,=,1)
+	F.ODBC.Connection!con.Close
+F.Intrinsic.Control.EndIf
+
+F.Intrinsic.Control.End
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("GsGridMaint_RowCellClick_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	Function.Intrinsic.String.Concat("Project: GCG_5364_GUIScriptMaint.g2u",V.Ambient.Newline,V.Ambient.Newline,"Subroutine: ",V.Ambient.CurrentSubroutine,V.Ambient.NewLine,"Error Occurred ",V.Ambient.ErrorNumber," with description ",V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.End
+Function.Intrinsic.Control.EndIf
+Program.Sub.frmMaint_UnLoad.End
+
+Program.Sub.GsGridMaint_RowCellClick.Start
+F.Intrinsic.Control.SetErrorHandler("Main_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String)
+V.Local.sSql.Declare(String)
+variable.local.sTitles.Declare 
+variable.local.sWidths.Declare 
+Variable.local.sRet.Declare 
+Variable.local.iRet.Declare 
+
+f.Intrinsic.Control.BlockEvents 
+f.Intrinsic.Control.If(V.Args.column.UCase,=,"ACTION")
+	F.Intrinsic.Control.If(V.Args.RowIndex,<>,-1)
+		f.Data.DataTable.DeleteRow("DTHook",V.Args.RowIndex)
+		V.Global.bSave.Set(True)
+	F.Intrinsic.Control.EndIf
+	
+F.Intrinsic.Control.ElseIf(V.Args.column.UCase,=,"HOOK_ID")
+	Function.Intrinsic.String.Split("Hook*!*Description*!*Path*!*Script Name","*!*",variable.local.sTitles)
+	Function.Intrinsic.String.Split("300*!*1000*!*0*!*1000","*!*",variable.local.sWidths)
+
+	V.Local.sSql.Set("select Asso.id,rtrim(Script_Desc) as Script_Desc,Script_Path,rtrim(Script_Name) as Script_Name from HOOK_ASSOCIATION Asso join HOOK_USER Usr on Asso.id = Usr.id where  Active_Flag <> 'N' and Script_Desc <> '' order by 2")
+	F.Intrinsic.UI.SetBrowserHotTypeAhead(True)
+	F.ODBC.Connection!Con.OpenCompanyConnection
+	Function.Intrinsic.UI.Browser("Select a Hook","con",Variable.Local.sSql,Variable.Local.sTitles,Variable.Local.sWidths,10000,11000,Variable.local.sRet)
+	F.ODBC.Connection!Con.Close
+	Function.Intrinsic.Control.If(Variable.local.sRet,"=","***CANCEL***")
+	 Function.Intrinsic.UI.Msgbox("No Hook was selected!")
+	Function.Intrinsic.Control.Else
+	 Function.Intrinsic.String.Split(Variable.local.sRet,"*!*",Variable.local.sRet)
+	 	gui.frmMaint.GsGridMaint.SetCellValue("GVHook",0,V.Args.RowIndex,Variable.local.sRet(0))
+		gui.frmMaint.GsGridMaint.SetCellValue("GVHook",1,V.Args.RowIndex,Variable.local.sRet(1))
+		Gui.frmMaint.GsGridMaint.FocusCell("GVHook",V.Args.RowIndex,2)
+	Function.Intrinsic.Control.EndIf
+f.Intrinsic.Control.ElseIf(V.Args.column.UCase,=,"BUTTONSCR")
+	gui.frmMaint.GsGridMaint.GetCellValue("GVHook",1,V.Args.RowIndex,Variable.local.sRet)
+	F.Intrinsic.String.Replace(V.Local.sRet,"#SCRIPT-PATH#\",V.Global.sScriptPath,V.Local.sRet)
+	F.Global.Task.CallASyncGas(V.Local.sRet,"",V.Local.iRet)
+	f.Intrinsic.Control.CallSub(frmmaint_unload)
+Function.Intrinsic.Control.EndIf
+f.Intrinsic.Control.UnBlockEvents 
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("Main_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	Function.Intrinsic.String.Concat("Project: GCG_5364_GUIScriptMaint.g2u",V.Ambient.Newline,V.Ambient.Newline,"Subroutine: ",V.Ambient.CurrentSubroutine,V.Ambient.NewLine,"Error Occurred ",V.Ambient.ErrorNumber," with description ",V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(frmMaint_UnLoad)
+Function.Intrinsic.Control.EndIf
+Program.Sub.GsGridMaint_RowCellClick.End
+
+Program.Sub.GsGridMaint_CellValueChanged.Start
+F.Intrinsic.Control.SetErrorHandler("GsGridMaint_RowCellClick_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String)
+V.Local.sRet.Declare(String)
+
+'f.Intrinsic.Control.If(V.Args.column,=,"Button_name")
+'	gui.frmMaint.GsGridMaint.GetCellValue("GVHook",3,V.Args.RowIndex,Variable.local.sRet)
+'	f.Intrinsic.Control.If(Variable.local.sRet,=,"Add")
+'		f.Data.DataTable.AddRow("DTHook","Hook_ID","","Button_Name","","Button_Name","","Action","Delete")
+'		gui.frmMaint.GsGridMaint.SetCellValue("GVHook",3,V.Args.RowIndex,"Delete")
+'	Function.Intrinsic.Control.EndIf
+'	V.Global.bSave.Set(True)
+'Function.Intrinsic.Control.EndIf
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("GsGridMaint_RowCellClick_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	Function.Intrinsic.String.Concat("Project: GCG_5364_GUIScriptMaint.g2u",V.Ambient.Newline,V.Ambient.Newline,"Subroutine: ",V.Ambient.CurrentSubroutine,V.Ambient.NewLine,"Error Occurred ",V.Ambient.ErrorNumber," with description ",V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(frmMaint_UnLoad)
+Function.Intrinsic.Control.EndIf
+Program.Sub.GsGridMaint_CellValueChanged.End
+
+Program.Sub.cmdsave_Click.Start
+F.Intrinsic.Control.SetErrorHandler("Main_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String)
+'	f.Data.DataView.Create("DTHook","DVHdrHook",22,"Button_name<>''","")
+'
+'	f.Data.DataView.ToDataTable("DTHook","DVHdrHook","DTHdrSave")
+'	F.Data.DataTable.SaveToDB("DTHdrSave","con","GCG_5364_GUIScrMaint","Hook_ID",256,"Hook_ID@!@Hook_ID*!*Button_name@!@Button_name")	
+	F.ODBC.Connection!Con.OpenCompanyConnection
+	F.Data.DataTable.SaveToDB("DTHook","con","GCG_5364_GUIScrMaint","Hook_ID",7,"Hook_ID@!@Hook_ID*!*Button_name@!@Button_name")
+	F.ODBC.Connection!Con.Close
+	F.Data.DataTable.AcceptChanges("DTHook")
+	V.Global.bSave.Set(False)
+'	Function.Data.DataView.Close("DTHook","DVHdrHook")
+'	Function.Data.DataTable.Close("DTHdrSave")
+	F.Intrinsic.UI.Msgbox("Data Saved..........")
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("Main_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	Function.Intrinsic.String.Concat("Project: GCG_5364_GUIScriptMaint.g2u",V.Ambient.Newline,V.Ambient.Newline,"Subroutine: ",V.Ambient.CurrentSubroutine,V.Ambient.NewLine,"Error Occurred ",V.Ambient.ErrorNumber," with description ",V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(frmMaint_UnLoad)
+Function.Intrinsic.Control.EndIf
+Program.Sub.cmdsave_Click.End
+
+Program.Sub.LaunchMaint.Start
+F.Intrinsic.Control.SetErrorHandler("LaunchMaint_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String)
+
+V.Local.sSql.Declare(String)
+
+	V.Local.sSql.Set("select Hook_ID,rtrim(Script_Desc) as Script_Desc,Button_Name from GCG_5364_GUIScrMaint join HOOK_USER on ID = Hook_id order by 2")
+
+	F.ODBC.Connection!Con.OpenCompanyConnection
+	F.Data.DataTable.CreateFromSQL("DTHook","Con",v.Local.sSql,True)
+	F.ODBC.Connection!Con.Close
+	F.Data.DataView.Create("DTHook","DVHook")
+	
+	F.Data.DataTable.AddColumn("DTHook","Action","string","Delete")
+
+'	f.Data.DataTable.AddRow("DTHook","Hook_ID","","Button_Name","","Button_Name","","Action","Delete")
+
+	gui.frmMaint.GsGridMaint.AddGridViewFromDataView("GVHook","DTHook","DVHook")
+
+'	gui.frmMaint.GsGridMaint.SetGridviewProperty("GVHook","AllowAddRows",True)
+	
+	gui.frmMaint.GsGridMaint.MainView("GVHook")
+	
+	gui.frmMaint.GsGridMaint.SetColumnProperty("GVHook","Hook_ID","HeaderFontBold","True")
+	gui.frmMaint.GsGridMaint.SetColumnProperty("GVHook","Script_Desc","HeaderFontBold","True")
+	gui.frmMaint.GsGridMaint.SetColumnProperty("GVHook","Button_Name","HeaderFontBold","True")
+	gui.frmMaint.GsGridMaint.SetColumnProperty("GVHook","Action","HeaderFontBold","True")
+
+	gui.frmMaint.GsGridMaint.SetColumnProperty("GVHook","Hook_ID","HeaderBackColor","#d3d3d3")
+	gui.frmMaint.GsGridMaint.SetColumnProperty("GVHook","Script_Desc","HeaderBackColor","#d3d3d3")
+	gui.frmMaint.GsGridMaint.SetColumnProperty("GVHook","Button_Name","HeaderBackColor","#d3d3d3")
+	gui.frmMaint.GsGridMaint.SetColumnProperty("GVHook","Action","HeaderBackColor","#d3d3d3")
+
+	gui.frmMaint.GsGridMaint.AddStyleFormatCOndition("GVHook", "Action", "tagName1","NotEqual","1")
+	gui.frmMaint.GsGridMaint.SetStyleFormatCOnditionProperty("GVHook",  "Action", "tagName1", "backcolor", "#A9A9A9")
+
+	gui.frmMaint.GsGridMaint.AddStyleFormatCOndition("GVHook", "Action", "tagName1","NotEqual","1")
+	gui.frmMaint.GsGridMaint.SetStyleFormatCOnditionProperty("GVHook",  "Action", "tagName1", "FontBold", True)
+
+	gui.frmMaint.GsGridMaint.SetColumnProperty("GVHook","Hook_ID","AllowEdit",False)
+	gui.frmMaint.GsGridMaint.SetColumnProperty("GVHook","Hook_ID","ReadOnly",True)
+	gui.frmMaint.GsGridMaint.SetColumnProperty("GVHook","Script_Desc","AllowEdit",False)
+	gui.frmMaint.GsGridMaint.SetColumnProperty("GVHook","Script_Desc","ReadOnly",True)
+	gui.frmMaint.GsGridMaint.SetColumnProperty("GVHook","Action","AllowEdit",False)
+	gui.frmMaint.GsGridMaint.SetColumnProperty("GVHook","Action","ReadOnly",True)
+	gui.frmMaint.GsGridMaint.SetColumnProperty("GVHook","Button_Name","ReadOnly",False)
+
+	gui.frmMaint.GsGridMaint.SetColumnProperty("GVHook","Hook_ID","MinWidth",60)
+	gui.frmMaint.GsGridMaint.SetColumnProperty("GVHook","Button_Name","MinWidth",40)
+	gui.frmMaint.GsGridMaint.SetColumnProperty("GVHook","Action","MinWidth",40)
+
+	gui.frmMaint.GsGridMaint.SetColumnProperty("GVHook","Hook_ID","MaxWidth",60)
+	gui.frmMaint.GsGridMaint.SetColumnProperty("GVHook","Button_Name","MaxWidth",140)
+	gui.frmMaint.GsGridMaint.SetColumnProperty("GVHook","Action","MaxWidth",50)
+
+	gui.frmMaint.GsGridMaint.SetColumnProperty("GVHook","Hook_ID","Caption","Hook ID")
+	gui.frmMaint.GsGridMaint.SetColumnProperty("GVHook","Button_Name","Caption","Button Name")
+	gui.frmMaint.GsGridMaint.SetColumnProperty("GVHook","Script_Desc","Caption","Script Desc")
+
+	gui.frmMaint.GsGridMaint.SetGridViewProperty("GVHook", "OptionsSelectionEnableAppearanceFocusedRow", "False") 
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("LaunchMaint_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	Function.Intrinsic.String.Concat("Project: GCG_5364_GUIScriptMaint.g2u",V.Ambient.Newline,V.Ambient.Newline,"Subroutine: ",V.Ambient.CurrentSubroutine,V.Ambient.NewLine,"Error Occurred ",V.Ambient.ErrorNumber," with description ",V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(frmMaint_UnLoad)
+Function.Intrinsic.Control.EndIf
+Program.Sub.LaunchMaint.End
+
+Program.Sub.launchscript.Start
+F.Intrinsic.Control.SetErrorHandler("launchscript_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String)
+V.Local.sSql.Declare(String)
+
+	V.Local.sSql.Set("select rtrim(Button_Name) as ButtonScr,rtrim(Script_Path) + '\' + rtrim(Script_Name) as ScriptPath,Hook_ID from HOOK_Association join GCG_5364_GUIScrMaint on id = Hook_Id ")
+
+	F.ODBC.Connection!Con.OpenCompanyConnection
+	F.Data.DataTable.CreateFromSQL("DTHook","Con",v.Local.sSql,True)
+	F.ODBC.Connection!Con.Close
+	F.Data.DataView.Create("DTHook","DVHook")
+
+	gui.frmMaint.GsGridMaint.AddGridViewFromDataView("GVHook","DTHook","DVHook")
+
+	gui.frmMaint.GsGridMaint.SetColumnProperty("GVHook","ScriptPath","HeaderFontBold","True")
+
+	gui.frmMaint.GsGridMaint.SetColumnProperty("GVHook","ButtonScr","HeaderBackColor","#FAF0E6")
+
+	gui.frmMaint.GsGridMaint.AddStyleFormatCOndition("GVHook", "ButtonScr", "tagName1","NotEqual","1")
+	gui.frmMaint.GsGridMaint.SetStyleFormatCOnditionProperty("GVHook",  "ButtonScr", "tagName1", "backcolor", "#A9A9A9")
+
+	gui.frmMaint.GsGridMaint.AddStyleFormatCOndition("GVHook","ButtonScr", "tagName1","NotEqual","1")
+	gui.frmMaint.GsGridMaint.SetStyleFormatCOnditionProperty("GVHook",  "ButtonScr", "tagName1", "FontBold", True)
+
+	gui.frmMaint.GsGridMaint.SetColumnProperty("GVHook", "ButtonScr", "CellHAlignment", "Center")
+
+	gui.frmMaint.GsGridMaint.SetColumnProperty("GVHook","ButtonScr","AllowEdit",False)
+
+	gui.frmMaint.GsGridMaint.SetColumnProperty("GVHook","ScriptPath","visible",False)
+	gui.frmMaint.GsGridMaint.SetColumnProperty("GVHook","Hook_ID","visible",False)
+
+	gui.frmMaint.GsGridMaint.SetColumnProperty("GVHook","ButtonScr","MinWidth",165)
+
+	gui.frmMaint.GsGridMaint.SetColumnProperty("GVHook","ButtonScr","MaxWidth",165)
+
+	gui.frmMaint.GsGridMaint.SetColumnProperty("GVHook","ButtonScr","Caption","Launch Screen")
+
+	gui.frmMaint.GsGridMaint.SetGridViewProperty("GVHook", "OptionsSelectionEnableAppearanceFocusedRow", "False") 
+
+	gui.frmMaint.GsGridMaint.SetColumnProperty("GVHook","ButtonScr","HeaderFontSize","14")
+	'gui.frmMaint.GsGridMaint.SetColumnProperty("GVHook","ButtonScr","CellFontSize","11")
+	Gui.frmMaint.GsGridMaint.SetGridviewProperty("GVHook","OptionsViewRowAutoHeight",True)
+	Gui.frmMaint.GsGridMaint.SetGridviewProperty("GVHook","ColumnPanelRowHeight","20")
+
+	gui.frmMaint.GsGridMaint.MainView("GVHook")
+	f.Intrinsic.Control.if(v.DataTable.DTHook.rowcount,>,0)
+		Gui.frmMaint.GsGridMaint.FocusCell("GVHook",0,1)
+	f.Intrinsic.Control.EndIf 
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("launchscript_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	Function.Intrinsic.String.Concat("Project: GCG_5364_GUIScriptMaint.g2u",V.Ambient.Newline,V.Ambient.Newline,"Subroutine: ",V.Ambient.CurrentSubroutine,V.Ambient.NewLine,"Error Occurred ",V.Ambient.ErrorNumber," with description ",V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(frmMaint_UnLoad)
+Function.Intrinsic.Control.EndIf
+Program.Sub.launchscript.End
+
+Program.Sub.cmdAdd_Click.Start
+F.Intrinsic.Control.SetErrorHandler("cmdAdd_Click_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String)
+V.Local.sSql.Declare(String)
+V.Local.sRet.Declare(String)
+
+F.Intrinsic.Control.If(V.Screen.frmMaint!txtHook.Text,<>,"")
+	F.Intrinsic.String.Build("select Asso.id,rtrim(Script_Desc) as Script_Desc,Script_Path,rtrim(Script_Name) as Script_Name from HOOK_ASSOCIATION Asso join HOOK_USER Usr on Asso.id = Usr.id where Asso.id = '{0}'",V.Screen.frmMaint!txtHook.Text,V.Local.sSql)
+	
+	F.ODBC.Connection!Con.OpenCompanyConnection
+	F.ODBC.Connection!Con.ExecuteAndReturn(V.Local.sSql,V.Local.sRet)
+	F.ODBC.Connection!Con.Close
+	
+	F.Intrinsic.String.Replace(V.Local.sRet,"#$#","",V.Local.sRet)
+	
+	F.Intrinsic.String.Split(V.Local.sRet,"*!*",V.Local.sRet)
+
+	f.Data.DataTable.AddRow("DTHook","Hook_ID",Variable.local.sRet(0),"Script_Desc",Variable.local.sRet(1),"Button_Name","","Action","Delete")
+	Gui.frmMaint.txtHook.Text("")
+	
+F.Intrinsic.Control.EndIf
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("cmdAdd_Click_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	Function.Intrinsic.String.Concat("Project: GCG_5364_GUIScriptMaint.g2u",V.Ambient.Newline,V.Ambient.Newline,"Subroutine: ",V.Ambient.CurrentSubroutine,V.Ambient.NewLine,"Error Occurred ",V.Ambient.ErrorNumber," with description ",V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(frmMaint_UnLoad)
+Function.Intrinsic.Control.EndIf
+Program.Sub.cmdAdd_Click.End
+
+Program.Sub.txtHook_Click.Start
+F.Intrinsic.Control.SetErrorHandler("txtHook_Click_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String)
+V.Local.sSql.Declare(String)
+V.Local.sRet.Declare(String)
+V.Local.sTitles.Declare(String)
+V.Local.sWidths.Declare(String)
+
+Function.Intrinsic.String.Split("Hook*!*Description*!*Path*!*Script Name","*!*",variable.local.sTitles)
+Function.Intrinsic.String.Split("300*!*1000*!*0*!*1000","*!*",variable.local.sWidths)
+	
+V.Local.sSql.Set("select Asso.id,rtrim(Script_Desc) as Script_Desc,Script_Path,rtrim(Script_Name) as Script_Name from HOOK_ASSOCIATION Asso join HOOK_USER Usr on Asso.id = Usr.id where  Active_Flag <> 'N' and Script_Desc <> '' order by 2")
+F.Intrinsic.UI.SetBrowserHotTypeAhead(True)
+F.ODBC.Connection!Con.OpenCompanyConnection
+Function.Intrinsic.UI.Browser("Select a Hook","con",Variable.Local.sSql,Variable.Local.sTitles,Variable.Local.sWidths,10000,11000,Variable.local.sRet)
+F.ODBC.Connection!Con.Close
+Function.Intrinsic.Control.If(Variable.local.sRet,"<>","***CANCEL***")
+ Function.Intrinsic.String.Split(Variable.local.sRet,"*!*",Variable.local.sRet)
+ Gui.frmMaint.txtHook.Text(V.Local.sRet.Trim)
+Function.Intrinsic.Control.EndIf
+
+Gui.frmMaint..AlwaysOnTop(True)
+Gui.frmMaint..AlwaysOnTop(False)
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("txtHook_Click_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	Function.Intrinsic.String.Concat("Project: GCG_5364_GUIScriptMaint.g2u",V.Ambient.Newline,V.Ambient.Newline,"Subroutine: ",V.Ambient.CurrentSubroutine,V.Ambient.NewLine,"Error Occurred ",V.Ambient.ErrorNumber," with description ",V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(frmMaint_UnLoad)
+Function.Intrinsic.Control.EndIf
+Program.Sub.txtHook_Click.End
+
+Program.Sub.Comments.Start
+${$0$}$GUI Script Maintenance$}$RAN$}$2/26/2018 4:34:11 PM$}$False
+${$5$}$2.0.0.0$}$2
+${$6$}$triley$}$20230517085037220$}$iK6nerqp9nur1h1iSBfRKBBz1ENCgYv6Cm8hXu2VJDetb1UHu1gIZJkEtgW+UWlhQfFgDUendPs=
+Program.Sub.Comments.End
