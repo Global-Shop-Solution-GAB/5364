@@ -1,0 +1,80 @@
+Program.Sub.Preflight.Start
+Program.Sub.Preflight.End
+
+Program.Sub.Main.Start
+F.Intrinsic.Control.SetErrorHandler("Main_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+
+F.Intrinsic.Control.SelectCase(V.Caller.Hook)
+	F.Intrinsic.Control.Case(49035)
+		F.Intrinsic.Control.CallSub(Copy_Order)
+		F.Intrinsic.Control.CallSub(Exit)
+		
+	F.Intrinsic.Control.CaseElse
+		F.Intrinsic.Control.End
+		
+F.Intrinsic.Control.EndSelect
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("Main_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_5364_OE_Copy.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(Exit)
+Function.Intrinsic.Control.EndIf
+Program.Sub.Main.End
+
+Program.Sub.Exit.Start
+F.Intrinsic.Control.SetErrorHandler("Main_Err")
+F.Intrinsic.Control.ClearErrors
+
+F.Intrinsic.Control.End
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("Main_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.Control.End
+Function.Intrinsic.Control.EndIf
+Program.Sub.Exit.End
+
+Program.Sub.Copy_Order.Start
+F.Intrinsic.Control.SetErrorHandler("Copy_Order_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+V.Local.sPrevOrder.Declare(String,"")
+V.Local.sNewOrder.Declare(String,"")
+V.Local.sSql.Declare(String,"")
+
+F.Intrinsic.String.LPad(V.Passed.000001,"0",7,V.Local.sPrevOrder)
+F.Intrinsic.String.LPad(V.Passed.000003,"0",7,V.Local.sNewOrder)
+
+F.ODBC.Connection!Con.OpenCompanyConnection
+
+F.Intrinsic.String.Build("Select * From GCG_5364_OE_LINES Where Order_No = '{0}'",V.Local.sPrevOrder,V.Local.sSql)
+F.Data.DataTable.CreateFromSQL("Order","con",V.Local.sSql,True)
+
+F.Intrinsic.Control.If(V.DataTable.Order.RowCount--,<>,-1)
+	F.Data.DataTable.SetValue("Order",-1,"Order_No",V.Local.sNewOrder)
+	
+	F.Data.DataTable.SaveToDB("Order","con","GCG_5364_OE_LINES","Order_No*!*Record_No",3)
+	
+F.Intrinsic.Control.EndIf
+
+F.ODBC.Connection!Con.Close
+
+F.Data.DataTable.Close("Order")
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("Copy_Order_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_5364_OE_Copy.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(Exit)
+Function.Intrinsic.Control.EndIf
+Program.Sub.Copy_Order.End
