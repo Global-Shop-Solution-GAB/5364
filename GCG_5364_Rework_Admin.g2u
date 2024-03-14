@@ -1,0 +1,269 @@
+Program.Sub.ScreenSU.Start
+Gui.FormRWAdmin..Create
+Gui.FormRWAdmin..Caption("Rework Work Order Add Qty")
+Gui.FormRWAdmin..Size(4845,2865)
+Gui.FormRWAdmin..MinX(0)
+Gui.FormRWAdmin..MinY(0)
+Gui.FormRWAdmin..Position(0,0)
+Gui.FormRWAdmin..BackColor(-2147483633)
+Gui.FormRWAdmin..MousePointer(0)
+Gui.FormRWAdmin..Event(UnLoad,FormRWAdmin_UnLoad)
+Gui.FormRWAdmin.txtJob.Create(TextBox,"",True,1680,300,0,150,390,True,0,"Arial",8,-2147483643,1)
+Gui.FormRWAdmin.txtJob.Event(GotFocus,txtJob_GotFocus)
+Gui.FormRWAdmin.txtSuffix.Create(TextBox,"",True,1065,300,0,1965,390,True,0,"Arial",8,-2147483643,1)
+Gui.FormRWAdmin.txtSuffix.Event(GotFocus,txtSuffix_GotFocus)
+Gui.FormRWAdmin.txtSuffix.Event(LostFocus,txtSuffix_LostFocus)
+Gui.FormRWAdmin.cmdJS.Create(Button)
+Gui.FormRWAdmin.cmdJS.Size(495,375)
+Gui.FormRWAdmin.cmdJS.Position(3120,360)
+Gui.FormRWAdmin.cmdJS.Caption("^")
+Gui.FormRWAdmin.cmdJS.Event(Click,cmdJS_Click)
+Gui.FormRWAdmin.lblJob.Create(Label,"Job",True,1485,255,0,135,165,True,0,"Arial",8,-2147483633,0)
+Gui.FormRWAdmin.lblSuffix.Create(Label,"Suffix",True,1140,255,0,1980,165,True,0,"Arial",8,-2147483633,0)
+Gui.FormRWAdmin.txtQty.Create(TextBox,"",True,1215,300,0,165,1050,True,0,"Arial",8,-2147483643,1)
+Gui.FormRWAdmin.txtQty.NumericOnly(2)
+Gui.FormRWAdmin.txtQty.Event(GotFocus,txtQty_GotFocus)
+Gui.FormRWAdmin.lblQty.Create(Label,"Rework Qty",True,1440,255,0,165,810,True,0,"Arial",8,-2147483633,0)
+Gui.FormRWAdmin.cmdAdd.Create(Button)
+Gui.FormRWAdmin.cmdAdd.Size(1320,375)
+Gui.FormRWAdmin.cmdAdd.Position(195,1590)
+Gui.FormRWAdmin.cmdAdd.Caption("Add/Update")
+Gui.FormRWAdmin.cmdAdd.Event(Click,cmdAdd_Click)
+Program.Sub.ScreenSU.End
+
+Program.Sub.Preflight.Start
+Program.Sub.Preflight.End
+
+Program.Sub.Main.Start
+F.Intrinsic.Control.SetErrorHandler("Main_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+
+Gui.FormRWAdmin..Show
+Gui.FormRWAdmin..AlwaysOnTop(True)
+Gui.FormRWAdmin..AlwaysOnTop(False)
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("Main_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_5364_Rework_Admin.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(FormRWAdmin_UnLoad)
+Function.Intrinsic.Control.EndIf
+Program.Sub.Main.End
+
+Program.Sub.FormRWAdmin_UnLoad.Start
+F.Intrinsic.Control.SetErrorHandler("FormRWAdmin_UnLoad_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+
+F.Intrinsic.Control.End
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("FormRWAdmin_UnLoad_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.Control.End
+Function.Intrinsic.Control.EndIf
+Program.Sub.FormRWAdmin_UnLoad.End
+
+Program.Sub.txtJob_GotFocus.Start
+F.Intrinsic.Control.SetErrorHandler("txtJob_GotFocus_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+
+Gui.FormRWAdmin.txtJob.SelectAll
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("txtJob_GotFocus_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_5364_Rework_Admin.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(FormRWAdmin_UnLoad)
+Function.Intrinsic.Control.EndIf
+Program.Sub.txtJob_GotFocus.End
+
+Program.Sub.txtSuffix_GotFocus.Start
+F.Intrinsic.Control.SetErrorHandler("txtSuffix_GotFocus_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+
+Gui.FormRWAdmin.txtSuffix.SelectAll
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("txtSuffix_GotFocus_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_5364_Rework_Admin.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(FormRWAdmin_UnLoad)
+Function.Intrinsic.Control.EndIf
+Program.Sub.txtSuffix_GotFocus.End
+
+Program.Sub.txtSuffix_LostFocus.Start
+F.Intrinsic.Control.SetErrorHandler("txtSuffix_LostFocus_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+
+F.Intrinsic.Control.CallSub(Get_Data)
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("txtSuffix_LostFocus_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_5364_Rework_Admin.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(FormRWAdmin_UnLoad)
+Function.Intrinsic.Control.EndIf
+Program.Sub.txtSuffix_LostFocus.End
+
+Program.Sub.cmdJS_Click.Start
+F.Intrinsic.Control.SetErrorHandler("cmdJS_Click_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+V.Local.sSql.Declare(String,"")
+V.Local.sTitles.Declare(String,"")
+V.Local.sWidths.Declare(String,"")
+V.Local.sRet.Declare(String,"")
+
+F.Intrinsic.UI.SetBrowserHotTypeAhead(True)
+F.Intrinsic.UI.SetBrowserOOT(True)
+
+V.Local.sSql.Set("Select Job,Suffix From V_Job_Header Order by Job,Suffix")
+
+V.Local.sTitles.Set("Job*!*Suffix")
+V.Local.sWidths.Set("1800*!*1800")
+
+F.Intrinsic.String.Split(V.Local.sTitles,"*!*",V.Local.sTitles)
+F.Intrinsic.String.Split(V.Local.sWidths,"*!*",V.Local.sWidths)
+
+F.ODBC.Connection!Con.OpenCompanyConnection
+
+F.Intrinsic.UI.Browser("Select Router","con",V.Local.sSql,V.Local.sTitles,V.Local.sWidths,10200,9000,V.Local.sRet)
+
+F.ODBC.Connection!Con.Close
+
+F.Intrinsic.Control.If(V.Local.sRet,<>,"***CANCEL***")
+	F.Intrinsic.String.Split(V.Local.sRet,"*!*",V.Local.sRet)
+	Gui.FormRWAdmin.txtJob.Text(V.Local.sRet.Trim)
+	Gui.FormRWAdmin.txtSuffix.Text(V.Local.sRet(1).Trim)
+	F.Intrinsic.Control.CallSub(Get_Data)
+F.Intrinsic.Control.EndIf
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("cmdJS_Click_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_5364_Rework_Admin.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(FormRWAdmin_UnLoad)
+Function.Intrinsic.Control.EndIf
+Program.Sub.cmdJS_Click.End
+
+Program.Sub.txtQty_GotFocus.Start
+F.Intrinsic.Control.SetErrorHandler("txtQty_GotFocus_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+
+Gui.FormRWAdmin.txtQty.SelectAll
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("txtQty_GotFocus_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_5364_Rework_Admin.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(FormRWAdmin_UnLoad)
+Function.Intrinsic.Control.EndIf
+Program.Sub.txtQty_GotFocus.End
+
+Program.Sub.cmdAdd_Click.Start
+F.Intrinsic.Control.SetErrorHandler("cmdAdd_Click_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+
+F.Intrinsic.Control.If(V.DataTable.Rework.RowCount--,<>,-1)
+	F.Intrinsic.Control.If(V.Screen.FormRWAdmin!txtQty.Text,>,"0")
+		F.Data.DataTable.SetValue("Rework",-1,"Rework_Qty",V.Screen.FormRWAdmin!txtQty.Text)
+		F.ODBC.Connection!Con.OpenCompanyConnection
+		F.Data.DataTable.SaveToDB("Rework","con","GCG_5364_REWORK","Job*!*Suffix",256,"Job@!@Job*!*Suffix@!@Suffix*!*Rework_Qty@!@Rework_Qty")
+		F.ODBC.Connection!Con.Close
+		F.Data.DataTable.Close("Rework")
+	F.Intrinsic.Control.Else
+		F.Intrinsic.UI.Msgbox("Enter Qty > 0")
+		F.Intrinsic.Control.ExitSub
+	F.Intrinsic.Control.EndIf
+F.Intrinsic.Control.EndIf
+
+F.Intrinsic.Control.BlockEvents
+Gui.FormRWAdmin.txtJob.Text("")
+Gui.FormRWAdmin.txtSuffix.Text("")
+Gui.FormRWAdmin.txtQty.Text("0")
+F.Intrinsic.Control.UnBlockEvents
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("cmdAdd_Click_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_5364_Rework_Admin.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(FormRWAdmin_UnLoad)
+Function.Intrinsic.Control.EndIf
+Program.Sub.cmdAdd_Click.End
+
+Program.Sub.Get_Data.Start
+F.Intrinsic.Control.SetErrorHandler("Get_Data_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+V.Local.sJob.Declare(String,"")
+V.Local.sSuffix.Declare(String,"")
+V.Local.sRet.Declare(String,"")
+V.Local.sSql.Declare(String,"")
+
+V.Local.sJob.Set(V.Screen.FormRWAdmin!txtJob.Text)
+V.Local.sSuffix.Set(V.Screen.FormRWAdmin!txtSuffix.Text)
+
+F.Intrinsic.Control.If(V.Local.sJob.Trim,<>,"")
+	F.ODBC.Connection!Con.OpenCompanyConnection
+	F.Intrinsic.String.Build("Select Job,Suffix From V_Job_Header Where Job = '{0}' and Suffix = '{1}'",V.Local.sJob.Trim,V.Local.sSuffix.Trim,V.Local.sSql)
+	F.ODBC.Connection!Con.ExecuteAndReturn(V.Local.sSql,V.Local.sRet)
+	F.Intrinsic.Control.If(V.Local.sRet.Trim,<>,"")
+		F.Intrinsic.String.Build("Select Job,Suffix, Rework_Qty From GCG_5364_REWORK Where Job = '{0}' and Suffix = '{1}'",V.Local.sJob.Trim,V.Local.sSuffix.Trim,V.Local.sSql)
+		F.Intrinsic.Control.If(V.DataTable.Rework.Exists)
+			F.Data.DataTable.Close("Rework")
+		F.Intrinsic.Control.EndIf
+		F.Data.DataTable.CreateFromSQL("Rework","con",V.Local.sSql,True)
+		F.Intrinsic.Control.If(V.DataTable.Rework.RowCount--,<>,-1)
+			Gui.FormRWAdmin.txtQty.Text(V.DataTable.Rework(V.DataTable.Rework.RowCount--).Rework_Qty!FieldValLong)
+		F.Intrinsic.Control.Else
+			F.Data.DataTable.AddRow("Rework","Job",V.Local.sJob.Trim,"Suffix",V.Local.sSuffix.Trim,"Rework_Qty",0)
+			Gui.FormRWAdmin.txtQty.Text("0")
+		F.Intrinsic.Control.EndIf
+	F.Intrinsic.Control.Else
+		F.Intrinsic.UI.Msgbox("Job/Suffix not valid")
+	F.Intrinsic.Control.EndIf
+	F.ODBC.Connection!Con.Close
+F.Intrinsic.Control.Else
+	Gui.FormRWAdmin.txtQty.Text("0")
+F.Intrinsic.Control.EndIf
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("Get_Data_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_5364_Rework_Admin.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(FormRWAdmin_UnLoad)
+Function.Intrinsic.Control.EndIf
+Program.Sub.Get_Data.End
