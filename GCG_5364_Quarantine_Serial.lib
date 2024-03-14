@@ -1,0 +1,78 @@
+Program.Sub.ScreenSU.Start
+Gui.FormQuarantine..Create
+Gui.FormQuarantine..Caption("Quarantine Serial #")
+Gui.FormQuarantine..Size(7290,3450)
+Gui.FormQuarantine..MinX(0)
+Gui.FormQuarantine..MinY(0)
+Gui.FormQuarantine..Position(0,0)
+Gui.FormQuarantine..BackColor(-2147483633)
+Gui.FormQuarantine..MousePointer(0)
+Gui.FormQuarantine..Event(UnLoad,FormQuarantine_UnLoad)
+Gui.FormQuarantine.txtSerial.Create(TextBox,"",True,3840,435,0,1770,1410,True,0,"Arial",14,-2147483643,1)
+Gui.FormQuarantine.txtSerial.Event(KeyPressEnter,txtSerial_KeyPressEnter)
+Gui.FormQuarantine.lblSerial.Create(Label,"Quarantine Serial #",True,4500,435,0,1770,960,True,0,"Arial",14,-2147483633,0)
+Program.Sub.ScreenSU.End
+
+Program.Sub.Preflight.Start
+V.Global.slibSerial.Declare(String,"")
+V.Global.sLibResponse.Declare(String,"N")
+Program.Sub.Preflight.End
+
+Program.Sub.FormQuarantine_UnLoad.Start
+
+Gui.FormQuarantine..Visible(False)
+
+Program.Sub.FormQuarantine_UnLoad.End
+
+Program.Sub.txtSerial_KeyPressEnter.Start
+F.Intrinsic.Control.SetErrorHandler("txtSerial_KeyPressEnter_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+V.Local.sMsg.Declare(String,"")
+V.Local.iRet.Declare(Long,0)
+
+V.Global.slibSerial.Set(V.Screen.FormQuarantine!txtSerial.Text)
+
+F.Intrinsic.String.Build("Are You Sure You Want To Quarantine Serial #: {0}",V.Global.slibSerial.Trim,V.Local.sMsg)
+
+F.Intrinsic.UI.Msgbox(V.Local.sMsg,"Attention",4,V.Local.iRet)
+F.Intrinsic.Control.If(V.Local.iRet,=,6)
+	V.Global.sLibResponse.Set("Y")
+F.Intrinsic.Control.Else
+	V.Global.sLibResponse.Set("N")
+F.Intrinsic.Control.EndIf
+
+F.Intrinsic.Control.CallSub(FormQuarantine_UnLoad)
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("txtSerial_KeyPressEnter_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_5364_Quarantine_Serial.lib {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	V.Global.sLibResponse.Set("N")
+	F.Intrinsic.Control.CallSub(FormQuarantine_UnLoad)
+Function.Intrinsic.Control.EndIf
+Program.Sub.txtSerial_KeyPressEnter.End
+
+Program.Sub.Show_Quarantine_Form.Start
+F.Intrinsic.Control.SetErrorHandler("Show_Quarantine_Form_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+
+V.Global.sLibResponse.Set("N")
+
+Gui.FormQuarantine..Show
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("Show_Quarantine_Form_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_5364_Quarantine_Serial.lib {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	V.Global.sLibResponse.Set("N")
+	F.Intrinsic.Control.CallSub(FormQuarantine_UnLoad)
+Function.Intrinsic.Control.EndIf
+Program.Sub.Show_Quarantine_Form.End
