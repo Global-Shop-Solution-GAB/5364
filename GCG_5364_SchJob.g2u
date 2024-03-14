@@ -1,0 +1,41 @@
+Program.Sub.Preflight.Start
+
+Program.Sub.Preflight.End
+
+Program.Sub.Main.Start
+F.Intrinsic.Control.Try
+	V.Local.sError.Declare
+	v.Local.i.Declare
+	v.Local.sSQL.Declare
+	V.Local.sRet.Declare
+
+'Script Called from GCG_5364_Order_Entry
+	F.ODBC.Connection!con.OpenConnection(V.Ambient.PDSN,V.Ambient.PUser,V.Ambient.PPass)
+	f.Intrinsic.String.Build("select job+suffix as WO,Job,Suffix,date_due from v_job_header where job+Suffix in ({0})",v.Passed.WO,v.Local.sSQL)
+	f.Data.DataTable.CreateFromSQL("DTSchjob","con",v.Local.ssql)
+	
+	F.Data.DataTable.SetValueFormat("DTSchjob",-1,"date_due","date_due","MM/DD/YYYY")
+	
+	f.Intrinsic.Control.For(v.Local.i,0,v.DataTable.DTSchjob.rowcount--,1)
+		F.Intrinsic.String.Build("Select Top 1 Job,Suffix From V_Job_Operations Where Job = '{0}' and Suffix = '{1}'",V.DataTable.DTSchjob(V.Local.i).Job!FieldValTrim,V.DataTable.DTSchjob(V.Local.i).Suffix!FieldValTrim,V.Local.sSQL)
+		F.ODBC.Connection!con.ExecuteAndReturn(V.Local.sSQL,V.Local.sRet)
+		F.Intrinsic.Control.If(V.Local.sRet.Trim,<>,"")
+			F.Global.APS.ScheduleJob(V.DataTable.DTSchjob(V.Local.i).Job!FieldValTrim,V.DataTable.DTSchjob(V.Local.i).Suffix!FieldValTrim,"B",V.DataTable.DTSchjob(V.Local.i).date_due!FieldVal)
+		F.Intrinsic.Control.Else
+		
+		F.Intrinsic.Control.EndIf
+	f.Intrinsic.Control.Next(v.Local.i)
+	Function.Data.DataTable.Close("DTSchjob")
+	F.ODBC.Connection!con.Close
+	f.Intrinsic.Control.end
+
+F.Intrinsic.Control.Catch
+'	F.Intrinsic.String.Build("Project: {0}{1}{1}Subroutine: {2}{1}Error Occurred {3} with description {4}{1}{1}GAB Version: {5}",V.Ambient.ScriptPath,V.Ambient.Newline,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Ambient.GABVersion,V.Local.sError)
+'	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.End
+F.Intrinsic.Control.EndTry
+Program.Sub.Main.End
+
+Program.Sub.Comments.Start
+${$0$}$GCG_5364_SchJob.g2u$}$SUPERVSR$}$8/12/2019 12:50:37 PM$}$True
+Program.Sub.Comments.End
