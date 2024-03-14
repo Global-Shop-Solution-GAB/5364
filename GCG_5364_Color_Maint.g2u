@@ -1,0 +1,400 @@
+Program.Sub.ScreenSU.Start
+Gui.FormColor..Create
+Gui.FormColor..Caption("Color Maintenance")
+Gui.FormColor..Size(15360,10695)
+Gui.FormColor..MinX(0)
+Gui.FormColor..MinY(0)
+Gui.FormColor..Position(0,0)
+Gui.FormColor..BackColor(-2147483633)
+Gui.FormColor..MousePointer(0)
+Gui.FormColor..Event(UnLoad,FormColor_UnLoad)
+Gui.FormColor.GsGridColor.Create(GsGridControl)
+Gui.FormColor.GsGridColor.Size(15030,8970)
+Gui.FormColor.GsGridColor.Position(105,735)
+Gui.FormColor.GsGridColor.Event(RowCellClick,GsGridColor_RowCellClick)
+Gui.FormColor.lblColor.Create(Label,"Color",True,1935,255,0,105,120,True,0,"Arial",8,-2147483633,0)
+Gui.FormColor.txtColor.Create(TextBox,"",True,3930,300,0,105,345,True,0,"Arial",8,-2147483643,1)
+Gui.FormColor.txtColor.MaxLength(30)
+Gui.FormColor.txtColor.Event(GotFocus,txtColor_GotFocus)
+Gui.FormColor.cmdSave.Create(Button)
+Gui.FormColor.cmdSave.Size(855,375)
+Gui.FormColor.cmdSave.Position(105,9795)
+Gui.FormColor.cmdSave.Caption("Save")
+Gui.FormColor.cmdSave.Event(Click,cmdSave_Click)
+Gui.FormColor.cmdAdd.Create(Button)
+Gui.FormColor.cmdAdd.Size(855,375)
+Gui.FormColor.cmdAdd.Position(4170,300)
+Gui.FormColor.cmdAdd.Caption("Add")
+Gui.FormColor.cmdAdd.Event(Click,cmdAdd_Click)
+Program.Sub.ScreenSU.End
+
+Program.Sub.Preflight.Start
+Program.Sub.Preflight.End
+
+Program.Sub.Main.Start
+F.Intrinsic.Control.SetErrorHandler("Main_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+
+'getting color data
+F.Intrinsic.Control.CallSub(Get_Data)
+'setting grid properties
+F.Intrinsic.Control.CallSub(Set_Properties)
+
+Gui.FormColor..Show
+
+Gui.FormColor..AlwaysOnTop(True)
+Gui.FormColor..AlwaysOnTop(False)
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("Main_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_5364_Color_Maint.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(FormColor_UnLoad)
+Function.Intrinsic.Control.EndIf
+Program.Sub.Main.End
+
+Program.Sub.GsGridColor_RowCellClick.Start
+F.Intrinsic.Control.SetErrorHandler("GsGridColor_RowCellClick_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("GsGridColor_RowCellClick_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_5364_Color_Maint.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(FormColor_UnLoad)
+Function.Intrinsic.Control.EndIf
+Program.Sub.GsGridColor_RowCellClick.End
+
+Program.Sub.cmdAdd_Click.Start
+F.Intrinsic.Control.SetErrorHandler("cmdAdd_Click_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+V.Local.sColor.Declare(String,"")
+V.Local.sNumb.Declare(String,"")
+V.Local.sFirstChar.Declare(String,"")
+V.Local.sSecondChar.Declare(String,"")
+V.Local.sThirdChar.Declare(String,"")
+V.Local.sFourthChar.Declare(String,"")
+V.Local.i.Declare(Long,0)
+V.Local.iNext.Declare(Long,0)
+V.Local.sTemp.Declare(String,"")
+V.Local.sAlpha.Declare(String,"A*!*B*!*C*!*D*!*E*!*F*!*G*!*H*!*I*!*J*!*K*!*L*!*M*!*N*!*O*!*P*!*Q*!*R*!*S*!*T*!*U*!*V*!*W*!*X*!*Y*!*Z")
+
+F.Intrinsic.String.Split(V.Local.sAlpha,"*!*",V.Local.sAlpha)
+
+V.Local.sColor.Set(V.Screen.FormColor!txtColor.Text)
+V.Local.sColor.Set(V.Local.sColor.UCase)
+
+F.Intrinsic.Control.If(V.DataTable.Color.RowCount--,<>,-1)
+	V.Local.sNumb.Set(V.DataTable.Color(V.DataTable.Color.RowCount--).Color_Num!FieldVal)
+F.Intrinsic.Control.Else
+	V.Local.sNumb.Set("0000")
+F.Intrinsic.Control.EndIf
+
+V.Local.sFirstChar.Set(V.Local.sNumb.Left1)
+F.Intrinsic.String.Mid(V.Local.sNumb,2,1,V.Local.sSecondChar)
+F.Intrinsic.String.Mid(V.Local.sNumb,3,1,V.Local.sThirdChar)
+V.Local.sFourthChar.Set(V.Local.sNumb.Right1)
+
+'building Color Num Alpha Numeric Value
+F.Intrinsic.Control.If(V.Local.sFirstChar.IsNumeric)
+	F.Intrinsic.Math.Add(V.Local.sNumb.Long,1,V.Local.sNumb)
+	F.Intrinsic.Control.If(V.Local.sNumb.Long,=,10000)
+		V.Local.sNumb.Set("A001")
+	F.Intrinsic.Control.Else
+		F.Intrinsic.String.Format(V.Local.sNumb,"0000",V.Local.sNumb)
+	F.Intrinsic.Control.EndIf
+F.Intrinsic.Control.Else
+	F.Intrinsic.Control.If(V.Local.sSecondChar.IsNumeric)
+		F.Intrinsic.String.Right(V.Local.sNumb,3,V.Local.sTemp)
+		F.Intrinsic.Math.Add(V.Local.sTemp.Long,1,V.Local.sNumb)
+		F.Intrinsic.Control.If(V.Local.sNumb.Long,=,1000)
+			F.Intrinsic.Control.If(V.Local.sFirstChar,<>,"Z")
+				F.Intrinsic.Control.For(V.Local.i,0,25,1)
+					F.Intrinsic.Control.If(V.Local.sFirstChar,=,V.Local.sAlpha(V.Local.i))
+						F.Intrinsic.Math.Add(V.Local.i,1,V.Local.iNext)
+						F.Intrinsic.String.Format(V.Local.sNumb,"000",V.Local.sNumb)
+						F.Intrinsic.String.Build("{0}001",V.Local.sAlpha(V.Local.iNext),V.Local.sNumb)
+					F.Intrinsic.Control.EndIf
+				F.Intrinsic.Control.Next(V.Local.i)
+			F.Intrinsic.Control.Else
+				V.Local.sNumb.Set("AA01")
+			F.Intrinsic.Control.EndIf
+		F.Intrinsic.Control.Else
+			F.Intrinsic.String.Format(V.Local.sNumb,"000",V.Local.sNumb)
+			F.Intrinsic.String.Build("{0}{1}",V.Local.sFirstChar.Trim,V.Local.sNumb,V.Local.sNumb)
+		F.Intrinsic.Control.EndIf
+	F.Intrinsic.Control.Else
+		F.Intrinsic.Control.If(V.Local.sThirdChar.IsNumeric)
+			F.Intrinsic.String.Right(V.Local.sNumb,2,V.Local.sTemp)
+			F.Intrinsic.Math.Add(V.Local.sTemp.Long,1,V.Local.sNumb)
+			F.Intrinsic.Control.If(V.Local.sNumb.Long,=,100)
+				F.Intrinsic.Control.If(V.Local.sSecondChar,<>,"Z")
+					F.Intrinsic.Control.For(V.Local.i,0,25,1)
+						F.Intrinsic.Control.If(V.Local.sSecondChar,=,V.Local.sAlpha(V.Local.i))
+							F.Intrinsic.Math.Add(V.Local.i,1,V.Local.iNext)
+							F.Intrinsic.String.Format(V.Local.sNumb,"00",V.Local.sNumb)
+							F.Intrinsic.String.Build("{0}{1}01",V.Local.sFirstChar,V.Local.sAlpha(V.Local.iNext),V.Local.sNumb)
+						F.Intrinsic.Control.EndIf
+					F.Intrinsic.Control.Next(V.Local.i)
+				F.Intrinsic.Control.Else
+					F.Intrinsic.Control.If(V.Local.sFirstChar,<>,"Z")
+						F.Intrinsic.Control.For(V.Local.i,0,25,1)
+							F.Intrinsic.Control.If(V.Local.sFirstChar,=,V.Local.sAlpha(V.Local.i))
+								F.Intrinsic.Math.Add(V.Local.i,1,V.Local.iNext)
+								F.Intrinsic.String.Build("{0}A01",V.Local.sAlpha(V.Local.iNext),V.Local.sNumb)
+							F.Intrinsic.Control.EndIf
+						F.Intrinsic.Control.Next(V.Local.i)
+					F.Intrinsic.Control.Else
+						V.Local.sNumb.Set("AAA1")
+					F.Intrinsic.Control.EndIf
+				F.Intrinsic.Control.EndIf
+			F.Intrinsic.Control.Else
+				F.Intrinsic.String.Format(V.Local.sNumb,"00",V.Local.sNumb)
+				F.Intrinsic.String.Build("{0}{1}{2}",V.Local.sFirstChar,V.Local.sSecondChar.Trim,V.Local.sNumb,V.Local.sNumb)
+			F.Intrinsic.Control.EndIf
+		F.Intrinsic.Control.Else
+			F.Intrinsic.Control.If(V.Local.sFourthChar.IsNumeric)
+				F.Intrinsic.String.Right(V.Local.sNumb,1,V.Local.sTemp)
+				F.Intrinsic.Math.Add(V.Local.sTemp.Long,1,V.Local.sNumb)
+				F.Intrinsic.Control.If(V.Local.sNumb,<,10)
+					F.Intrinsic.String.Build("{0}{1}{2}{3}",V.Local.sFirstChar,V.Local.sSecondChar.Trim,V.Local.sThirdChar,V.Local.sNumb,V.Local.sNumb)
+				F.Intrinsic.Control.Else
+					F.Intrinsic.Control.If(V.Local.sThirdChar,<>,"Z")
+						F.Intrinsic.Control.For(V.Local.i,0,25,1)
+							F.Intrinsic.Control.If(V.Local.sThirdChar,=,V.Local.sAlpha(V.Local.i))
+								F.Intrinsic.Math.Add(V.Local.i,1,V.Local.iNext)
+								F.Intrinsic.String.Build("{0}{1}{2}1",V.Local.sFirstChar,V.Local.sSecondChar,V.Local.sAlpha(V.Local.iNext),V.Local.sNumb)
+							F.Intrinsic.Control.EndIf
+						F.Intrinsic.Control.Next(V.Local.i)
+					F.Intrinsic.Control.Else
+						F.Intrinsic.Control.If(V.Local.sSecondChar,<>,"Z")
+							F.Intrinsic.Control.For(V.Local.i,0,25,1)
+								F.Intrinsic.Control.If(V.Local.sSecondChar,=,V.Local.sAlpha(V.Local.i))
+									F.Intrinsic.Math.Add(V.Local.i,1,V.Local.iNext)
+									F.Intrinsic.String.Build("{0}{1}A1",V.Local.sFirstChar,V.Local.sAlpha(V.Local.iNext),V.Local.sNumb)
+								F.Intrinsic.Control.EndIf
+							F.Intrinsic.Control.Next(V.Local.i)
+						F.Intrinsic.Control.Else
+							F.Intrinsic.Control.If(V.Local.sFirstChar,<>,"Z")
+								F.Intrinsic.Control.For(V.Local.i,0,25,1)
+									F.Intrinsic.Control.If(V.Local.sFirstChar,=,V.Local.sAlpha(V.Local.i))
+										F.Intrinsic.Math.Add(V.Local.i,1,V.Local.iNext)
+										F.Intrinsic.String.Build("{0}{1}{2}1",V.Local.sAlpha(V.Local.iNext),V.Local.sThirdChar,V.Local.sThirdChar,V.Local.sNumb)
+									F.Intrinsic.Control.EndIf
+								F.Intrinsic.Control.Next(V.Local.i)
+							F.Intrinsic.Control.Else
+								V.Local.sNumb.Set("AAAA")
+							F.Intrinsic.Control.EndIf
+						F.Intrinsic.Control.EndIf
+					F.Intrinsic.Control.EndIf
+				F.Intrinsic.Control.EndIf
+			F.Intrinsic.Control.Else
+				F.Intrinsic.Control.If(V.Local.sFourthChar,<>,"Z")
+					F.Intrinsic.Control.If(V.Local.sFirstChar,<>,"Z")
+						F.Intrinsic.Control.For(V.Local.i,0,25,1)
+							F.Intrinsic.Control.If(V.Local.sFirstChar,=,V.Local.sAlpha(V.Local.i))
+								F.Intrinsic.Math.Add(V.Local.i,1,V.Local.iNext)
+								F.Intrinsic.String.Build("{0}AAA",V.Local.sAlpha(V.Local.iNext),V.Local.sNumb)
+							F.Intrinsic.Control.EndIf
+						F.Intrinsic.Control.Next(V.Local.i)
+					F.Intrinsic.Control.Else
+						F.Intrinsic.Control.If(V.Local.sSecondChar,<>,"Z")
+							F.Intrinsic.Control.For(V.Local.i,0,25,1)
+								F.Intrinsic.Control.If(V.Local.sSecondChar,=,V.Local.sAlpha(V.Local.i))
+									F.Intrinsic.Math.Add(V.Local.i,1,V.Local.iNext)
+									F.Intrinsic.String.Build("{0}{1}AA",V.Local.sFirstChar,V.Local.sAlpha(V.Local.iNext),V.Local.sNumb)
+								F.Intrinsic.Control.EndIf
+							F.Intrinsic.Control.Next(V.Local.i)
+						F.Intrinsic.Control.Else
+							F.Intrinsic.Control.If(V.Local.sThirdChar,<>,"Z")
+								F.Intrinsic.Control.For(V.Local.i,0,25,1)
+									F.Intrinsic.Control.If(V.Local.sThirdChar,=,V.Local.sAlpha(V.Local.i))
+										F.Intrinsic.Math.Add(V.Local.i,1,V.Local.iNext)
+										F.Intrinsic.String.Build("{0}{1}{2}A",V.Local.sFirstChar,V.Local.sSecondChar,V.Local.sAlpha(V.Local.iNext),V.Local.sNumb)
+									F.Intrinsic.Control.EndIf
+								F.Intrinsic.Control.Next(V.Local.i)
+							F.Intrinsic.Control.Else
+								F.Intrinsic.Control.If(V.Local.sFourthChar,<>,"Z")
+									F.Intrinsic.Control.For(V.Local.i,0,25,1)
+										F.Intrinsic.Control.If(V.Local.sFourthChar,=,V.Local.sAlpha(V.Local.i))
+											F.Intrinsic.Math.Add(V.Local.i,1,V.Local.iNext)
+											F.Intrinsic.String.Build("{0}{1}{2}{3}",V.Local.sFirstChar,V.Local.sSecondChar,V.Local.sThirdChar,V.Local.sAlpha(V.Local.iNext),V.Local.sNumb)
+										F.Intrinsic.Control.EndIf
+									F.Intrinsic.Control.Next(V.Local.i)
+								F.Intrinsic.Control.Else
+									V.Local.sNumb.Set("ZZZZ")
+								F.Intrinsic.Control.EndIf
+							F.Intrinsic.Control.EndIf
+						F.Intrinsic.Control.EndIf
+					F.Intrinsic.Control.EndIf
+				F.Intrinsic.Control.Else
+					F.Intrinsic.UI.Msgbox("You are out of Alpha Numberic Numbers.","Attention")
+					Gui.FormColor.txtColor.Text("")
+					F.Intrinsic.Control.ExitSub
+				F.Intrinsic.Control.EndIf
+			F.Intrinsic.Control.EndIf
+		F.Intrinsic.Control.EndIf
+	F.Intrinsic.Control.EndIf
+	
+F.Intrinsic.Control.EndIf
+
+'adding color and color num to the grid
+F.Data.DataTable.AddRow("Color","Color_Num",V.Local.sNumb,"Color",V.Local.sColor.Trim,"Discont","N")
+
+Gui.FormColor.txtColor.Text("")
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("cmdAdd_Click_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_5364_Color_Maint.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(FormColor_UnLoad)
+Function.Intrinsic.Control.EndIf
+Program.Sub.cmdAdd_Click.End
+
+Program.Sub.txtColor_GotFocus.Start
+F.Intrinsic.Control.SetErrorHandler("txtColor_GotFocus_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+
+Gui.FormColor.txtColor.SelectAll
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("txtColor_GotFocus_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_5364_Color_Maint.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(FormColor_UnLoad)
+Function.Intrinsic.Control.EndIf
+Program.Sub.txtColor_GotFocus.End
+
+Program.Sub.FormColor_UnLoad.Start
+F.Intrinsic.Control.SetErrorHandler("FormColor_UnLoad_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+
+F.Intrinsic.Control.If(V.ODBC.Con.State,=,1)
+	F.ODBC.Connection!Con.Close
+F.Intrinsic.Control.EndIf
+
+F.Intrinsic.Control.End
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("FormColor_UnLoad_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_5364_Color_Maint.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.End
+Function.Intrinsic.Control.EndIf
+Program.Sub.FormColor_UnLoad.End
+
+Program.Sub.Get_Data.Start
+F.Intrinsic.Control.SetErrorHandler("Get_Data_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+
+F.ODBC.Connection!Con.OpenCompanyConnection
+
+F.Data.DataTable.CreateFromSQL("Color","con","Select Color_Num, rtrim(Color) as Color, Discont From GCG_5364_Color_Maint Order By Color_Num",True)
+
+F.ODBC.Connection!Con.Close
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("Get_Data_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_5364_Color_Maint.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(FormColor_UnLoad)
+Function.Intrinsic.Control.EndIf
+Program.Sub.Get_Data.End
+
+Program.Sub.Set_Properties.Start
+F.Intrinsic.Control.SetErrorHandler("Set_Properties_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+
+Gui.FormColor.GsGridColor.AddGridviewFromDatatable("GVColor","Color")
+
+Gui.FormColor.GsGridColor.SetColumnProperty("GVColor","Color_Num","Caption","Number")
+Gui.FormColor.GsGridColor.SetColumnProperty("GVColor","Color","Caption","Color")
+Gui.FormColor.GsGridColor.SetColumnProperty("GVColor","Discont","Caption","Discontinued")
+
+Gui.FormColor.GsGridColor.SetColumnProperty("GVColor","Color_Num","ReadOnly",True)
+Gui.FormColor.GsGridColor.SetColumnProperty("GVColor","Color","ReadOnly",False)
+Gui.FormColor.GsGridColor.SetColumnProperty("GVColor","Discont","ReadOnly",False)
+
+Gui.FormColor.GsGridColor.SetColumnProperty("GVColor","Color_Num","AllowEdit",False)
+Gui.FormColor.GsGridColor.SetColumnProperty("GVColor","Color","AllowEdit",True)
+Gui.FormColor.GsGridColor.SetColumnProperty("GVColor","Discont","AllowEdit",True)
+
+Gui.FormColor.GsGridColor.SetColumnProperty("GVColor","Color_Num","HeaderBackColor","MediumSeaGreen")
+Gui.FormColor.GsGridColor.SetColumnProperty("GVColor","Color","HeaderBackColor","MediumSeaGreen")
+Gui.FormColor.GsGridColor.SetColumnProperty("GVColor","Discont","HeaderBackColor","MediumSeaGreen")
+
+Gui.FormColor.GsGridColor.SetColumnProperty("GVColor","Color_Num","HeaderFontBold",True)
+Gui.FormColor.GsGridColor.SetColumnProperty("GVColor","Color","HeaderFontBold",True)
+Gui.FormColor.GsGridColor.SetColumnProperty("GVColor","Discont","HeaderFontBold",True)
+
+Gui.FormColor.GsGridColor.ColumnEdit("GVColor","Discont","DropDownList","N*!*Y")
+
+Gui.FormColor.GsGridColor.MainView("GVColor")
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("Set_Properties_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_5364_Color_Maint.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(FormColor_UnLoad)
+Function.Intrinsic.Control.EndIf
+Program.Sub.Set_Properties.End
+
+Program.Sub.cmdSave_Click.Start
+F.Intrinsic.Control.SetErrorHandler("Set_Properties_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+
+Gui.FormColor.cmdSave.Enabled(False)
+
+F.ODBC.Connection!Con.OpenCompanyConnection
+
+F.Intrinsic.UI.InvokeWaitDialog("Saving Color Data...............")
+
+F.Data.DataTable.SaveToDB("Color","con","GCG_5364_Color_Maint","Color_Num")
+
+F.Intrinsic.UI.CloseWaitDialog
+
+F.Intrinsic.UI.Msgbox("Color Data Saved.........")
+
+F.ODBC.Connection!Con.Close
+
+Gui.FormColor.cmdSave.Enabled(True)
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("Set_Properties_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_5364_Color_Maint.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(FormColor_UnLoad)
+Function.Intrinsic.Control.EndIf
+Program.Sub.cmdSave_Click.End
