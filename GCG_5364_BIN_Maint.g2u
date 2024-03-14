@@ -1,0 +1,165 @@
+Program.Sub.ScreenSU.Start
+Gui.FormBin..Create
+Gui.FormBin..Caption("Bin Size Maintenance")
+Gui.FormBin..Size(7020,10695)
+Gui.FormBin..MinX(0)
+Gui.FormBin..MinY(0)
+Gui.FormBin..Position(0,0)
+Gui.FormBin..BackColor(-2147483633)
+Gui.FormBin..MousePointer(0)
+Gui.FormBin..Event(UnLoad,FormBin_UnLoad)
+Gui.FormBin.GsGridBin.Create(GsGridControl)
+Gui.FormBin.GsGridBin.Size(6555,9555)
+Gui.FormBin.GsGridBin.Position(105,150)
+Gui.FormBin.cmdSave.Create(Button)
+Gui.FormBin.cmdSave.Size(855,375)
+Gui.FormBin.cmdSave.Position(105,9795)
+Gui.FormBin.cmdSave.Caption("Save")
+Gui.FormBin.cmdSave.Event(Click,cmdSave_Click)
+Program.Sub.ScreenSU.End
+
+Program.Sub.Preflight.Start
+Program.Sub.Preflight.End
+
+Program.Sub.Main.Start
+F.Intrinsic.Control.SetErrorHandler("Main_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+
+F.Intrinsic.Control.CallSub(Get_Data)
+F.Intrinsic.Control.CallSub(Set_Prop)
+
+Gui.FormBin..Show
+Gui.FormBin..AlwaysOnTop(True)
+Gui.FormBin..AlwaysOnTop(False)
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("Main_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_5364_BIN_Maint.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(FormBin_UnLoad)
+Function.Intrinsic.Control.EndIf
+Program.Sub.Main.End
+
+Program.Sub.FormBin_UnLoad.Start
+F.Intrinsic.Control.SetErrorHandler("FormBin_UnLoad_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+
+F.Intrinsic.Control.End
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("FormBin_UnLoad_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_5364_BIN_Maint.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.End
+Function.Intrinsic.Control.EndIf
+Program.Sub.FormBin_UnLoad.End
+
+Program.Sub.cmdSave_Click.Start
+F.Intrinsic.Control.SetErrorHandler("cmdSave_Click_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+
+Gui.FormBin..Enabled(False)
+
+F.ODBC.Connection!Con.OpenCompanyConnection
+
+'saving bin maint size data
+F.Data.DataTable.SaveToDB("BinMaint","con","GCG_5364_Bin_Maint","Bin",256,"Bin@!@Bin*!*Start_Size@!@Start_Size*!*End_Size@!@End_Size*!*MAX_LENGTH@!@MAX_LENGTH")
+
+F.ODBC.Connection!Con.Close
+
+F.Intrinsic.UI.Msgbox("Bin Sizes Saved..............","Attention")
+
+Gui.FormBin..Enabled(True)
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("cmdSave_Click_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_5364_BIN_Maint.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(FormBin_UnLoad)
+Function.Intrinsic.Control.EndIf
+Program.Sub.cmdSave_Click.End
+
+Program.Sub.Get_Data.Start
+F.Intrinsic.Control.SetErrorHandler("Get_Data_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+
+F.ODBC.Connection!Con.OpenCompanyConnection
+
+'creating datatable of bin size data
+F.Data.DataTable.CreateFromSQL("BinMaint","con","Select a.Bin, if(Start_Size is null,0,Start_Size) as Start_Size, if(End_Size is null,0,End_Size) as End_Size, if(Max_Length is null,0,Max_Length) as Max_Length From V_Bin_Master a Left Join GCG_5364_Bin_Maint b On a.Bin = b.Bin",True)
+
+F.ODBC.Connection!Con.Close
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("Get_Data_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_5364_BIN_Maint.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(FormBin_UnLoad)
+Function.Intrinsic.Control.EndIf
+Program.Sub.Get_Data.End
+
+Program.Sub.Set_Prop.Start
+F.Intrinsic.Control.SetErrorHandler("Set_Prop_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+
+Gui.FormBin.GsGridBin.AddGridviewFromDatatable("GVBinMaint","BinMaint")
+
+Gui.FormBin.GsGridBin.SetColumnProperty("GVBinMaint","Bin","ReadOnly",True)
+Gui.FormBin.GsGridBin.SetColumnProperty("GVBinMaint","Bin","AllowEdit",False)
+Gui.FormBin.GsGridBin.SetColumnProperty("GVBinMaint","Bin","Caption","BIN")
+Gui.FormBin.GsGridBin.SetColumnProperty("GVBinMaint","Bin","HeaderFontBold",True)
+Gui.FormBin.GsGridBin.SetColumnProperty("GVBinMaint","Bin","HeaderBackColor","MediumSeaGreen")
+
+Gui.FormBin.GsGridBin.SetColumnProperty("GVBinMaint","Start_Size","ReadOnly",False)
+Gui.FormBin.GsGridBin.SetColumnProperty("GVBinMaint","Start_Size","AllowEdit",True)
+Gui.FormBin.GsGridBin.SetColumnProperty("GVBinMaint","Start_Size","Caption","START SIZE")
+Gui.FormBin.GsGridBin.SetColumnProperty("GVBinMaint","Start_Size","HeaderFontBold",True)
+Gui.FormBin.GsGridBin.SetColumnProperty("GVBinMaint","Start_Size","HeaderBackColor","MediumSeaGreen")
+Gui.FormBin.GsGridBin.SetColumnProperty("GVBinMaint","Start_Size","HeaderHAlignment","Center")
+Gui.FormBin.GsGridBin.SetColumnProperty("GVBinMaint","Start_Size","CellHAlignment","Center")
+
+Gui.FormBin.GsGridBin.SetColumnProperty("GVBinMaint","End_Size","ReadOnly",False)
+Gui.FormBin.GsGridBin.SetColumnProperty("GVBinMaint","End_Size","AllowEdit",True)
+Gui.FormBin.GsGridBin.SetColumnProperty("GVBinMaint","End_Size","Caption","END SIZE")
+Gui.FormBin.GsGridBin.SetColumnProperty("GVBinMaint","End_Size","HeaderFontBold",True)
+Gui.FormBin.GsGridBin.SetColumnProperty("GVBinMaint","End_Size","HeaderBackColor","MediumSeaGreen")
+Gui.FormBin.GsGridBin.SetColumnProperty("GVBinMaint","End_Size","HeaderHAlignment","Center")
+Gui.FormBin.GsGridBin.SetColumnProperty("GVBinMaint","End_Size","CellHAlignment","Center")
+
+Gui.FormBin.GsGridBin.SetColumnProperty("GVBinMaint","Max_Length","ReadOnly",False)
+Gui.FormBin.GsGridBin.SetColumnProperty("GVBinMaint","Max_Length","AllowEdit",True)
+Gui.FormBin.GsGridBin.SetColumnProperty("GVBinMaint","Max_Length","Caption","MAX LENGTH")
+Gui.FormBin.GsGridBin.SetColumnProperty("GVBinMaint","Max_Length","HeaderFontBold",True)
+Gui.FormBin.GsGridBin.SetColumnProperty("GVBinMaint","Max_Length","HeaderBackColor","MediumSeaGreen")
+Gui.FormBin.GsGridBin.SetColumnProperty("GVBinMaint","Max_Length","HeaderHAlignment","Center")
+Gui.FormBin.GsGridBin.SetColumnProperty("GVBinMaint","Max_Length","CellHAlignment","Center")
+
+Gui.FormBin.GsGridBin.MainView("GVBinMaint")
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("Set_Prop_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_5364_BIN_Maint.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(FormBin_UnLoad)
+Function.Intrinsic.Control.EndIf
+Program.Sub.Set_Prop.End
