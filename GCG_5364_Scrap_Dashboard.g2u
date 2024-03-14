@@ -1,0 +1,502 @@
+﻿Program.Sub.ScreenSU.Start
+Gui.Scrap..Create
+Gui.Scrap..Caption("Scrap Dashboard")
+Gui.Scrap..Size(15360,9495)
+Gui.Scrap..MinX(0)
+Gui.Scrap..MinY(0)
+Gui.Scrap..Position(0,0)
+Gui.Scrap..BackColor(-2147483633)
+Gui.Scrap..MousePointer(0)
+Gui.Scrap..Event(UnLoad,Scrap_UnLoad)
+Gui.Scrap.dtp1.Create(DatePicker)
+Gui.Scrap.dtp1.Size(1935,285)
+Gui.Scrap.dtp1.Position(210,150)
+Gui.Scrap.lbl1.Create(Label,"Between",True,1335,255,0,2205,240,True,0,"Arial",8,-2147483633,0)
+Gui.Scrap.dtp2.Create(DatePicker)
+Gui.Scrap.dtp2.Size(1935,285)
+Gui.Scrap.dtp2.Position(3300,150)
+Gui.Scrap.cmdrefresh.Create(Button)
+Gui.Scrap.cmdrefresh.Size(855,450)
+Gui.Scrap.cmdrefresh.Position(5595,75)
+Gui.Scrap.cmdrefresh.Caption("REFRESH")
+Gui.Scrap.cmdrefresh.Event(Click,cmdrefresh_Click)
+Gui.Scrap.GsGridScrap.Create(GsGridControl)
+Gui.Scrap.GsGridScrap.Size(14790,8040)
+Gui.Scrap.GsGridScrap.Position(255,645)
+Gui.Scrap.GsGridScrap.Anchor(15)
+Gui.Scrap.GsGridScrap.Event(RowCellClick,GsGridScrap_RowCellClick)
+Gui.Scrap.cmdExport.Create(Button)
+Gui.Scrap.cmdExport.Size(1125,450)
+Gui.Scrap.cmdExport.Position(13905,75)
+Gui.Scrap.cmdExport.Anchor(9)
+Gui.Scrap.cmdExport.Caption("Export")
+Gui.Scrap.cmdExport.Event(Click,cmdExport_Click)
+Program.Sub.ScreenSU.End
+
+Program.Sub.Preflight.Start
+Program.Sub.Preflight.End
+
+Program.Sub.Main.Start
+F.Intrinsic.Control.SetErrorHandler("Main_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+
+F.Intrinsic.Control.CallSub(Get_Data)
+F.Intrinsic.Control.CallSub(Set_Properties)
+
+Gui.Scrap..Show
+Gui.Scrap..AlwaysOnTop(True)
+Gui.Scrap..AlwaysOnTop(False)
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("Main_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_5364_Scrap_Dashboard.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(Scrap_UnLoad)
+Function.Intrinsic.Control.EndIf
+Program.Sub.Main.End
+
+Program.Sub.Scrap_UnLoad.Start
+F.Intrinsic.Control.SetErrorHandler("Scrap_UnLoad_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+V.Local.sSerialize.Declare(String,"")
+
+Gui.Scrap.GsGridScrap.Serialize("GScrap",V.Local.sSerialize)
+F.Global.Registry.AddValue(V.Caller.User,V.Caller.CompanyCode,"GScrap",5364,1000,False,"Serialize",False,0,-999.0,1/1/1980,12:00:00 AM,V.Local.sSerialize)
+
+F.Intrinsic.Control.End
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("Scrap_UnLoad_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.Control.End
+Function.Intrinsic.Control.EndIf
+Program.Sub.Scrap_UnLoad.End
+
+Program.Sub.cmdExport_Click.Start
+F.Intrinsic.Control.SetErrorHandler("cmdExport_Click_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+V.Local.sFileExport.Declare(String,"")
+V.Local.sMsg.Declare(String,"")
+V.Local.bExcel.Declare(Boolean,False)
+V.Local.bFileLocked.Declare(Boolean,False)
+
+F.Automation.MSExcel.CheckPresence(V.Local.bExcel)
+F.Intrinsic.Control.If(V.Local.bExcel)
+	F.Intrinsic.String.Build("{0}\GCG_5364_Scrap_Export.xlsx",V.Caller.LocalGssTempDir,V.Local.sFileExport)
+	F.Intrinsic.File.IsFileLocked(V.Local.sFileExport,V.Local.bFileLocked)
+	F.Intrinsic.Control.If(V.Local.bFileLocked)
+		F.Intrinsic.String.Build("File is already open. Please close and export again.{0}File: {1}",V.Ambient.NewLine,V.Local.sFileExport,V.Local.sMsg)
+		F.Intrinsic.UI.Msgbox(V.Local.sMsg,"File In Use")
+	F.Intrinsic.Control.Else
+		Gui.Scrap.GsGridScrap.Export(V.Local.sFileExport,"xlsx")
+		F.Intrinsic.Task.ShellExec(0,"",V.Local.sFileExport,"","",1)
+	F.Intrinsic.Control.EndIf
+F.Intrinsic.Control.Else
+	F.Intrinsic.String.Build("{0}\GCG_5364_Scrap_Export.csv",V.Caller.LocalGssTempDir,V.Local.sFileExport)
+	F.Intrinsic.File.IsFileLocked(V.Local.sFileExport,V.Local.bFileLocked)
+	F.Intrinsic.Control.If(V.Local.bFileLocked)
+		F.Intrinsic.String.Build("File is already open. Please close and export again.{0}File: {1}",V.Ambient.NewLine,V.Local.sFileExport,V.Local.sMsg)
+		F.Intrinsic.UI.Msgbox(V.Local.sMsg,"File In Use")
+	F.Intrinsic.Control.Else
+		Gui.Scrap.GsGridScrap.Export(V.Local.sFileExport,"csv")
+	F.Intrinsic.Control.EndIf
+	F.Intrinsic.Task.ShellExec(0,"",V.Local.sFileExport,"","",1)
+F.Intrinsic.Control.EndIf
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("cmdExport_Click_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_5364_Scrap_Dashboard.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(Scrap_UnLoad)
+Function.Intrinsic.Control.EndIf
+Program.Sub.cmdExport_Click.End
+
+Program.Sub.Get_Data.Start
+F.Intrinsic.Control.SetErrorHandler("Get_Data_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+V.Local.sSql.Declare(String,"")
+V.Local.sFilter.Declare(String,"")
+V.Local.bRet.Declare(Boolean,False)
+V.Local.dStart.Declare(Date)
+V.Local.dEnd.Declare(Date)
+V.Local.sDate.Declare(String)
+
+V.Local.sDate.Set("IF(SUBSTRING(Start_Date,3,1) = '/' and SUBSTRING(Start_Date,6,1) = '/',Convert(SUBSTRING(Start_Date,7,4)+'-'+SUBSTRING(Start_Date,1,2)+'-'+SUBSTRING(Start_Date,4,2),SQL_DATE),IF(SUBSTRING(Start_Date,2,1) = '/' and SUBSTRING(Start_Date,4,1) = '/',Convert(SUBSTRING(Start_Date,5,4)+'-0'+SUBSTRING(Start_Date,1,1)+'-0'+SUBSTRING(Start_Date,3,1),SQL_DATE),IF(SUBSTRING(Start_Date,3,1) = '/' and SUBSTRING(Start_Date,5,1) = '/',Convert(SUBSTRING(Start_Date,6,4)+'-'+SUBSTRING(Start_Date,1,2)+'-0'+SUBSTRING(Start_Date,4,1),SQL_DATE),IF(SUBSTRING(Start_Date,2,1) = '/' and SUBSTRING(Start_Date,5,1) = '/',Convert(SUBSTRING(Start_Date,6,4)+'-0'+SUBSTRING(Start_Date,1,1)+'-'+SUBSTRING(Start_Date,3,2),SQL_DATE),CONVERT('1900-01-01',SQL_DATE)))))")
+
+'V.Local.sSql.Set("Select Job, Suffix, Part, Description, JSSI, Order_No, Order_Line, Start_Date, Employee, WorkCenter, Scrap_Qty, Scrap_Reason From GCG_5364_JOB_DTL Where Scrap = 'Y' and Scrap_Qty > 0 Order by Start_Date")
+
+F.ODBC.Connection!con.OpenCompanyConnection(999)
+
+V.Local.dStart.Set(V.Screen.Scrap!dtp1.Value)
+V.Local.dEnd.Set(V.Screen.Scrap!dtp2.Value)
+
+'F.Intrinsic.String.Build("SDate >= '#{0}#' and SDate <= '#{1}#'",V.Screen.Scrap!dtp1.Value,V.Screen.Scrap!dtp2.Value,V.Local.sFilter)
+F.Intrinsic.String.Build("SDate >= '#{0}#' and SDate <= '#{1}#' and [SF] <> 0",V.Screen.Scrap!dtp1.Value,V.Screen.Scrap!dtp2.Value,V.Local.sFilter)
+
+f.Intrinsic.UI.InvokeWaitDialog("Getting Data..........")
+F.Intrinsic.Control.If(V.DataTable.Scrap.Exists)
+'	V.Local.sSql.Set("Select a.Job, a.Suffix, a.Part, a.Description, TotalLength, TotalWidth, (TotalLength * TotalWidth)/144 as SF, a.JSSI, a.Order_No, a.Order_Line, Start_Date, Employee, WorkCenter, Scrap_Qty, Scrap_Reason From GCG_5364_JOB_DTL a Join GCG_5364_Label_Data b on rtrim(a.Jssi) = rtrim(b.Jssi) Where Scrap = 'Y' and Scrap_Qty > 0 Order by Start_Date")
+'	F.Intrinsic.String.Build("Select a.Job, a.Suffix, a.Part, a.Description, rtrim(a.JSSI) as JSSI, a.Order_No, a.Order_Line, Start_Date, Employee, WorkCenter, Scrap_Qty, Scrap_Reason From GCG_5364_JOB_DTL a Join GCG_5364_Label_Data b on rtrim(a.Jssi) = rtrim(b.Jssi) Where Scrap = 'Y' and Scrap_Qty > 0 and {2} Between '{0}' and '{1}' Order by Start_Date",V.Local.dStart.PervasiveDate,V.Local.dEnd.PervasiveDate,V.Local.sDate,V.Local.sSql)
+
+'George Sandoval 12 July 2023 - This does not load the way it is written. Taking the join out of the SQL query and doing a linq join in GAB instead for the two tables. Leaving alias to distinguish tables.
+	F.Intrinsic.String.Build("Select a.Job, a.Suffix, a.Part, a.Description, rtrim(a.JSSI) as JSSI, a.Order_No, a.Order_Line, Start_Date, Employee, WorkCenter, Scrap_Qty, Scrap_Reason From GCG_5364_JOB_DTL a Where Scrap = 'Y' and Scrap_Qty > 0 and {2} Between '{0}' and '{1}' Order by Start_Date",V.Local.dStart.PervasiveDate,V.Local.dEnd.PervasiveDate,V.Local.sDate,V.Local.sSql)
+	
+'	F.Data.DataTable.CreateFromSQL("ScrapTemp","con",V.Local.sSql,True)
+	F.Data.DataTable.CreateFromSQL("ScrapLinq","con",V.Local.sSql,True)
+	F.Data.DataTable.CreateFromSQL("DIM","con","Select rtrim(JSSI) as JSSI,TotalLength, TotalWidth, (TotalLength * TotalWidth)/144 as SF From GCG_5364_Label_Data",True)
+	
+	F.Data.Linq.Join("InnerJoin","datatable","ScrapLinq*!*A","datatable","DIM*!*B","A.JSSI=B.JSSI","A.Job*!*A.Suffix*!*A.Part*!*A.Description*!*A.JSSI*!*a.Order_No*!*A.Order_Line*!*A.Start_Date*!*A.Employee*!*a.Workcenter*!*A.Scrap_Qty*!*A.Scrap_Reason","","","","ScrapTemp",True)
+	F.Data.DataTable.Close("ScrapLinq")
+	
+	F.Data.Dictionary.CreateFromDataTable("TL","DIM","JSSI","TOTALLENGTH")
+	F.Data.Dictionary.CreateFromDataTable("TW","DIM","JSSI","TotalWidth")
+	F.Data.Dictionary.CreateFromDataTable("SF","DIM","JSSI","SF")
+	F.Data.DataTable.Close("DIM")
+	F.Data.Dictionary.SetDefaultReturn("TL","0")
+	F.Data.Dictionary.SetDefaultReturn("TW","0")
+	F.Data.Dictionary.SetDefaultReturn("SF","0")
+	F.Data.DataTable.AddColumn("ScrapTemp","SF",FLOAT)
+	F.Data.DataTable.AddColumn("ScrapTemp","TOTALLENGTH",FLOAT)
+	F.Data.DataTable.AddColumn("ScrapTemp","TOTALWIDTH",FLOAT)
+	F.Data.DataTable.FillFromDictionary("ScrapTemp","TL","JSSI","TOTALLENGTH")
+	F.Data.DataTable.FillFromDictionary("ScrapTemp","TW","JSSI","TotalWidth")
+	F.Data.DataTable.FillFromDictionary("ScrapTemp","SF","JSSI","SF")
+	F.Data.Dictionary.Close("TL")
+	F.Data.Dictionary.Close("TW")
+	F.Data.Dictionary.Close("SF")
+'	V.Local.sSql.Set("Select a.Job, a.Suffix, a.Part, a.Description, c.Length as TotalLength, c.Width as TotalWidth, c.Width as TotalWidth, (c.Length * c.Width)/144 as SF, a.JSSI, a.Order_No, a.Order_Line, Start_Date, Employee, WorkCenter, Scrap_Qty, Scrap_Reason From GCG_5364_JOB_DTL a Join V_Order_Hist_Lot b on a.Jssi = b.Serial Join GCG_5364_Invc_Hist c on b.invoice = c.invoice and b.order_no = c.order_no and b.order_line = c.order_line Where Scrap = 'Y' and Scrap_Qty > 0 Order by Start_Date")
+
+'	F.Intrinsic.String.Build("Select a.Job, a.Suffix, a.Part, a.Description, rtrim(a.JSSI) as JSSI, a.Order_No, a.Order_Line, Start_Date, Employee, WorkCenter, Scrap_Qty, Scrap_Reason From GCG_5364_JOB_DTL a Join V_Order_Hist_Lot b on a.Jssi = b.Serial Join GCG_5364_Invc_Hist c on b.invoice = c.invoice and b.order_no = c.order_no and b.order_line = c.order_line Where Scrap = 'Y' and Scrap_Qty > 0 and {2} Between '{0}' and '{1}' Order by Start_Date",V.Local.dStart.PervasiveDate,V.Local.dEnd.PervasiveDate,V.Local.sDate,V.Local.sSql)
+	F.Intrinsic.String.Build("Select a.Job, a.Suffix, a.Part, a.Description, rtrim(a.JSSI) as JSSI, a.Order_No, a.Order_Line, Start_Date, Employee, WorkCenter, Scrap_Qty, Scrap_Reason From GCG_5364_JOB_DTL a Where Scrap = 'Y' and Scrap_Qty > 0 and {2} Between '{0}' and '{1}' Order by Start_Date",V.Local.dStart.PervasiveDate,V.Local.dEnd.PervasiveDate,V.Local.sDate,V.Local.sSql)
+	
+	F.Data.DataTable.CreateFromSQL("OrderHist2Linq","con","Select rtrim(b.Serial) as JSSI, B.Invoice, B.Order_No, B.Order_Line from V_Order_Hist_Lot B Join GCG_5364_Invc_Hist c on b.invoice = c.invoice and b.order_no = c.order_no and b.order_line = c.order_line",True)
+		
+'	F.Data.DataTable.CreateFromSQL("ScrapTemp2","con",V.Local.sSql,True)
+	F.Data.DataTable.CreateFromSQL("ScrapLinq2","con",V.Local.sSql,True)
+	
+	F.Data.Linq.Join("InnerJoin","datatable","ScrapLinq2*!*A","datatable","OrderHist2Linq*!*B","A.JSSI=B.JSSI and A.Order_No=B.Order_No and A.Order_Line = B.Order_Line","A.Job*!*A.Suffix*!*A.Part*!*A.Description*!*A.JSSI*!*a.Order_No*!*A.Order_Line*!*A.Start_Date*!*A.Employee*!*a.Workcenter*!*A.Scrap_Qty*!*A.Scrap_Reason","","","","ScrapTemp2",True)
+	F.Data.DataTable.Close("ScrapLinq2")
+	F.Data.DataTable.Close("OrderHist2Linq")
+	
+	F.Data.DataTable.CreateFromSQL("DIM","con","Select rtrim(b.Serial) as JSSI,c.Length as TotalLength, c.Width as TotalWidth, (c.Length * c.Width)/144 as SF From V_Order_Hist_Lot b Join GCG_5364_Invc_Hist c on b.invoice = c.invoice and b.order_no = c.order_no and b.order_line = c.order_line",True)
+	F.Data.Dictionary.CreateFromDataTable("TL","DIM","JSSI","TOTALLENGTH")
+	F.Data.Dictionary.CreateFromDataTable("TW","DIM","JSSI","TotalWidth")
+	F.Data.Dictionary.CreateFromDataTable("SF","DIM","JSSI","SF")
+	F.Data.DataTable.Close("DIM")
+	F.Data.Dictionary.SetDefaultReturn("TL","0")
+	F.Data.Dictionary.SetDefaultReturn("TW","0")
+	F.Data.Dictionary.SetDefaultReturn("SF","0")
+	F.Data.DataTable.AddColumn("ScrapTemp2","SF",FLOAT)
+	F.Data.DataTable.AddColumn("ScrapTemp2","TOTALLENGTH",FLOAT)
+	F.Data.DataTable.AddColumn("ScrapTemp2","TOTALWIDTH",FLOAT)
+	F.Data.DataTable.FillFromDictionary("ScrapTemp2","TL","JSSI","TOTALLENGTH")
+	F.Data.DataTable.FillFromDictionary("ScrapTemp2","TW","JSSI","TotalWidth")
+	F.Data.DataTable.FillFromDictionary("ScrapTemp2","SF","JSSI","SF")
+	F.Data.Dictionary.Close("TL")
+	F.Data.Dictionary.Close("TW")
+	F.Data.Dictionary.Close("SF")
+	F.Data.DataTable.Merge("ScrapTemp2","ScrapTemp",False,2)
+	F.Data.DataTable.Close("ScrapTemp2")
+	F.Data.DataTable.AddExpressionColumn("ScrapTemp","SDate",Date,"Start_Date")
+	F.Data.DataView.Create("ScrapTemp","Temp",22,V.Local.sFilter,"")
+	F.Data.DataView.ToDataTable("ScrapTemp","Temp","Temp",True)
+	F.Data.DataTable.DeleteRow("Scrap")
+	F.Data.DataTable.AcceptChanges("Scrap")
+	F.Data.DataView.Close("ScrapTemp","Temp")
+	F.Data.DataTable.Merge("Temp","Scrap",False,2)
+	F.Data.DataTable.Close("Temp")
+	F.Data.DataTable.Close("ScrapTemp")
+F.Intrinsic.Control.Else
+'	V.Local.sSql.Set("Select a.Job, a.Suffix, a.Part, a.Description, TotalLength, TotalWidth, (TotalLength * TotalWidth)/144 as SF, a.JSSI, a.Order_No, a.Order_Line, Start_Date, Employee, WorkCenter, Scrap_Qty, Scrap_Reason From GCG_5364_JOB_DTL a Join GCG_5364_Label_Data b on rtrim(a.Jssi) = rtrim(b.Jssi) Where Scrap = 'Y' and Scrap_Qty > 0 Order by Start_Date")
+	F.Intrinsic.String.Build("Select a.Job, a.Suffix, a.Part, a.Description, rtrim(a.JSSI) as JSSI, a.Order_No, a.Order_Line, Start_Date, Employee, WorkCenter, Scrap_Qty, Scrap_Reason From GCG_5364_JOB_DTL a Where Scrap = 'Y' and Scrap_Qty > 0 and {2} Between '{0}' and '{1}' Order by Start_Date",V.Local.dStart.PervasiveDate,V.Local.dEnd.PervasiveDate,V.Local.sDate,V.Local.sSql)
+	F.Data.DataTable.CreateFromSQL("Scrap","con",V.Local.sSql,True)
+	F.Data.DataTable.CreateFromSQL("DIM","con","Select rtrim(JSSI) as JSSI,TotalLength, TotalWidth, (TotalLength * TotalWidth)/144 as SF From GCG_5364_Label_Data",True)
+	F.Data.Dictionary.CreateFromDataTable("TL","DIM","JSSI","TOTALLENGTH")
+	F.Data.Dictionary.CreateFromDataTable("TW","DIM","JSSI","TotalWidth")
+	F.Data.Dictionary.CreateFromDataTable("SF","DIM","JSSI","SF")
+	F.Data.DataTable.Close("DIM")
+	F.Data.Dictionary.SetDefaultReturn("TL","0")
+	F.Data.Dictionary.SetDefaultReturn("TW","0")
+	F.Data.Dictionary.SetDefaultReturn("SF","0")
+	F.Data.DataTable.AddColumn("Scrap","SF",FLOAT)
+	F.Data.DataTable.AddColumn("Scrap","TOTALLENGTH",FLOAT)
+	F.Data.DataTable.AddColumn("Scrap","TOTALWIDTH",FLOAT)
+	F.Data.DataTable.FillFromDictionary("Scrap","TL","JSSI","TOTALLENGTH")
+	F.Data.DataTable.FillFromDictionary("Scrap","TW","JSSI","TotalWidth")
+	F.Data.DataTable.FillFromDictionary("Scrap","SF","JSSI","SF")
+	F.Data.Dictionary.Close("TL")
+	F.Data.Dictionary.Close("TW")
+	F.Data.Dictionary.Close("SF")
+'	V.Local.sSql.Set("Select a.Job, a.Suffix, a.Part, a.Description, c.Length as TotalLength, c.Width as TotalWidth, (c.Length * c.Width)/144 as SF, a.JSSI, a.Order_No, a.Order_Line, Start_Date, Employee, WorkCenter, Scrap_Qty, Scrap_Reason From GCG_5364_JOB_DTL a Join V_Order_Hist_Lot b on a.Jssi = b.Serial Join GCG_5364_Invc_Hist c on b.invoice = c.invoice and b.order_no = c.order_no and b.order_line = c.order_line Where Scrap = 'Y' and Scrap_Qty > 0 Order by Start_Date")
+	F.Intrinsic.String.Build("Select a.Job, a.Suffix, a.Part, a.Description, rtrim(a.JSSI) as JSSI, a.Order_No, a.Order_Line, Start_Date, Employee, WorkCenter, Scrap_Qty, Scrap_Reason From GCG_5364_JOB_DTL a Where Scrap = 'Y' and Scrap_Qty > 0 and {2} Between '{0}' and '{1}' Order by Start_Date",V.Local.dStart.PervasiveDate,V.Local.dEnd.PervasiveDate,V.Local.sDate,V.Local.sSql)
+	F.Data.DataTable.CreateFromSQL("ScrapTemp2","con",V.Local.sSql,True)
+	F.Data.DataTable.CreateFromSQL("DIM","con","Select rtrim(b.Serial) as JSSI,c.Length as TotalLength, c.Width as TotalWidth, (c.Length * c.Width)/144 as SF From V_Order_Hist_Lot b Join GCG_5364_Invc_Hist c on b.invoice = c.invoice and b.order_no = c.order_no and b.order_line = c.order_line",True)
+	F.Data.Dictionary.CreateFromDataTable("TL","DIM","JSSI","TOTALLENGTH")
+	F.Data.Dictionary.CreateFromDataTable("TW","DIM","JSSI","TotalWidth")
+	F.Data.Dictionary.CreateFromDataTable("SF","DIM","JSSI","SF")
+	F.Data.DataTable.Close("DIM")
+	F.Data.Dictionary.SetDefaultReturn("TL","0")
+	F.Data.Dictionary.SetDefaultReturn("TW","0")
+	F.Data.Dictionary.SetDefaultReturn("SF","0")
+	F.Data.DataTable.AddColumn("ScrapTemp2","SF",FLOAT)
+	F.Data.DataTable.AddColumn("ScrapTemp2","TOTALLENGTH",FLOAT)
+	F.Data.DataTable.AddColumn("ScrapTemp2","TOTALWIDTH",FLOAT)
+	F.Data.DataTable.FillFromDictionary("ScrapTemp2","TL","JSSI","TOTALLENGTH")
+	F.Data.DataTable.FillFromDictionary("ScrapTemp2","TW","JSSI","TotalWidth")
+	F.Data.DataTable.FillFromDictionary("ScrapTemp2","SF","JSSI","SF")
+	F.Data.Dictionary.Close("TL")
+	F.Data.Dictionary.Close("TW")
+	F.Data.Dictionary.Close("SF")
+	F.Data.DataTable.Merge("ScrapTemp2","Scrap",False,2)
+	F.Data.DataTable.Close("ScrapTemp2")
+	F.Data.DataTable.AddExpressionColumn("Scrap","SDate",Date,"Start_Date")
+	F.Data.DataView.Create("Scrap","Temp",22,V.Local.sFilter,"")
+	F.Data.DataView.ToDataTable("Scrap","Temp","Temp",True)
+	F.Data.DataTable.DeleteRow("Scrap")
+	F.Data.DataTable.AcceptChanges("Scrap")
+	F.Data.DataView.Close("Scrap","Temp")
+	F.Data.DataTable.Merge("Temp","Scrap",False,2)
+	F.Data.DataTable.Close("Temp")
+	F.Global.Security.IsInGroup(V.Caller.User,"LEADS",V.Caller.CompanyCode,V.Local.bRet)
+	F.Intrinsic.Control.If(V.Local.bRet)
+		F.Data.DataTable.AddColumn("Scrap","Remove_Scrap",String)
+	F.Intrinsic.Control.EndIf
+F.Intrinsic.Control.EndIf
+
+F.Intrinsic.UI.CloseWaitDialog
+F.ODBC.Connection!Con.Close
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("Get_Data_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_5364_Scrap_Dashboard.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(Scrap_UnLoad)
+Function.Intrinsic.Control.EndIf
+Program.Sub.Get_Data.End
+
+Program.Sub.Set_Properties.Start
+F.Intrinsic.Control.SetErrorHandler("Set_Properties_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+V.Local.sSerialize.Declare(String,"")
+V.Local.bRet.Declare(Boolean,False)
+
+Gui.Scrap.GsGridScrap.AddGridviewFromDatatable("GScrap","Scrap")
+GUI.Scrap.GsGridScrap.SetGridviewProperty("GScrap", "OptionsViewColumnAutoWidth", False)
+Gui.Scrap.GsGridScrap.SetGridviewProperty("GScrap","Showgrouppanel",True)
+Gui.Scrap.GsGridScrap.SetGridviewProperty("GScrap","Multiselect",False)
+Gui.Scrap.GsGridScrap.SetGridviewProperty("GScrap","OptionsViewShowAutoFilterRow",True)
+Gui.Scrap.GsGridScrap.SetGridviewProperty("GScrap","OptionsFindAlwaysVisible",True)
+
+'Job
+Gui.Scrap.GsGridScrap.SetColumnProperty("GScrap","JOB","Caption","Job")
+Gui.Scrap.GsGridScrap.SetColumnProperty("GScrap","JOB","AllowEdit",False)
+Gui.Scrap.GsGridScrap.SetColumnProperty("GScrap","JOB","Visible",True)
+Gui.Scrap.GsGridScrap.SetColumnProperty("GScrap","JOB","HeaderForeColor",v.Color.PRI-GSS-00)
+Gui.Scrap.GsGridScrap.SetColumnProperty("GScrap","JOB","HeaderFontBold",True)
+Gui.Scrap.GsGridScrap.SetColumnProperty("GScrap","JOB","ReadOnly",True)
+
+'Suffix 
+Gui.Scrap.GsGridScrap.SetColumnProperty("GScrap","SUFFIX","Caption","Suffix")
+Gui.Scrap.GsGridScrap.SetColumnProperty("GScrap","SUFFIX","AllowEdit",False)
+Gui.Scrap.GsGridScrap.SetColumnProperty("GScrap","SUFFIX","HeaderForeColor",v.Color.PRI-GSS-00)
+Gui.Scrap.GsGridScrap.SetColumnProperty("GScrap","SUFFIX","HeaderFontBold",True)
+Gui.Scrap.GsGridScrap.SetColumnProperty("GScrap","SUFFIX","ReadOnly",True)
+
+'Part
+Gui.Scrap.GsGridScrap.SetColumnProperty("GScrap","PART","Caption","Part Number") 
+Gui.Scrap.GsGridScrap.SetColumnProperty("GScrap","PART","AllowEdit",False)
+Gui.Scrap.GsGridScrap.SetColumnProperty("GScrap","PART","HeaderForeColor",v.Color.PRI-GSS-00)
+Gui.Scrap.GsGridScrap.SetColumnProperty("GScrap","PART","HeaderFontBold",True)
+Gui.Scrap.GsGridScrap.SetColumnProperty("GScrap","PART","ReadOnly",True)
+
+'Description
+Gui.Scrap.GsGridScrap.SetColumnProperty("GScrap","DESCRIPTION","Caption","Description")
+Gui.Scrap.GsGridScrap.SetColumnProperty("GScrap","DESCRIPTION","AllowEdit",False)
+Gui.Scrap.GsGridScrap.SetColumnProperty("GScrap","DESCRIPTION","HeaderForeColor",v.Color.PRI-GSS-00)
+Gui.Scrap.GsGridScrap.SetColumnProperty("GScrap","DESCRIPTION","HeaderFontBold",True)
+Gui.Scrap.GsGridScrap.SetColumnProperty("GScrap","DESCRIPTION","ReadOnly",True)
+
+Gui.Scrap.GsGridScrap.SetColumnProperty("GScrap","TOTALLENGTH","Caption","Length")
+Gui.Scrap.GsGridScrap.SetColumnProperty("GScrap","TOTALLENGTH","AllowEdit",False)
+Gui.Scrap.GsGridScrap.SetColumnProperty("GScrap","TOTALLENGTH","HeaderForeColor",v.Color.PRI-GSS-00)
+Gui.Scrap.GsGridScrap.SetColumnProperty("GScrap","TOTALLENGTH","HeaderFontBold",True)
+Gui.Scrap.GsGridScrap.SetColumnProperty("GScrap","TOTALLENGTH","ReadOnly",True)
+
+Gui.Scrap.GsGridScrap.SetColumnProperty("GScrap","TOTALWIDTH","Caption","Width")
+Gui.Scrap.GsGridScrap.SetColumnProperty("GScrap","TOTALWIDTH","AllowEdit",False)
+Gui.Scrap.GsGridScrap.SetColumnProperty("GScrap","TOTALWIDTH","HeaderForeColor",v.Color.PRI-GSS-00)
+Gui.Scrap.GsGridScrap.SetColumnProperty("GScrap","TOTALWIDTH","HeaderFontBold",True)
+Gui.Scrap.GsGridScrap.SetColumnProperty("GScrap","TOTALWIDTH","ReadOnly",True)
+
+Gui.Scrap.GsGridScrap.SetColumnProperty("GScrap","SF","Caption","Square Ft")
+Gui.Scrap.GsGridScrap.SetColumnProperty("GScrap","SF","AllowEdit",False)
+Gui.Scrap.GsGridScrap.SetColumnProperty("GScrap","SF","HeaderForeColor",v.Color.PRI-GSS-00)
+Gui.Scrap.GsGridScrap.SetColumnProperty("GScrap","SF","HeaderFontBold",True)
+Gui.Scrap.GsGridScrap.SetColumnProperty("GScrap","SF","ReadOnly",True)
+
+'JSSI
+Gui.Scrap.GsGridScrap.SetColumnProperty("GScrap","JSSI","Caption","Serial #")
+Gui.Scrap.GsGridScrap.SetColumnProperty("GScrap","JSSI","AllowEdit",False)
+Gui.Scrap.GsGridScrap.SetColumnProperty("GScrap","JSSI","HeaderForeColor",v.Color.PRI-GSS-00)
+Gui.Scrap.GsGridScrap.SetColumnProperty("GScrap","JSSI","HeaderFontBold",True)
+Gui.Scrap.GsGridScrap.SetColumnProperty("GScrap","JSSI","ReadOnly",True)
+
+'Order_No
+Gui.Scrap.GsGridScrap.SetColumnProperty("GScrap","ORDER_NO","Caption","Sales Order")
+Gui.Scrap.GsGridScrap.SetColumnProperty("GScrap","ORDER_NO","AllowEdit",False)
+Gui.Scrap.GsGridScrap.SetColumnProperty("GScrap","ORDER_NO","HeaderForeColor",v.Color.PRI-GSS-00)
+Gui.Scrap.GsGridScrap.SetColumnProperty("GScrap","ORDER_NO","HeaderFontBold",True)
+Gui.Scrap.GsGridScrap.SetColumnProperty("GScrap","ORDER_NO","ReadOnly",True)
+
+'Order_Line
+Gui.Scrap.GsGridScrap.SetColumnProperty("GScrap","ORDER_LINE","Caption","Order Line")
+Gui.Scrap.GsGridScrap.SetColumnProperty("GScrap","ORDER_LINE","AllowEdit",False)
+Gui.Scrap.GsGridScrap.SetColumnProperty("GScrap","ORDER_LINE","HeaderForeColor",v.Color.PRI-GSS-00)
+Gui.Scrap.GsGridScrap.SetColumnProperty("GScrap","ORDER_LINE","HeaderFontBold",True)
+Gui.Scrap.GsGridScrap.SetColumnProperty("GScrap","ORDER_LINE","ReadOnly",True)
+
+'Start_Date
+Gui.Scrap.GsGridScrap.SetColumnProperty("GScrap","Start_Date","Caption","Date")
+Gui.Scrap.GsGridScrap.SetColumnProperty("GScrap","Start_Date","AllowEdit",False)
+Gui.Scrap.GsGridScrap.SetColumnProperty("GScrap","Start_Date","HeaderForeColor",v.Color.PRI-GSS-00)
+Gui.Scrap.GsGridScrap.SetColumnProperty("GScrap","Start_Date","HeaderFontBold",True)
+Gui.Scrap.GsGridScrap.SetColumnProperty("GScrap","Start_Date","ReadOnly",True)
+
+'sDate
+Gui.Scrap.GsGridScrap.SetColumnProperty("GScrap","sDate","Caption","sDate")
+Gui.Scrap.GsGridScrap.SetColumnProperty("GScrap","sDate","AllowEdit",False)
+Gui.Scrap.GsGridScrap.SetColumnProperty("GScrap","sDate","HeaderForeColor",v.Color.PRI-GSS-00)
+Gui.Scrap.GsGridScrap.SetColumnProperty("GScrap","sDate","HeaderFontBold",True)
+Gui.Scrap.GsGridScrap.SetColumnProperty("GScrap","sDate","ReadOnly",True)
+Gui.Scrap.GsGridScrap.SetColumnProperty("GScrap","sDate","Visible",False)
+Gui.Scrap.GsGridScrap.SetColumnProperty("GScrap","sDate","AllowShowHide",False)
+
+'Employee
+Gui.Scrap.GsGridScrap.SetColumnProperty("GScrap","Employee","Caption","Employee")
+Gui.Scrap.GsGridScrap.SetColumnProperty("GScrap","Employee","AllowEdit",False)
+Gui.Scrap.GsGridScrap.SetColumnProperty("GScrap","Employee","HeaderForeColor",v.Color.PRI-GSS-00)
+Gui.Scrap.GsGridScrap.SetColumnProperty("GScrap","Employee","HeaderFontBold",True)
+Gui.Scrap.GsGridScrap.SetColumnProperty("GScrap","Employee","ReadOnly",True)
+
+'WorkCenter
+Gui.Scrap.GsGridScrap.SetColumnProperty("GScrap","WorkCenter","Caption","WorkCenter")
+Gui.Scrap.GsGridScrap.SetColumnProperty("GScrap","WorkCenter","AllowEdit",False)
+Gui.Scrap.GsGridScrap.SetColumnProperty("GScrap","WorkCenter","HeaderForeColor",v.Color.PRI-GSS-00)
+Gui.Scrap.GsGridScrap.SetColumnProperty("GScrap","WorkCenter","HeaderFontBold",True)
+Gui.Scrap.GsGridScrap.SetColumnProperty("GScrap","WorkCenter","ReadOnly",True)
+
+'Scrap_Qty
+Gui.Scrap.GsGridScrap.SetColumnProperty("GScrap","Scrap_Qty","Caption","Scrap Qty")
+Gui.Scrap.GsGridScrap.SetColumnProperty("GScrap","Scrap_Qty","AllowEdit",False)
+Gui.Scrap.GsGridScrap.SetColumnProperty("GScrap","Scrap_Qty","HeaderForeColor",v.Color.PRI-GSS-00)
+Gui.Scrap.GsGridScrap.SetColumnProperty("GScrap","Scrap_Qty","HeaderFontBold",True)
+Gui.Scrap.GsGridScrap.SetColumnProperty("GScrap","Scrap_Qty","ReadOnly",True)
+
+'Scrap_Reason
+Gui.Scrap.GsGridScrap.SetColumnProperty("GScrap","Scrap_Reason","Caption","Scrap Reason")
+Gui.Scrap.GsGridScrap.SetColumnProperty("GScrap","Scrap_Reason","AllowEdit",False)
+Gui.Scrap.GsGridScrap.SetColumnProperty("GScrap","Scrap_Reason","HeaderForeColor",v.Color.PRI-GSS-00)
+Gui.Scrap.GsGridScrap.SetColumnProperty("GScrap","Scrap_Reason","HeaderFontBold",True)
+Gui.Scrap.GsGridScrap.SetColumnProperty("GScrap","Scrap_Reason","ReadOnly",True)
+
+F.Global.Registry.ReadValue(V.Caller.User, V.Caller.CompanyCode, "GScrap", 5364, 1000, 6, "", V.Local.sSerialize)
+
+F.Intrinsic.Control.If(V.Local.sSerialize.Trim,<>,"")
+	Gui.Scrap.GsGridScrap.Deserialize(V.Local.sSerialize)
+F.Intrinsic.Control.EndIf
+
+F.Global.Security.IsInGroup(V.Caller.User,"LEADS",V.Caller.CompanyCode,V.Local.bRet)
+F.Intrinsic.Control.If(V.Local.bRet)
+	Gui.Scrap.GsGridScrap.SetColumnProperty("GScrap","Remove_Scrap","Visible",True)
+	Gui.Scrap.GsGridScrap.SetColumnProperty("GScrap","Remove_Scrap","AllowShowHide",True)
+	Gui.Scrap.GsGridScrap.SetColumnProperty("GScrap","Remove_Scrap","Fixed","Right")
+	'Remove_Scrap
+	Gui.Scrap.GsGridScrap.SetColumnProperty("GScrap","Remove_Scrap","Caption"," ")
+	Gui.Scrap.GsGridScrap.SetColumnProperty("GScrap","Remove_Scrap","AllowEdit",False)
+	Gui.Scrap.GsGridScrap.SetColumnProperty("GScrap","Remove_Scrap","HeaderForeColor",v.Color.PRI-GSS-00)
+	Gui.Scrap.GsGridScrap.SetColumnProperty("GScrap","Remove_Scrap","HeaderFontBold",True)
+	Gui.Scrap.GsGridScrap.SetColumnProperty("GScrap","Remove_Scrap","ReadOnly",True)
+	Gui.Scrap.GsGridScrap.ColumnEdit("GScrap","Remove_Scrap","EditorButton","Not Scrap")
+F.Intrinsic.Control.EndIf
+
+Gui.Scrap.GsGridScrap.MainView("GScrap")
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("Set_Properties_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_5364_Scrap_Dashboard.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(Scrap_UnLoad)
+Function.Intrinsic.Control.EndIf
+Program.Sub.Set_Properties.End
+
+Program.Sub.cmdrefresh_Click.Start
+F.Intrinsic.Control.SetErrorHandler("cmdrefresh_Click_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+
+F.Intrinsic.Control.CallSub(Get_Data)
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("cmdrefresh_Click_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_5364_Scrap_Dashboard.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(Scrap_UnLoad)
+Function.Intrinsic.Control.EndIf
+Program.Sub.cmdrefresh_Click.End
+
+Program.Sub.GsGridScrap_RowCellClick.Start
+F.Intrinsic.Control.SetErrorHandler("GsGridScrap_RowCellClick_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+V.Local.iRet.Declare(Long,0)
+V.Local.sSql.Declare(String,"")
+
+F.Intrinsic.Control.If(V.Args.Column.UCase,=,"REMOVE_SCRAP")
+	F.Intrinsic.UI.Msgbox("Are you sure you want to un-scrap this serial","",4,V.Local.iRet)
+	F.Intrinsic.Control.If(V.Local.iRet,=,6)
+		F.Intrinsic.String.Build("Update GCG_5364_Job_Dtl Set Scrap_Qty = 0, Scrap_Reason = '', Scrap = 'N' Where JSSI = '{0}' and Start_Date = '{1}'and Scrap_Qty > 0",V.DataTable.Scrap(V.Args.RowIndex).JSSI!FieldValTrim,V.DataTable.Scrap(V.Args.RowIndex).Start_Date!FieldValTrim,V.Local.sSql)
+		F.ODBC.Connection!Con.OpenCompanyConnection
+		F.ODBC.Connection!Con.Execute(V.Local.sSql)
+		F.ODBC.Connection!Con.Close
+		F.Data.DataTable.DeleteRow("Scrap",V.Args.RowIndex)
+		F.Data.DataTable.AcceptChanges("Scrap")
+	F.Intrinsic.Control.EndIf
+F.Intrinsic.Control.EndIf
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("GsGridScrap_RowCellClick_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_5364_Scrap_Dashboard.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(Scrap_UnLoad)
+Function.Intrinsic.Control.EndIf
+Program.Sub.GsGridScrap_RowCellClick.End
+
+Program.Sub.Comments.Start
+${$5$}$2.0.0.0$}$2
+${$6$}$gsandoval$}$20230831142532276$}$pxyipsmdqasyAY7lJ5+YqAibKN4I37/YudkzCwm6ngT91OdJV1lkEnSnwa7rMwQYImmd3zA3I4J5HmrsOOhZAA==
+Program.Sub.Comments.End
