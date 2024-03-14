@@ -1,0 +1,1255 @@
+Program.Sub.ScreenSU.Start
+Gui.Form..Create
+Gui.Form..Caption("")
+Gui.Form..Size(6645,3630)
+Gui.Form..MinX(0)
+Gui.Form..MinY(0)
+Gui.Form..Position(0,0)
+Gui.Form..BackColor(-2147483633)
+Gui.Form..MousePointer(0)
+Gui.Form.lbl1.Create(Label,"Please Wait",True,2565,540,0,60,1140,True,0,"Arial",18,-2147483633,0)
+Gui.Form.lbl2.Create(Label,"Label",True,6195,255,0,120,1755,True,0,"Arial",8,-2147483633,0)
+Program.Sub.ScreenSU.End
+Program.Sub.Preflight.Start
+v.Global.sPIDFile.Declare(String,"")
+V.Global.iUser.Declare(Long,-1)
+Program.Sub.Preflight.End
+
+Program.Sub.Main.Start
+F.Intrinsic.Control.SetErrorHandler("Main_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+V.Local.sFile.Declare(String,"")
+V.Local.bCheck.Declare(Boolean,False)
+V.Local.sRet.Declare(String,"")
+V.Local.iTime.Declare(Long,0)
+V.Local.i.Declare(Long,0)
+V.Local.sMsg.Declare(String,"")
+
+F.Intrinsic.Control.If(V.Caller.CompanyCode,=,"JBC")
+	F.Intrinsic.String.Build("{0}\5364_{1}.stop",V.Caller.FilesDir,V.Caller.CompanyCode,V.Local.sFile)
+	F.Intrinsic.File.Exists(V.Local.sFile,v.Local.bCheck)
+	F.Intrinsic.Control.If(V.Local.bCheck,=,True)
+		F.Intrinsic.Control.End
+	F.Intrinsic.Control.EndIf
+
+	F.ODBC.Connection!con.OpenCompanyConnection
+	
+'	F.ODBC.Connection!Con.ExecuteAndReturn("Select L_Time, Menu_PID, WD_PID From GCG_5364_WO_LAUNCH",V.Local.sRet)
+'	
+'	F.Intrinsic.Control.If(V.Local.sRet.Trim,<>,"")
+'		F.Intrinsic.String.Split(V.Local.sRet,"*!*",V.Local.sRet)
+'		V.Local.sRet.RedimPreserve(0,2)
+'		F.Intrinsic.Date.DateDiff("H",V.Local.sRet(0),V.Ambient.Now,V.Local.iTime)
+''		commentng out for now
+'		F.Intrinsic.Control.If(V.Local.iTime,>=,2)
+'			'ending process closing menu and watchdog and relaunching to keep the menu from running out of memorey.
+'			F.ODBC.Connection!Con.Execute("Update GCG_5364_WO_LAUNCH Set Menu_PID = 'Launch'")
+'			F.ODBC.Connection!Con.Close
+'			
+'			F.Intrinsic.Control.If(V.Caller.User.UCase,=,"CUTRITE")
+'				F.Intrinsic.String.Build("{0}\GCG_5364_WO_WatchDog2.bat",v.Caller.GlobalDir,V.Local.sRet)
+'			F.Intrinsic.Control.Else
+'				F.Intrinsic.String.Build("{0}\GCG_5364_WO_WatchDog.bat",v.Caller.GlobalDir,V.Local.sRet)
+'			F.Intrinsic.Control.EndIf
+'			F.Intrinsic.Task.ShellExec(V.Caller.Handle,"runas",V.Local.sRet, "", "", 1)
+'			F.Intrinsic.Task.TerminatePID(V.Local.sRet(2))
+'			F.Intrinsic.UI.SleepMS(5000)
+'			F.Intrinsic.Task.TerminatePID(V.Local.sRet(1))
+'			F.Intrinsic.Control.End
+'		F.Intrinsic.Control.EndIf
+'	F.Intrinsic.Control.EndIf
+	F.Intrinsic.String.Build("{0}::Getting Orders........",V.Caller.CompanyCode,V.Local.sMsg)
+'	F.Intrinsic.UI.InvokeWaitDialog(V.Local.sMsg)
+	Gui.Form.lbl2.Caption(V.Local.sMsg)
+	Gui.Form..Show
+	F.Intrinsic.Control.CallSub(Get_Non_Door_WOs)
+	F.Intrinsic.Control.CallSub(Get_Order_No)
+'	F.Intrinsic.UI.CloseWaitDialog
+	Gui.Form..Visible(False)
+'	F.Intrinsic.Control.CallSub(Get_Non_Door_WOs)
+	F.ODBC.Connection!Con.Close
+	
+	F.Intrinsic.Control.CallSub(File_Cleanup)
+	
+	F.Intrinsic.Control.CallSub(Call_GAB_Script)
+
+	F.Intrinsic.Control.CallSub(Exit)
+	
+F.Intrinsic.Control.Else
+
+	F.Intrinsic.Control.SelectCase(V.Caller.Hook)
+		F.Intrinsic.Control.Case(38120)
+			F.Global.Security.GetUserId("Online",V.Caller.CompanyCode,V.Global.iUser)
+	
+			'track if prog running async on OLU Hook. 
+			f.Intrinsic.Control.CallSub(isRunning)
+	
+			F.ODBC.Connection!Con.OpenCompanyConnection
+			F.Intrinsic.String.Build("{0}::Getting Orders........",V.Caller.CompanyCode,V.Local.sMsg)
+			Gui.Form..Show
+			Gui.Form.lbl2.Caption(V.Local.sMsg)
+'			F.Intrinsic.UI.InvokeWaitDialog(V.Local.sMsg)
+			F.Intrinsic.Control.CallSub(Get_Order_No)
+			Gui.Form..Visible(False)
+'			F.Intrinsic.UI.CloseWaitDialog
+			F.Intrinsic.Control.CallSub(Get_Non_Door_WOs)
+			F.ODBC.Connection!Con.Close
+			
+			F.Intrinsic.Control.CallSub(File_Cleanup)
+			
+			'show that process is over for check in the isRunning sub
+			F.Intrinsic.Control.Try
+				f.Intrinsic.File.DeleteFile(v.Global.sPIDFile)
+			F.Intrinsic.Control.Catch
+			
+			F.Intrinsic.Control.EndTry
+		F.Intrinsic.Control.CaseElse
+			F.Intrinsic.Control.CallSub(Exit)
+			
+	F.Intrinsic.Control.EndSelect
+F.Intrinsic.Control.EndIf
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("Main_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.Control.CallSub(LogError,"CurrentSub",V.Ambient.CurrentSubroutine,"ErrorNumber",V.Ambient.ErrorNumber,"ErrorDescription",V.Ambient.ErrorDescription)
+	F.Intrinsic.Control.CallSub(Call_GAB_Script)
+
+	F.Intrinsic.Control.CallSub(Exit)
+Function.Intrinsic.Control.EndIf
+Program.Sub.Main.End
+
+Program.Sub.Get_Order_No.Start
+F.Intrinsic.Control.SetErrorHandler("Get_Order_No_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+V.Local.sSql.Declare(String,"")
+V.Local.i.Declare(Long,0)
+V.Local.sDueDate.Declare(String,"")
+V.Local.sWOFile.Declare(String,"")
+V.Local.sRouter.Declare(String,"")
+V.Local.sPart.Declare(String,"")
+V.Local.sRev.Declare(String,"")
+V.Local.sSort.Declare(String,"")
+V.Local.sStatus.Declare(String,"")
+V.Local.sMsg.Declare(String,"")
+V.Local.sEmail.Declare(String,"")
+V.Local.sUser.Declare(String,"")
+V.Local.iCount.Declare(Long,0)
+v.Local.sFile.Declare(String,"")
+V.Local.bCheck.Declare(Boolean,False)
+
+'getting list of SO that have not had WO's created
+V.Local.sSql.Set("Select Order_No+Record_No as SO_Line, Order_No, Record_No, Part, Qty_Ordered, Date_Item_Prom, '' as Status From V_Order_Lines Where SO_Line Not In(Select Order_No+Order_Line From V_Order_To_Wo)")
+'V.Local.sSql.Set("Select Order_No+Left(Record_No,3) as SO_Line, Order_No, Record_No, Part, Qty_Ordered, Date_Item_Prom, '' as Status From V_Order_Lines Where SO_Line Not In(Select Sales_Order+Sales_Order_Line From V_Job_Header)")
+F.Data.DataTable.CreateFromSQL("Order","con",V.Local.sSql,True)
+
+'getting status of SO's
+F.Data.Dictionary.CreateFromSQL("Status","con","Select Order_No, ucase(Status) From GCG_5364_Ord_Status")
+
+'updating status of SO's in Datatable
+F.Data.Dictionary.SetDefaultReturn("Status","Hold")
+F.Data.DataTable.FillFromDictionary("Order","Status","Order_No","Status")
+F.Data.Dictionary.Close("Status")
+
+'Creating a View of SO's that have been released and ready for a WO
+F.Data.DataView.Create("Order","VOrder",22,"Status = 'NEW'","Order_No,Record_No")
+
+F.Intrinsic.Control.For(V.Local.i,0,V.DataView.Order!VOrder.RowCount--,1)
+	F.Intrinsic.String.Build("Select Code_Sort from V_Inventory_Mstr Where Part = '{0}'",V.DataView.Order!VOrder(V.Local.i).Part!FieldValTrim,V.Local.sSql)
+	F.ODBC.Connection!Con.ExecuteAndReturn(V.Local.sSql,V.Local.sSort)
+	F.Intrinsic.String.Build("Select Status From GCG_5364_SORT_MAINT Where Sort_Code = '{0}'",V.Local.sSort,V.Local.sSql)
+	F.ODBC.Connection!Con.ExecuteAndReturn(V.Local.sSql,V.Local.sStatus)
+	F.Intrinsic.Control.If(V.Local.sStatus.Trim,<>,"","AND",V.Local.sStatus.Trim,<>,"NON-WORK ORDER")
+		F.Intrinsic.String.RPad(V.DataView.Order!VOrder(V.Local.i).Part!FieldVal," ",20,V.Local.sPart)
+		F.Intrinsic.String.Right(V.Local.sPart,3,V.Local.sRev)
+		F.Intrinsic.String.Left(V.Local.sPart,17,V.Local.sPart)
+		'getting router from Text Info 1 if this field is not blank then checking if router exist
+		'if text info 1 is blank checking if a router exists for the part and using that router
+		F.Intrinsic.String.Build("Select Top 1 Text_Info1 From V_Inventory_Mst2 Where Part = '{0}'",V.DataView.Order!VOrder(V.Local.i).Part!FieldVal,V.Local.sSql)
+		F.ODBC.Connection!Con.ExecuteAndReturn(V.Local.sSql,V.Local.sRouter)
+		F.Intrinsic.Control.If(V.Local.sRouter.Trim,=,"")
+			'checking if router exists for part
+			F.Intrinsic.String.Build("Select Router From V_ROUTER_HEADER Where Router = '{0}'",V.DataView.Order!VOrder(V.Local.i).Part!FieldValTrim,V.Local.sSql)
+			F.ODBC.Connection!Con.ExecuteAndReturn(V.Local.sSql,V.Local.sRouter)
+		F.Intrinsic.Control.Else
+			'checking if router exists for text_info1
+			F.Intrinsic.String.Build("Select Router From V_ROUTER_HEADER Where Router = '{0}'",V.Local.sRouter.Trim,V.Local.sSql)
+			F.ODBC.Connection!Con.ExecuteAndReturn(V.Local.sSql,V.Local.sRouter)
+		F.Intrinsic.Control.EndIf
+		'PART*!*REV*!*LOCATION*!*DUEDATE*!*QTY*!**!**!*ORDER NO*!*ORDER LINE
+		F.Intrinsic.Control.If(V.Local.sRouter.Trim,<>,"")
+			'creating wo creation file for callwrapper
+'			F.Intrinsic.Control.If(V.Local.sWOFile.Trim,=,"")
+				F.Intrinsic.String.Format(V.DataView.Order!VOrder(V.Local.i).Date_Item_Prom!FieldVal,"MM/DD/YYYY",V.Local.sDueDate)
+				F.Intrinsic.String.Build("{0}*!*{1}*!*{2}*!*{3}*!*{4}*!* *!* *!*{5}*!*{6}",V.Local.sPart.Trim,"","",V.Local.sDueDate,V.DataView.Order!VOrder(V.Local.i).Qty_Ordered!FieldVal,V.DataView.Order!VOrder(V.Local.i).Order_No!FieldValTrim,V.DataView.Order!VOrder(V.Local.i).Record_No!FieldValTrim,V.Local.sRouter.Trim,V.Local.sWOFile)
+'			F.Intrinsic.Control.Else
+'				F.Intrinsic.String.Format(V.DataView.Order!VOrder(V.Local.i).Date_Item_Prom!FieldVal,"MM/DD/YYYY",V.Local.sDueDate)
+'				F.Intrinsic.String.Build("{0}{1}{2}*!*{3}*!*{4}*!*{5}*!*{6}*!* *!* *!*{7}*!*{8}",V.Local.sWOFile,V.Ambient.NewLine,V.Local.sPart.Trim,"","",V.Local.sDueDate,V.DataView.Order!VOrder(V.Local.i).Qty_Ordered!FieldVal,V.DataView.Order!VOrder(V.Local.i).Order_No!FieldValTrim,V.DataView.Order!VOrder(V.Local.i).Record_No!FieldValTrim,V.Local.sRouter.Trim,V.Local.sWOFile)
+'			F.Intrinsic.Control.EndIf
+		F.Intrinsic.Control.Else
+			V.Local.sWOFile.Set("")
+			F.Intrinsic.Control.If(V.Local.sSort.Trim,<>,"MOLDING")
+				F.Intrinsic.String.Build("Select * From GCG_5364_WO_Issue Where Part = '{0}'",V.DataView.Order!VOrder(V.Local.i).Part!FieldValTrim,V.Local.sSql)
+				F.ODBC.Connection!Con.ExecuteAndReturn(V.Local.sSql,V.Local.sSql)
+				'adding part issue table to so a user can check to see if a router needs to be created for the entered part.
+				'either a router for the part or a template router that is entered on Text_Info1 field on Inventory Master.
+				F.Intrinsic.Control.If(V.Local.sSql.Trim,=,"")
+					F.Intrinsic.String.Build("No Valid Router Exists.",V.DataView.Order!VOrder(V.Local.i).Part!FieldValTrim,V.Local.sMsg)
+					F.Intrinsic.String.Build("Insert Into GCG_5364_WO_Issue (Part,Issue) Values('{0}','{1}')",V.DataView.Order!VOrder(V.Local.i).Part!FieldValTrim,V.Local.sMsg,V.Local.sSql)
+					F.ODBC.Connection!Con.Execute(V.Local.sSql)
+'					F.Intrinsic.String.Build("select Last_Chg_By From V_Order_Header Where Order = '{0}'",V.DataView.Order!VOrder(V.Local.i).Order_No!FieldValTrim,V.Local.sSql)
+'					F.ODBC.Connection!Con.ExucuteAndReturn(V.Local.sSql,V.Local.sUser)
+'					F.Intrinsic.String.Replace(V.Local.sUser,"#$#","",V.Local.sUser)
+'					F.Global.Security.GetUserEmail(V.Local.sUser,V.Caller.CompanyCode,V.Local.sEmail)
+'					F.Intrinsic.String.Build("{0} for Part {1}.  Order # {2} Line # {3}",V.Local.sMsg,V.DataView.Order!VOrder(V.Local.i).Part!FieldValTrim,V.DataView.Order!VOrder(V.Local.i).Order_No!FieldValTrim,V.DataView.Order!VOrder(V.Local.i).Record_No!FieldValTrim,V.Local.sMsg)
+'					F.Global.Messaging.QueueMessage(V.Caller.CompanyCode,V.Global.iUser,"No Valid Router Exists","NoReplay@jbcutting.com",V.Local.sEmail,V.Local.sMsg)
+				F.Intrinsic.Control.EndIf
+			F.Intrinsic.Control.EndIf
+		F.Intrinsic.Control.EndIf
+	F.Intrinsic.Control.EndIf
+	
+	F.Intrinsic.Control.If(V.Local.sWOFile.Trim,<>,"")
+		F.Intrinsic.Math.Add(V.Local.iCount,1,V.Local.iCount)
+		'processing single order line at time rather than creating a batch 
+		F.Intrinsic.Control.CallSub(Create_WO,"WO_File",V.Local.sWOFile,"Order",V.DataView.Order!VOrder(V.Local.i).Order_No!FieldValTrim,"Line",V.DataView.Order!VOrder(V.Local.i).Record_No!FieldValTrim,"Index",V.Local.i)
+		'only allowing up 20 wo's to be created before letting program relaunch
+		F.Intrinsic.Control.If(V.Local.iCount,>,20)
+			F.Intrinsic.Control.ExitSub
+		F.Intrinsic.Control.EndIf
+	F.Intrinsic.Control.EndIf
+	V.Local.sWOFile.Set("")
+	F.Intrinsic.Control.If(V.Caller.CompanyCode,=,"JBC")
+		F.Intrinsic.String.Build("{0}\5364_{1}.stop",V.Caller.FilesDir,V.Caller.CompanyCode,V.Local.sFile)
+		F.Intrinsic.File.Exists(V.Local.sFile,v.Local.bCheck)
+		F.Intrinsic.Control.If(V.Local.bCheck,=,True)
+			F.Intrinsic.Control.CallSub(Exit)
+		F.Intrinsic.Control.EndIf
+	F.Intrinsic.Control.EndIf
+F.Intrinsic.Control.Next(V.Local.i)
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("Get_Order_No_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.Control.CallSub(LogError,"CurrentSub",V.Ambient.CurrentSubroutine,"ErrorNumber",V.Ambient.ErrorNumber,"ErrorDescription",V.Ambient.ErrorDescription)
+	F.Intrinsic.Control.CallSub(Call_GAB_Script)
+
+	F.Intrinsic.Control.CallSub(Exit)
+Function.Intrinsic.Control.EndIf
+Program.Sub.Get_Order_No.End
+
+Program.Sub.Exit.Start
+F.Intrinsic.Control.SetErrorHandler("Exit_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+
+F.Intrinsic.Control.If(V.ODBC.Con.State,=,1)
+	F.ODBC.Connection!Con.Close
+F.Intrinsic.Control.EndIf
+
+F.Intrinsic.Control.End
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("Exit_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.Control.CallSub(Call_GAB_Script)
+
+	F.Intrinsic.Control.End
+Function.Intrinsic.Control.EndIf
+Program.Sub.Exit.End
+
+Program.Sub.Create_WO.Start
+F.Intrinsic.Control.SetErrorHandler("Create_WO_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+V.Local.sFile.Declare(String,"")
+V.Local.sDate.Declare(String,"")
+V.Local.i.Declare(Long,0)
+V.Local.Ssql.Declare(String,"")
+V.Local.sLocal.Declare(String,"")
+V.Local.sRet.Declare(String,"")
+V.Local.sData.Declare(String,"")
+V.Local.bFile.Declare(Boolean,False)
+
+F.Intrinsic.Control.If(V.Args.WO_File.Trim,<>,"")
+	F.Intrinsic.String.Format(V.Ambient.Now,"DD-HhNnSs",V.Local.sDate)
+	F.Intrinsic.Control.If(V.Caller.TempDir.Right1,=,"\")
+		V.Local.sLocal.Set(V.Caller.TempDir)
+	F.Intrinsic.Control.Else
+		F.Intrinsic.String.Build("{0}\",V.Caller.TempDir,V.Local.sLocal)
+	F.Intrinsic.Control.EndIf
+	F.Intrinsic.String.Build("{0}WO_5364_{1}.txt",V.Local.sLocal,V.Local.sDate,V.Local.sFile)
+	F.Intrinsic.File.String2File(V.Local.sFile,V.Args.WO_File.Trim)
+
+	'check if order has a wo created in order to work order table if so don't attempt to create a wo
+	F.Intrinsic.String.Build("Select Job,Suffix From V_Order_To_WO Where Order_No = '{0}' and Order_Line = '{1}'",V.Args.Order,V.Args.Line,V.Local.Ssql)
+	F.ODBC.Connection!Con.ExecuteAndReturn(V.Local.Ssql,V.Local.sData)
+	F.Intrinsic.Control.If(V.Local.sData.Trim,=,"")
+		F.Intrinsic.String.Build("Select Top 1 Job, Suffix From V_Job_Header WHere Sales_Order = '{0}' and Sales_Order_Line+'0' = '{1}'",V.Args.Order,V.Args.Line,V.Local.Ssql)
+		F.ODBC.Connection!Con.ExecuteAndReturn(V.Local.Ssql,V.Local.sData)
+		F.Intrinsic.Control.If(V.Local.sData.Trim,<>,"")
+			F.Intrinsic.String.Split(V.Local.sData,"*!*",V.Local.sData)
+			F.Intrinsic.String.Build("Select Job, Suffix, Sales_Order as Order_No, Sales_ORder_Line+'0' as Order_Line, '000' as MQD_SEQ, Part, Location, Description, Qty_Order as Qty_Ord, Qty_Order as Qty_WO, Qty_Completed as Qty_Complete, '' as Date_Order_Due, '' as Date_Job_Due, 'CUTRITE' as userid, '' as ShipTo_ID, '' as FILLER From Job_Header Where Job = '{0}' and Suffix = '{1}'",V.Local.sData(0).Trim,V.Local.sData(1).Trim,V.Local.Ssql)
+			F.Data.DataTable.CreateFromSQL("WOSO","con",V.Local.Ssql,True)
+			F.Intrinsic.String.Format(V.DataView.Order!VOrder(V.Args.Index).Date_Item_Prom!FieldVal,"YYYYMMDD",V.Local.sDate)
+			F.Data.DataTable.SetValue("WOSO",-1,"Date_Order_Due",V.Local.sDate,"Date_Job_Due",V.Local.sDate)
+			F.Data.DataTable.SaveToDB("WOSO","con","Order_To_WO","",128)
+			F.Data.DataTable.Close("WOSO")
+			F.Intrinsic.String.Build("Update Order_Lines Set Flag_SO_To_WO = 'Y' Where Order_No = '{0}' and Record_No = '{1}'",V.Args.Order,V.Args.Line,V.Local.Ssql)
+			F.ODBC.Connection!Con.Execute(V.Local.Ssql)
+			F.Intrinsic.File.Exists(V.Local.sFile,v.Local.bFile)
+			F.Intrinsic.Control.If(V.Local.bFile)
+				F.Intrinsic.File.DeleteFile(V.Local.sFile)
+			F.Intrinsic.Control.EndIf
+			F.Intrinsic.Control.ExitSub
+		F.Intrinsic.Control.Else
+			F.Intrinsic.String.Build("{2}::Creating WO for SO: {0} Line: {1}",V.Args.Order,V.Args.Line,V.Caller.CompanyCode,V.Local.Ssql)
+'			F.Intrinsic.UI.ChangeWaitStatus(V.Local.Ssql)
+			Gui.Form.lbl2.Caption(V.Local.Ssql)
+			F.Global.Callwrapper.New("GenFG","Manufacturing.CreateWorkOrderFinishedGoodPart")
+			F.Global.Callwrapper.SetProperty("GenFG","FileName",V.Local.sFile)
+			F.Global.CallWrapper.Run("GenFG")
+			F.Global.CallWrapper.GetProperty("GenFG","ReturnCode",V.Local.sRet)
+		F.Intrinsic.Control.EndIf
+		F.Intrinsic.File.Exists(V.Local.sFile,v.Local.bFile)
+		F.Intrinsic.Control.If(V.Local.bFile)
+			F.Intrinsic.File.DeleteFile(V.Local.sFile)
+		F.Intrinsic.Control.EndIf
+	F.Intrinsic.Control.Else
+		F.Intrinsic.File.Exists(V.Local.sFile,v.Local.bFile)
+		F.Intrinsic.Control.If(V.Local.bFile)
+			F.Intrinsic.File.DeleteFile(V.Local.sFile)
+		F.Intrinsic.Control.EndIf
+		F.Intrinsic.Control.ExitSub
+	F.Intrinsic.Control.EndIf
+	
+	'check if order has a wo created in order to work order table
+	F.Intrinsic.String.Build("Select Top 1 Job, Suffix From V_Order_To_WO WHere Order_NO = '{0}' and Order_Line = '{1}'",V.Args.Order,V.Args.Line,V.Local.Ssql)
+	F.ODBC.Connection!Con.ExecuteAndReturn(V.Local.Ssql,V.Local.sData)
+	F.Intrinsic.Control.If(V.Local.sData.Trim,<>,"")
+		F.Intrinsic.String.Split(V.Local.sData,"*!*",V.Local.sData)
+		F.Intrinsic.String.Build("{0}-{1}",V.Local.sData(0).Trim,V.Local.sData(1).Trim,V.Local.sRet)
+		F.Intrinsic.String.Build("Update GCG_5364_OE_Lines Set WO = '{0}' Where Order_No = '{1}' and Record_No = '{2}'",V.Local.sRet,V.Args.Order,V.Args.Line,V.Local.Ssql)
+		F.ODBC.Connection!Con.Execute(V.Local.Ssql)
+		F.Intrinsic.Control.CallSub(New_UploadWO,"WO",V.Local.sData(0).Trim,"Suffix",V.Local.sData(1).Trim)
+	F.Intrinsic.Control.Else
+		'check Job Header
+		F.Intrinsic.String.Build("Select Top 1 Job, Suffix From V_Job_Header WHere Sales_Order = '{0}' and Sales_Order_Line+'0' = '{1}'",V.Args.Order,V.Args.Line,V.Local.Ssql)
+		F.ODBC.Connection!Con.ExecuteAndReturn(V.Local.Ssql,V.Local.sData)
+		F.Intrinsic.Control.If(V.Local.sData.Trim,<>,"")
+			F.Intrinsic.String.Split(V.Local.sData,"*!*",V.Local.sData)
+			F.Intrinsic.String.Build("{0}-{1}",V.Local.sData(0).Trim,V.Local.sData(1).Trim,V.Local.sRet)
+			F.Intrinsic.String.Build("Update GCG_5364_OE_Lines Set WO = '{0}' Where Order_No = '{1}' and Record_No = '{2}'",V.Local.sRet,V.Args.Order,V.Args.Line,V.Local.Ssql)
+			F.ODBC.Connection!Con.Execute(V.Local.Ssql)
+			F.Intrinsic.Control.CallSub(New_UploadWO,"WO",V.Local.sData(0).Trim,"Suffix",V.Local.sData(1).Trim)
+		F.Intrinsic.Control.EndIf
+	F.Intrinsic.Control.EndIf
+'	F.Intrinsic.File.File2String(V.Local.sFile,V.Local.sData)
+'	
+'	F.Intrinsic.Control.If(V.DataTable.DTOut.Exists)
+'		F.Data.DataTable.Close("DTOut")
+'	F.Intrinsic.Control.EndIf
+'	
+'	F.Intrinsic.Control.If(V.Local.sData.Trim,<>,"")
+'		
+'		F.Data.DataTable.CreateFromString("DTOut",V.Local.sData,"Part*!*Rev*!*Loc*!*Status*!*WO*!*Suffix","String*!*String*!*String*!*String*!*String*!*String","*!*",V.Ambient.NewLine,True)
+
+'		F.Intrinsic.Control.For(V.Local.i,0,V.DataTable.DTOut.RowCount--,1)
+'			F.Intrinsic.Control.If(V.DataTable.DTOut(V.Local.i).Status!FieldValTrim,=,"Y")
+'				F.Intrinsic.Control.CallSub(New_UploadWO,"WO",V.DataTable.DTOut(V.Local.i).WO!FieldValTrim,"Suffix",V.DataTable.DTOut(V.Local.i).Suffix!FieldValTrim)
+'			F.Intrinsic.Control.EndIf
+'		F.Intrinsic.Control.Next(V.Local.i)
+'		F.Data.DataTable.Close("DTOut")	
+'	F.Intrinsic.Control.EndIf
+F.Intrinsic.Control.EndIf
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("Create_WO_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.Control.CallSub(LogError,"CurrentSub",V.Ambient.CurrentSubroutine,"ErrorNumber",V.Ambient.ErrorNumber,"ErrorDescription",V.Ambient.ErrorDescription)
+	F.Intrinsic.Control.CallSub(Call_GAB_Script)
+
+	F.Intrinsic.Control.CallSub(Exit)
+Function.Intrinsic.Control.EndIf
+Program.Sub.Create_WO.End
+
+Program.Sub.New_UploadWO.Start
+F.Intrinsic.Control.SetErrorHandler("Create_WO_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+V.Local.sWO.Declare(String,"")
+V.Local.sSql.Declare(String,"")
+V.Local.b5PC.Declare(Boolean,False)
+V.Local.bComment.Declare(Boolean,False)
+V.Local.bDrill.Declare(Boolean,False)
+V.Local.bMat.Declare(Boolean,False)
+V.Local.bExport.Declare(Boolean,False)
+V.Local.bFinish.Declare(Boolean,False)
+V.Local.bInsertLabr.Declare(Boolean,False)
+V.Local.bInsertMatl.Declare(Boolean,False)
+V.Local.bInstr.Declare(Boolean,False)
+V.Local.fInsertLength.Declare(Float,0)
+V.Local.fInsertSF.Declare(Float,0)
+V.Local.fInsertWidth.Declare(Float,0)
+V.Local.fLengthAdj.Declare(Float,0)
+V.Local.fUnitQty.Declare(Float,0)
+V.Local.fWidthAdj.Declare(Float,0)
+V.Local.iFor.Declare(Long,0)
+V.Local.iFor2.Declare(Long,0)
+V.Local.iLen.Declare(Long,0)
+V.Local.iPos.Declare(Long,0)
+V.Local.sDescription.Declare(String,"")
+V.Local.sFile.Declare(String,"")
+V.Local.sFrag.Declare(String,"")
+V.Local.sInsertPC.Declare(String,"")
+V.Local.sInsertSize.Declare(String,"")
+V.Local.sJCOM.Declare(String,"")
+V.Local.sLine.Declare(String,"")
+V.Local.sLMO.Declare(String,"")
+V.Local.sOpCode.Declare(String,"")
+V.Local.sPart.Declare(String,"")
+V.Local.sQTY.Declare(String,"")
+V.Local.sRate.Declare(String,"")
+V.Local.sRouter.Declare(String,"")
+V.Local.sSeq.Declare(String,"")
+V.Local.sSetup.Declare(String,"")
+V.Local.sSuffix.Declare(String,"")
+V.Local.sUnitQty.Declare(String,"")
+V.Local.sUOM.Declare(String,"")
+V.Local.sWolist.Declare(String,"")
+V.Local.sParameters.Declare(String,"")
+V.Local.fHours.Declare(Float,0)
+V.Local.sTemp.Declare(String,"")
+V.Local.fWidth.Declare(Float,0)
+V.Local.fLength.Declare(Float,0)
+V.Local.sBanding.Declare(String,"")
+V.Local.sRet.Declare(String,"")
+V.Local.bRails.Declare(Boolean,False)
+V.Local.bDeleteRow.Declare(boolean,False)
+V.Local.fStile.Declare(Float,0)
+
+V.Local.sWO.Set(V.Args.WO)
+V.Local.sSuffix.Set(V.Args.Suffix)
+
+F.Intrinsic.String.Build("select Router,ORD.PART,LENGTH,WIDTH,DRILL_CODE,FINISH,INSERT_PC,INSERT_PN,INSERT_1,PART_CODE,MATL,ORD.DESCRIPTION,MCCODE,SQUARE_FT,ORD.QTY_ORDER,ORD.PL from GCG_5364_OE_LINES ORD join job_header HDR on sales_order = order_no and  sales_order_line = left(record_no,3) and  job = '{0}'	and suffix = '{1}'",V.Local.sWO,V.Local.sSuffix,V.Local.sSQL)
+F.Data.DataTable.CreateFromSQL("dtMain","con",V.Local.sSQL,True)
+
+F.Intrinsic.Control.For(V.Local.iFor,0,V.DataTable.dtMain.RowCount--,1)
+	F.Intrinsic.String.Build("Select Top 1 Five_Piece_Door From GCG_5364_MC_CONFIG Where ltrim(MC_CODE) = (Select rtrim(User4) From INV_EXTRA Where Part = '{0}')",V.DataTable.dtMain(V.Local.iFor).Part!FieldValTrim,V.Local.sSql)
+	F.ODBC.Connection!Con.ExecuteAndReturn(V.Local.sSql,V.Local.b5PC)
+	F.Intrinsic.String.Build("Select Top 1 Rails_Stiles From GCG_5364_MC_CONFIG Where ltrim(MC_CODE) = (Select rtrim(User4) From INV_EXTRA Where Part = '{0}')",V.DataTable.dtMain(V.Local.iFor).Part!FieldValTrim,V.Local.sSql)
+	F.ODBC.Connection!Con.ExecuteAndReturn(V.Local.sSql,V.Local.bRails)
+	
+	'Check to see if there is a drill code
+	F.Intrinsic.Control.If(V.DataTable.dtMain(V.Local.iFor).MATL!FieldValTrim,=,"")
+		V.Local.bMat.Set(False)
+	F.Intrinsic.Control.Else
+		V.Local.bMat.Set(True)
+	F.Intrinsic.Control.EndIf
+	
+	'Check to see if there is a drill code
+	F.Intrinsic.Control.If(V.DataTable.dtMain(V.Local.iFor).DRILL_CODE!FieldValTrim,=,"")
+		V.Local.bDrill.Set(False)
+	F.Intrinsic.Control.Else
+		V.Local.bDrill.Set(True)
+	F.Intrinsic.Control.EndIf
+	
+	'Check to see if there is a finish code
+	F.Intrinsic.Control.If(V.DataTable.dtMain(V.Local.iFor).FINISH!FieldValTrim,=,"")
+		V.Local.bFinish.Set(False)
+	F.Intrinsic.Control.Else
+		V.Local.bFinish.Set(True)
+	F.Intrinsic.Control.EndIf
+	
+	F.Intrinsic.String.Build("Select Job, Suffix, Seq, Operation, LMO, Description, Part, Router, Units_Open, Units, Hours_Estimated from Job_Operations Where Job = '{0}' and Suffix = '{1}' Order by Seq",V.Local.sWO,V.Local.sSuffix,V.Local.sSQL)
+	
+	F.Data.DataTable.CreateFromSQL("JobOp","con",V.Local.sSql,True)
+	
+	F.Intrinsic.Control.If(V.Local.sWolist.Trim,=,"")
+		F.Intrinsic.String.Build("'{0}{1}'",V.Local.sWo.Trim,V.Local.sSuffix.Trim,V.Local.sWolist)
+	F.Intrinsic.Control.else
+		F.Intrinsic.String.Build("{0},'{1}{2}'",V.Local.sWolist,V.Local.sWo.Trim,V.Local.sSuffix.Trim,V.Local.sWolist)
+	F.Intrinsic.Control.endif
+	
+	V.Local.sBanding.Set("")
+	F.Intrinsic.Control.For(V.Local.iFor2,V.DataTable.JobOp.RowCount--,0,-1)
+		V.Local.sRouter.Set(V.DataTable.JobOp(V.Local.iFor2).Router!FieldValTrim)
+		V.Local.sRouter.Set(V.Local.sRouter.UCase)
+		V.Local.bDeleteRow.Set(False)
+		F.Intrinsic.Control.If(V.DataTable.JobOp(V.Local.iFor2).Seq!FieldValTrim,<,"990000")
+			F.Intrinsic.Control.If(V.DataTable.JobOp(V.Local.iFor2).LMO!FieldValTrim,=,"M")
+				F.Intrinsic.Control.SelectCase(V.DataTable.JobOp(V.Local.iFor2).Part!FieldValTrim)
+					F.Intrinsic.Control.Case("MATERIAL")
+						V.Local.sBanding.Set("MAT")
+						F.Intrinsic.Control.If(V.Local.bMat)
+							F.Intrinsic.Control.If(V.Local.sRouter,=,"CRAFT","OR",V.Local.sRouter,=,"ART-90")
+								F.Intrinsic.String.Build("Select Top 1 Description From V_Inventory_Mstr Where Part = '{0}'",V.DataTable.dtMain(V.Local.iFor).MATL!FieldValTrim,V.Local.sSql)
+								F.ODBC.Connection!Con.ExecuteAndReturn(V.Local.sSql,V.Local.sDescription)
+								F.Intrinsic.String.Build("select User24,User25 from INV_EXTRA where PART = '{0}'",V.DataTable.dtMain(V.Local.iFor).PART_CODE!FieldValTrim,V.Local.sSQL)
+								F.ODBC.Connection!con.OpenLocalRecordsetRO("rstMatl",V.Local.sSQL)
+								F.Intrinsic.Control.If(V.ODBC.con!rstMatl.EOF,=,False)
+									F.Intrinsic.Control.If(V.ODBC.con!rstMatl.FieldValTrim!USER24,=,"")
+										V.Local.fWidthAdj.Set(0)
+									F.Intrinsic.Control.Else
+										V.Local.fWidthAdj.Set(V.ODBC.con!rstMatl.FieldValFloat!USER24)
+									F.Intrinsic.Control.EndIf
+									F.Intrinsic.Control.If(V.ODBC.con!rstMatl.FieldValTrim!USER25,=,"")
+										V.Local.fLengthAdj.Set(0)
+									F.Intrinsic.Control.Else
+										V.Local.fLengthAdj.Set(V.ODBC.con!rstMatl.FieldValFloat!USER25)
+									F.Intrinsic.Control.EndIf
+								F.Intrinsic.Control.Else
+									V.Local.fWidthAdj.Set(0)
+									V.Local.fLengthAdj.Set(0)
+								F.Intrinsic.Control.EndIf
+								F.ODBC.con!rstMatl.Close
+								F.Intrinsic.Control.If(V.Local.fWidthAdj,<,0)
+									F.Intrinsic.Math.Add(V.DataTable.dtMain(V.Local.iFor).WIDTH!FieldVal,V.Local.fWidthAdj,V.Local.fWidth)
+								F.Intrinsic.Control.Else
+									F.Intrinsic.Math.Sub(V.DataTable.dtMain(V.Local.iFor).WIDTH!FieldVal,V.Local.fWidthAdj,V.Local.fWidth)
+								F.Intrinsic.Control.EndIf
+								F.Intrinsic.Control.If(V.Local.fLengthAdj,<,0)
+									F.Intrinsic.Math.Add(V.DataTable.dtMain(V.Local.iFor).LENGTH!FieldVal,V.Local.fLengthAdj,V.Local.fLength)
+								F.Intrinsic.Control.Else
+									F.Intrinsic.Math.Sub(V.DataTable.dtMain(V.Local.iFor).LENGTH!FieldVal,V.Local.fLengthAdj,V.Local.fLength)
+								F.Intrinsic.Control.EndIf
+								F.Intrinsic.Math.Mult(V.Local.fWidth,V.Local.fLength,V.Local.fUnitQty)
+								F.Intrinsic.Math.Div(V.Local.fUnitQty,144,V.Local.fUnitQty)
+								F.Intrinsic.Math.Mult(V.Local.fUnitQty,V.DataTable.JobOp(V.Local.iFor2).Units!FieldValFloat,V.Local.fUnitQty)
+								F.Intrinsic.Math.Mult(V.Local.fUnitQty,V.DataTable.dtMain(V.Local.iFor).QTY_ORDER!FieldVal,V.Local.fHours)
+								F.Intrinsic.Math.Round(V.Local.fHours,4,V.Local.fHours)
+								F.Data.DataTable.SetValue("JobOp",V.Local.iFor2,"Part",V.DataTable.dtMain(V.Local.iFor).MATL!FieldValTrim,"Description",V.Local.sDescription.Trim,"Units",V.Local.fUnitQty,"Hours_Estimated",V.Local.fHours)
+							F.Intrinsic.Control.ElseIf(V.Local.sRouter,=,"ART-3PC")
+								F.Intrinsic.String.Build("Select Top 1 Description From V_Inventory_Mstr Where Part = '{0}'",V.DataTable.dtMain(V.Local.iFor).MATL!FieldValTrim,V.Local.sSql)
+								F.ODBC.Connection!Con.ExecuteAndReturn(V.Local.sSql,V.Local.sDescription)
+								F.Intrinsic.String.Build("select User24,User25 from INV_EXTRA where PART = '{0}'",V.DataTable.dtMain(V.Local.iFor).PART_CODE!FieldValTrim,V.Local.sSQL)
+								F.ODBC.Connection!con.OpenLocalRecordsetRO("rstMatl",V.Local.sSQL)
+								F.Intrinsic.Control.If(V.ODBC.con!rstMatl.EOF,=,False)
+									F.Intrinsic.Control.If(V.ODBC.con!rstMatl.FieldValTrim!USER24,=,"")
+										V.Local.fWidthAdj.Set(0)
+									F.Intrinsic.Control.Else
+										V.Local.fWidthAdj.Set(V.ODBC.con!rstMatl.FieldValFloat!USER24)
+									F.Intrinsic.Control.EndIf
+									F.Intrinsic.Control.If(V.ODBC.con!rstMatl.FieldValTrim!USER25,=,"")
+										V.Local.fLengthAdj.Set(0)
+									F.Intrinsic.Control.Else
+										V.Local.fLengthAdj.Set(V.ODBC.con!rstMatl.FieldValFloat!USER25)
+									F.Intrinsic.Control.EndIf
+								F.Intrinsic.Control.Else
+									V.Local.fWidthAdj.Set(0)
+									V.Local.fLengthAdj.Set(0)
+								F.Intrinsic.Control.EndIf
+								F.ODBC.con!rstMatl.Close
+								F.Intrinsic.Control.If(V.Local.fWidthAdj,<,0)
+									F.Intrinsic.Math.Add(V.DataTable.dtMain(V.Local.iFor).WIDTH!FieldVal,V.Local.fWidthAdj,V.Local.fWidth)
+								F.Intrinsic.Control.Else
+									F.Intrinsic.Math.Sub(V.DataTable.dtMain(V.Local.iFor).WIDTH!FieldVal,V.Local.fWidthAdj,V.Local.fWidth)
+								F.Intrinsic.Control.EndIf
+								F.Intrinsic.Control.If(V.Local.fLengthAdj,<,0)
+									F.Intrinsic.Math.Add(V.DataTable.dtMain(V.Local.iFor).LENGTH!FieldVal,V.Local.fLengthAdj,V.Local.fLength)
+								F.Intrinsic.Control.Else
+									F.Intrinsic.Math.Sub(V.DataTable.dtMain(V.Local.iFor).LENGTH!FieldVal,V.Local.fLengthAdj,V.Local.fLength)
+								F.Intrinsic.Control.EndIf
+								F.Intrinsic.Math.Mult(V.Local.fWidth,V.Local.fLength,V.Local.fUnitQty)
+								F.Intrinsic.Math.Div(V.Local.fUnitQty,144,V.Local.fUnitQty)
+								F.Intrinsic.Math.Mult(V.Local.fUnitQty,V.DataTable.JobOp(V.Local.iFor2).Units!FieldValFloat,V.Local.fUnitQty)
+								F.Intrinsic.Math.Mult(V.Local.fUnitQty,V.DataTable.dtMain(V.Local.iFor).QTY_ORDER!FieldVal,V.Local.fHours)
+								F.Intrinsic.Math.Round(V.Local.fHours,4,V.Local.fHours)
+								F.Data.DataTable.SetValue("JobOp",V.Local.iFor2,"Part",V.DataTable.dtMain(V.Local.iFor).MATL!FieldValTrim,"Description",V.Local.sDescription.Trim,"Units",V.Local.fUnitQty,"Hours_Estimated",V.Local.fHours)
+							F.Intrinsic.Control.Else
+								F.Intrinsic.Control.If(V.Local.b5PC)
+									F.Intrinsic.String.Build("Select Top 1 Description From V_Inventory_Mstr Where Part = '{0}'",V.DataTable.dtMain(V.Local.iFor).MATL!FieldValTrim,V.Local.sSql)
+									F.ODBC.Connection!Con.ExecuteAndReturn(V.Local.sSql,V.Local.sDescription)
+									F.Intrinsic.Math.Mult(V.DataTable.JobOp(V.Local.iFor2).Units!FieldVal,V.DataTable.dtMain(V.Local.iFor).SQUARE_FT!FieldValTrim,V.Local.fUnitQty)
+									F.Intrinsic.Math.Round(V.Local.fUnitQty,4,V.Local.fUnitQty)
+									F.Intrinsic.Math.Mult(V.Local.fUnitQty,V.DataTable.dtMain(V.Local.iFor).QTY_ORDER!FieldVal,V.Local.fHours)
+									F.Intrinsic.Math.Round(V.Local.fHours,4,V.Local.fHours)
+									F.Data.DataTable.SetValue("JobOp",V.Local.iFor2,"Part",V.DataTable.dtMain(V.Local.iFor).MATL!FieldValTrim,"Description",V.Local.sDescription.Trim,"Units",V.Local.fUnitQty,"Hours_Estimated",V.Local.fHours)
+								F.Intrinsic.Control.Else
+									F.Intrinsic.Math.Mult(V.DataTable.JobOp(V.Local.iFor2).Units!FieldVal,V.DataTable.dtMain(V.Local.iFor).SQUARE_FT!FieldValTrim,V.Local.fUnitQty)
+									F.Intrinsic.Math.Round(V.Local.fUnitQty,4,V.Local.fUnitQty)
+									F.Intrinsic.Math.Mult(V.Local.fUnitQty,V.DataTable.dtMain(V.Local.iFor).QTY_ORDER!FieldVal,V.Local.fHours)
+									F.Intrinsic.Math.Round(V.Local.fHours,4,V.Local.fHours)
+									F.Intrinsic.String.Build("Select Top 1 Description From V_Inventory_Mstr Where Part = '{0}'",V.DataTable.dtMain(V.Local.iFor).MATL!FieldValTrim,V.Local.sSql)
+									F.ODBC.Connection!Con.ExecuteAndReturn(V.Local.sSql,V.Local.sDescription)
+									F.Data.DataTable.SetValue("JobOp",V.Local.iFor2,"Part",V.DataTable.dtMain(V.Local.iFor).MATL!FieldValTrim,"Description",V.Local.sDescription.Trim,"Units",V.Local.fUnitQty,"Hours_Estimated",V.Local.fHours)
+								F.Intrinsic.Control.EndIf
+							F.Intrinsic.Control.EndIf
+						F.Intrinsic.Control.Else
+'							F.Data.DataTable.DeleteRow("JobOp",V.Local.iFor2)
+'							F.Intrinsic.Control.Next(V.Local.iFor2)
+							V.Local.bDeleteRow.Set(True)
+						F.Intrinsic.Control.EndIf
+						
+					F.Intrinsic.Control.Case("FINISH")
+						V.Local.sBanding.Set("FIN")
+						F.Intrinsic.Control.If(V.Local.bFinish)
+							F.Intrinsic.Control.If(V.Local.b5PC)
+								F.Intrinsic.String.Build("Select Top 1 Description From V_Inventory_Mstr Where Part = '{0}'",V.DataTable.dtMain(V.Local.iFor).FINISH!FieldValTrim,V.Local.sSql)
+								F.ODBC.Connection!Con.ExecuteAndReturn(V.Local.sSql,V.Local.sDescription)
+								F.Intrinsic.Math.Mult(2,V.DataTable.dtMain(V.Local.iFor).WIDTH!FieldVal,V.Local.fWidth)
+								F.Intrinsic.Math.Mult(2,V.DataTable.dtMain(V.Local.iFor).LENGTH!FieldVal,V.Local.fLength)
+'								F.Intrinsic.Math.Mult(V.DataTable.JobOp(V.Local.iFor2).Units!FieldVal,V.DataTable.dtMain(V.Local.iFor).SQUARE_FT!FieldValTrim,V.Local.fUnitQty)
+								F.Intrinsic.Control.If(V.Local.bRails)
+									'user27
+									F.Intrinsic.String.Build("select Top 1 User27 from INV_EXTRA where PART = '{0}'",V.DataTable.dtMain(V.Local.iFor).PART_CODE!FieldValTrim,V.Local.sSQL)
+									F.ODBC.Connection!Con.ExecuteAndReturn(V.Local.sSql,V.Local.sTemp)
+									F.Intrinsic.Math.Mult(V.Local.sTemp.Float,2,V.Local.fWidthAdj)
+
+									F.Intrinsic.Math.Sub(V.Local.fWidth,V.Local.fWidthAdj,V.Local.fWidthAdj)
+
+									F.Intrinsic.Math.Add(V.Local.fWidthAdj,V.Local.fLength,V.Local.fUnitQty)
+									
+									F.Intrinsic.Control.If(V.DataTable.JobOp(V.Local.iFor2).Units!FieldValFloat,>,0)
+										F.Intrinsic.Math.Div(V.Local.fUnitQty,V.DataTable.JobOp(V.Local.iFor2).Units!FieldVal,V.Local.fUnitQty)
+									F.Intrinsic.Control.EndIf
+									F.Intrinsic.Control.If(V.Local.sRouter,=,"ART-90","OR",V.Local.sRouter,=,"ART-90-MULL")
+'										F.Intrinsic.Math.Div(V.Local.fUnitQty,84,V.Local.fUnitQty)
+										F.Intrinsic.Math.Mult(V.Local.fUnitQty,.071,V.Local.fUnitQty)
+									F.Intrinsic.Control.EndIf
+								F.Intrinsic.Control.Else
+									F.Intrinsic.Math.Add(V.Local.fWidth,V.Local.fLength,V.Local.fUnitQty)
+'									F.Intrinsic.Math.Div(V.Local.fUnitQty,96,V.Local.fUnitQty)
+									F.Intrinsic.Control.If(V.DataTable.JobOp(V.Local.iFor2).Units!FieldValFloat,>,0)
+										F.Intrinsic.Math.Div(V.Local.fUnitQty,V.DataTable.JobOp(V.Local.iFor2).Units!FieldVal,V.Local.fUnitQty)
+									F.Intrinsic.Control.EndIf
+								F.Intrinsic.Control.EndIf
+								F.Intrinsic.Math.Round(V.Local.fUnitQty,4,V.Local.fUnitQty)
+								F.Intrinsic.Math.Mult(V.Local.fUnitQty,V.DataTable.dtMain(V.Local.iFor).QTY_ORDER!FieldVal,V.Local.fHours)
+								F.Intrinsic.Math.Round(V.Local.fHours,4,V.Local.fHours)
+								F.Data.DataTable.SetValue("JobOp",V.Local.iFor2,"Part",V.DataTable.dtMain(V.Local.iFor).FINISH!FieldValTrim,"Description",V.Local.sDescription.Trim,"Units",V.Local.fUnitQty,"Hours_Estimated",V.Local.fHours)
+							F.Intrinsic.Control.Else
+								F.Intrinsic.String.Build("Select Top 1 Description From V_Inventory_Mstr Where Part = '{0}'",V.DataTable.dtMain(V.Local.iFor).FINISH!FieldValTrim,V.Local.sSql)
+								F.ODBC.Connection!Con.ExecuteAndReturn(V.Local.sSql,V.Local.sDescription)
+								F.Intrinsic.Math.Mult(V.DataTable.JobOp(V.Local.iFor2).Units!FieldVal,V.DataTable.dtMain(V.Local.iFor).SQUARE_FT!FieldValTrim,V.Local.fUnitQty)
+								F.Intrinsic.Math.Round(V.Local.fUnitQty,4,V.Local.fUnitQty)
+								F.Intrinsic.Math.Mult(V.Local.fUnitQty,V.DataTable.dtMain(V.Local.iFor).QTY_ORDER!FieldVal,V.Local.fHours)
+								F.Intrinsic.Math.Round(V.Local.fHours,4,V.Local.fHours)
+								F.Data.DataTable.SetValue("JobOp",V.Local.iFor2,"Part",V.DataTable.dtMain(V.Local.iFor).FINISH!FieldValTrim,"Description",V.Local.sDescription.Trim,"Units",V.Local.fUnitQty,"Hours_Estimated",V.Local.fHours)
+							F.Intrinsic.Control.EndIf
+						F.Intrinsic.Control.Else
+'							F.Data.DataTable.DeleteRow("JobOp",V.Local.iFor2)
+'							F.Intrinsic.Control.Next(V.Local.iFor2)
+							V.Local.bDeleteRow.Set(True)
+						F.Intrinsic.Control.EndIf
+					
+					F.Intrinsic.Control.Case("BANDING")
+						F.Intrinsic.Control.If(V.Local.sRouter,=,"ART-1PC")
+							V.Local.sTemp.Set(V.DataTable.dtMain(V.Local.iFor).FINISH!FieldValTrim)
+						F.Intrinsic.Control.Else
+							F.Intrinsic.Control.If(V.Local.sBanding,=,"FIN")
+								F.Intrinsic.String.Mid(V.DataTable.dtMain(V.Local.iFor).FINISH!FieldValTrim,5,4,V.Local.sTemp)
+							F.Intrinsic.Control.Else
+								F.Intrinsic.String.Split(V.DataTable.dtMain(V.Local.iFor).MATL!FieldValTrim,"-",V.Local.sTemp)
+							F.Intrinsic.Control.EndIf
+							
+							V.Local.sTemp.RedimPreserve(0,1)
+							V.Local.sTemp.Set(V.Local.sTemp(1))
+							F.Intrinsic.String.Build("EDG-{0}",V.Local.sTemp,V.Local.sTemp)
+							F.Intrinsic.String.Build("Select Top 1 Part From V_Inventory_Mstr Where Part Like '{0}%'",V.Local.sTemp,V.Local.sSql)
+							F.ODBC.Connection!Con.ExecuteAndReturn(V.Local.sSql,V.Local.sTemp)
+						F.Intrinsic.Control.EndIf
+						F.Intrinsic.String.Build("Select Top 1 Description From V_Inventory_Mstr Where Part = '{0}'",V.Local.sTemp,V.Local.sSql)
+						F.ODBC.Connection!Con.ExecuteAndReturn(V.Local.sSql,V.Local.sDescription)
+						F.Intrinsic.Math.Mult(V.DataTable.dtMain(V.Local.iFor).WIDTH!FieldVal,2,V.Local.fWidth)
+						F.Intrinsic.Math.Mult(V.DataTable.dtMain(V.Local.iFor).LENGTH!FieldVal,2,V.Local.fLength)
+						F.Intrinsic.Math.Add(V.Local.fWidth,V.Local.fLength,V.Local.fUnitQty)
+						F.Intrinsic.Math.Div(V.Local.fUnitQty,12,V.Local.fUnitQty)
+						F.Intrinsic.Math.Round(V.Local.fUnitQty,4,V.Local.fUnitQty)
+						F.Intrinsic.Math.Mult(V.Local.fUnitQty,V.DataTable.dtMain(V.Local.iFor).QTY_ORDER!FieldVal,V.Local.fHours)
+						F.Intrinsic.Math.Round(V.Local.fHours,4,V.Local.fHours)
+						F.Data.DataTable.SetValue("JobOp",V.Local.iFor2,"Part",V.Local.sTemp,"Description",V.Local.sDescription.Trim,"Units",V.Local.fUnitQty,"Hours_Estimated",V.Local.fHours,"Operation","MATL")
+						
+					F.Intrinsic.Control.Case("INSERT")
+						F.Intrinsic.Control.CallSub(CalculateInsert,"Row",V.Local.iFor,"Type","INSERT")
+						V.Local.fInsertSF.Set(V.Args.SF)
+						'Set sPart to PC part number
+						V.Local.sPart.Set(V.Args.Material)
+						F.Intrinsic.String.RPad(V.Local.sPart," ",20,V.Local.sPart)
+						'Set quantity to InsertSF
+						F.Intrinsic.Math.Mult(V.Local.fInsertSF,V.DataTable.JobOp(V.Local.iFor2).Units!FieldVal,V.Local.fUnitQty)
+						F.Intrinsic.Math.Round(V.Local.fUnitQty,4,V.Local.fUnitQty)
+
+						F.Intrinsic.String.Build("Select User9 From Inv_Extra where PART = '{0}'",V.DataTable.dtMain(V.Local.iFor).PART_CODE!FieldValTrim,V.Local.sSQL)
+						F.ODBC.Connection!Con.ExecuteAndReturn(V.Local.sSql,V.Local.sTemp)
+						F.Intrinsic.Control.If(V.Local.sTemp.Trim,<>,"")
+						
+							F.Intrinsic.Math.Mult(V.Local.fUnitQty,V.DataTable.dtMain(V.Local.iFor).QTY_ORDER!FieldVal,V.Local.fHours)
+							F.Intrinsic.Math.Round(V.Local.fHours,4,V.Local.fHours)
+							F.Intrinsic.String.Build("Select Top 1 Description From V_Inventory_Mstr Where Part = '{0}'",V.Local.sPart,V.Local.sSql)
+							F.ODBC.Connection!Con.ExecuteAndReturn(V.Local.sSql,V.Local.sDescription)
+							F.Data.DataTable.SetValue("JobOp",V.Local.iFor2,"Part",V.Local.sPart.Trim,"Description",V.Local.sDescription.Trim,"Units",V.Local.fUnitQty,"Hours_Estimated",V.Local.fHours)
+											
+						F.Intrinsic.Control.Else
+'							F.Data.DataTable.DeleteRow("JobOp",V.Local.iFor2)
+'							F.Intrinsic.Control.Next(V.Local.iFor2)
+							V.Local.bDeleteRow.Set(True)
+						F.Intrinsic.Control.EndIf
+						
+					F.Intrinsic.Control.Case("MOLDING")
+	'					F.Intrinsic.String.Mid(V.DataTable.dtMain(V.Local.iFor).FINISH!FieldValTrim,5,4,V.Local.sTemp)
+						F.Intrinsic.String.Split(V.DataTable.dtMain(V.Local.iFor).MATL!FieldValTrim,"-",V.Local.sTemp)
+						V.Local.sTemp.RedimPreserve(0,1)
+						V.Local.sTemp.Set(V.Local.sTemp(1))
+						F.Intrinsic.String.Build("MLD-{0}",V.Local.sTemp,V.Local.sTemp)
+						F.Intrinsic.String.Build("Select Top 1 Part From V_Inventory_Mstr Where Part Like '{0}%'",V.Local.sTemp,V.Local.sSql)
+						F.ODBC.Connection!Con.ExecuteAndReturn(V.Local.sSql,V.Local.sTemp)
+						F.Intrinsic.String.Build("Select Top 1 Description From V_Inventory_Mstr Where Part = '{0}'",V.Local.sTemp,V.Local.sSql)
+						F.ODBC.Connection!Con.ExecuteAndReturn(V.Local.sSql,V.Local.sDescription)
+						F.Intrinsic.Math.Add(V.DataTable.dtMain(V.Local.iFor).LENGTH!FieldValFloat,V.DataTable.dtMain(V.Local.iFor).WIDTH!FieldValFloat,V.Local.fUnitQty)
+						F.Intrinsic.Math.Mult(V.Local.fUnitQty,2,V.Local.fUnitQty)
+						F.Intrinsic.Math.Div(V.Local.fUnitQty,96,V.Local.fUnitQty)
+						F.Intrinsic.Math.Round(V.Local.fUnitQty,4,V.Local.fUnitQty)
+						F.Intrinsic.Math.Mult(V.Local.fUnitQty,V.Local.fUnitQty,V.DataTable.dtMain(V.Local.iFor).QTY_ORDER!FieldVal,V.Local.fHours)
+						F.Intrinsic.Math.Round(V.Local.fHours,4,V.Local.fHours)
+						F.Data.DataTable.SetValue("JobOp",V.Local.iFor2,"Part",V.Local.sTemp,"Description",V.Local.sDescription.Trim,"Units",V.Local.fUnitQty,"Hours_Estimated",V.Local.fHours,"Operation","MATL")
+						
+				F.Intrinsic.Control.EndSelect
+			F.Intrinsic.Control.EndIf
+		
+			F.Intrinsic.Control.If(V.DataTable.JobOp(V.Local.iFor2).LMO!FieldValTrim,=,"L")
+				F.Intrinsic.Control.SelectCase(V.DataTable.JobOp(V.Local.iFor2).Operation!FieldValTrim)
+					F.Intrinsic.Control.Case("MACH")
+						F.Intrinsic.Math.Mult(V.DataTable.JobOp(V.Local.iFor2).Units!FieldVal,V.DataTable.dtMain(V.Local.iFor).SQUARE_FT!FieldValTrim,V.Local.fUnitQty)
+						F.Intrinsic.Math.Round(V.Local.fUnitQty,4,V.Local.fUnitQty)
+						F.Intrinsic.Math.Mult(V.Local.fUnitQty,V.DataTable.dtMain(V.Local.iFor).QTY_ORDER!FieldVal,V.Local.fHours)
+						F.Intrinsic.Math.Round(V.Local.fHours,4,V.Local.fHours)
+						F.Data.DataTable.SetValue("JobOp",V.Local.iFor2,"Units_Open",V.DataTable.dtMain(V.Local.iFor).QTY_ORDER!FieldVal,"Units",V.Local.fUnitQty,"Hours_Estimated",V.Local.fHours)
+					
+					F.Intrinsic.Control.Case("RS")
+						F.Intrinsic.Math.Mult(V.DataTable.JobOp(V.Local.iFor2).Units!FieldVal,V.DataTable.dtMain(V.Local.iFor).SQUARE_FT!FieldValTrim,V.Local.fUnitQty)
+						F.Intrinsic.Math.Round(V.Local.fUnitQty,4,V.Local.fUnitQty)
+						F.Intrinsic.Math.Mult(V.Local.fUnitQty,V.DataTable.dtMain(V.Local.iFor).QTY_ORDER!FieldVal,V.Local.fHours)
+						F.Intrinsic.Math.Round(V.Local.fHours,4,V.Local.fHours)
+						F.Data.DataTable.SetValue("JobOp",V.Local.iFor2,"Units_Open",V.DataTable.dtMain(V.Local.iFor).QTY_ORDER!FieldVal,"Units",V.Local.fUnitQty,"Hours_Estimated",V.Local.fHours)
+					
+					F.Intrinsic.Control.Case("BAND")
+						F.Intrinsic.Math.Mult(V.DataTable.JobOp(V.Local.iFor2).Units!FieldVal,V.DataTable.dtMain(V.Local.iFor).SQUARE_FT!FieldValTrim,V.Local.fUnitQty)
+						F.Intrinsic.Math.Round(V.Local.fUnitQty,4,V.Local.fUnitQty)
+						F.Intrinsic.Math.Mult(V.Local.fUnitQty,V.DataTable.dtMain(V.Local.iFor).QTY_ORDER!FieldVal,V.Local.fHours)
+						F.Intrinsic.Math.Round(V.Local.fHours,4,V.Local.fHours)
+						F.Data.DataTable.SetValue("JobOp",V.Local.iFor2,"Units_Open",V.DataTable.dtMain(V.Local.iFor).QTY_ORDER!FieldVal,"Units",V.Local.fUnitQty,"Hours_Estimated",V.Local.fHours,"Operation","MATL")
+						
+					F.Intrinsic.Control.Case("INSERT")
+						F.Intrinsic.Control.CallSub(CalculateInsert,"Row",V.Local.iFor,"Type","INSERT")
+						V.Local.fInsertSF.Set(V.Args.SF)
+						'Set sPart to material part number
+						V.Local.sPart.Set(V.Args.PC)
+						F.Intrinsic.String.RPad(V.Local.sPart," ",20,V.Local.sPart)
+						'Set quantity to InsertSF
+						F.Intrinsic.Math.Mult(V.Local.fInsertSF,V.DataTable.JobOp(V.Local.iFor2).Units!FieldVal,V.Local.fUnitQty)
+						F.Intrinsic.Math.Round(V.Local.fUnitQty,4,V.Local.fUnitQty)
+						F.Intrinsic.String.Build("Select User9 From Inv_Extra where PART = '{0}'",V.DataTable.dtMain(V.Local.iFor).PART_CODE!FieldValTrim,V.Local.sSQL)
+						F.ODBC.Connection!Con.ExecuteAndReturn(V.Local.sSql,V.Local.sTemp)
+						F.Intrinsic.Control.If(V.Local.sTemp.Trim,=,"")
+'						F.Intrinsic.Control.If(V.DataTable.dtMain(V.Local.iFor).INSERT_PC!FieldValTrim,=,"","AND",V.DataTable.dtMain(V.Local.iFor).INSERT_PN!FieldValTrim,=,"")
+'								F.Data.DataTable.DeleteRow("JobOp",V.Local.iFor2)
+'								F.Intrinsic.Control.Next(V.Local.iFor2)
+							V.Local.bDeleteRow.Set(True)
+						F.Intrinsic.Control.Else
+							F.Data.DataTable.SetValue("JobOp",V.Local.iFor2,"Units_Open",V.DataTable.dtMain(V.Local.iFor).QTY_ORDER!FieldVal,"Units",V.Local.fUnitQty,"Hours_Estimated",V.Local.fHours)
+						F.Intrinsic.Control.EndIf
+						
+					F.Intrinsic.Control.Case("DRILL")
+						F.Intrinsic.Control.If(V.Local.bDrill,=,False)
+'								F.Data.DataTable.DeleteRow("JobOp",V.Local.iFor2)
+'								F.Intrinsic.Control.Next(V.Local.iFor2)
+							V.Local.bDeleteRow.Set(True)
+						F.Intrinsic.Control.Else
+							F.Intrinsic.String.Build("select USER54 from INV_EXTRA where PART = '{0}'",V.DataTable.dtMain(V.Local.iFor).DRILL_CODE!FieldValTrim,V.Local.sSQL)
+							F.ODBC.Connection!con.OpenLocalRecordsetRO("rstDC",V.Local.sSQL)
+							F.Intrinsic.Control.If(V.ODBC.con!rstDC.EOF,=,False)
+								F.Intrinsic.Math.Div(V.ODBC.con!rstDC.FieldValFloat!USER54,60,V.Local.fUnitQty)
+							F.Intrinsic.Control.Else
+								V.Local.fUnitQty.Set(0)
+							F.Intrinsic.Control.EndIf
+							F.ODBC.con!rstDC.Close
+							F.Intrinsic.Math.Mult(V.Local.fUnitQty,V.DataTable.dtMain(V.Local.iFor).QTY_ORDER!FieldVal,V.Local.fHours)
+							F.Intrinsic.Math.Round(V.Local.fHours,4,V.Local.fHours)
+							F.Intrinsic.String.Build("Select Top 1 Description From V_Inventory_Mstr Where Part = '{0}'",V.DataTable.dtMain(V.Local.iFor).DRILL_CODE!FieldValTrim,V.Local.sSql)
+							F.ODBC.Connection!Con.ExecuteAndReturn(V.Local.sSql,V.Local.sDescription)
+							F.Data.DataTable.SetValue("JobOp",V.Local.iFor2,"Units_Open",V.DataTable.dtMain(V.Local.iFor).QTY_ORDER!FieldVal,"Description",V.Local.sDescription.Trim,"Units",V.Local.fUnitQty,"Hours_Estimated",V.Local.fHours)
+						F.Intrinsic.Control.EndIf
+					
+					F.Intrinsic.Control.Case("MUL")
+						F.Intrinsic.String.Build("Select Insert_1 From GCG_5364_OE_LINES a Left Join V_Order_To_WO b on a.Order_No = b.Order_No and A.Record_No = b.Order_Line where b.Job = '{0}' and b.Suffix = '{1}'",V.Local.sWO.Trim,V.Local.sSuffix.Trim,v.Local.sSql)
+						F.ODBC.Connection!Con.ExecuteAndReturn(V.Local.sSql,V.Local.sRet)
+						F.Intrinsic.Control.If(V.Local.sRet.Trim,<>,"GLASS")
+'								F.Data.DataTable.DeleteRow("JobOp",V.Local.iFor2)
+'								F.Intrinsic.Control.Next(V.Local.iFor2)
+							V.Local.bDeleteRow.Set(True)
+						F.Intrinsic.Control.EndIf
+					
+					F.Intrinsic.Control.CaseAny("PRESS","PRES")
+'						F.Intrinsic.String.Build("select User22,User23 from INV_EXTRA where PART = '{0}'",V.DataTable.dtMain(V.Local.iFor).PART_CODE!FieldValTrim,V.Local.sSQL)
+'						F.ODBC.Connection!con.OpenLocalRecordsetRO("rstMatl",V.Local.sSQL)
+'						F.Intrinsic.Control.If(V.ODBC.con!rstMatl.EOF,=,False)
+'							F.Intrinsic.Control.If(V.ODBC.con!rstMatl.FieldValTrim!USER22,=,"")
+'								V.Local.fWidthAdj.Set(0)
+'							F.Intrinsic.Control.Else
+'								V.Local.fWidthAdj.Set(V.ODBC.con!rstMatl.FieldValFloat!USER22)
+'							F.Intrinsic.Control.EndIf
+'							F.Intrinsic.Control.If(V.ODBC.con!rstMatl.FieldValTrim!USER23,=,"")
+'								V.Local.fLengthAdj.Set(0)
+'							F.Intrinsic.Control.Else
+'								V.Local.fLengthAdj.Set(V.ODBC.con!rstMatl.FieldValFloat!USER23)
+'							F.Intrinsic.Control.EndIf
+'						F.Intrinsic.Control.Else
+'							V.Local.fWidthAdj.Set(0)
+'							V.Local.fLengthAdj.Set(0)
+'						F.Intrinsic.Control.EndIf
+'						F.ODBC.con!rstMatl.Close
+'						F.Intrinsic.Math.Add(V.Local.fLengthAdj,V.Local.fWidthAdj,V.DataTable.dtMain(V.Local.iFor).LENGTH!FieldValFloat,V.DataTable.dtMain(V.Local.iFor).WIDTH!FieldValFloat,V.Local.fUnitQty)
+'						F.Intrinsic.Math.Mult(V.Local.fUnitQty,2,V.Local.fUnitQty)
+'						F.Intrinsic.Math.Div(V.Local.fUnitQty,96,V.Local.fUnitQty)
+'						F.Intrinsic.Math.Round(V.Local.fUnitQty,4,V.Local.fUnitQty)
+'						F.Intrinsic.Math.Mult(V.Local.fUnitQty,V.DataTable.dtMain(V.Local.iFor).QTY_ORDER!FieldVal,V.Local.fHours)
+'						F.Intrinsic.Math.Round(V.Local.fHours,4,V.Local.fHours)
+						
+'						F.Data.DataTable.SetValue("JobOp",V.Local.iFor2,"Units_Open",V.DataTable.dtMain(V.Local.iFor).QTY_ORDER!FieldVal,"Units",V.Local.fUnitQty,"Hours_Estimated",V.Local.fHours)
+						F.Data.DataTable.SetValue("JobOp",V.Local.iFor2,"Units_Open",V.DataTable.dtMain(V.Local.iFor).QTY_ORDER!FieldVal)
+						
+				F.Intrinsic.Control.EndSelect
+			F.Intrinsic.Control.EndIf
+		F.Intrinsic.Control.EndIf
+		F.Intrinsic.Control.If(V.Local.bDeleteRow)
+			V.Local.bDeleteRow.Set(False)
+			F.Intrinsic.Control.If(V.Local.iFor2,>,-1)
+				F.Data.DataTable.DeleteRow("JobOp",V.Local.iFor2)
+			F.Intrinsic.Control.EndIf
+		F.Intrinsic.Control.EndIf
+	F.Intrinsic.Control.Next(V.Local.iFor2)
+	
+	
+	F.Intrinsic.Control.If(V.DataTable.JobOp.RowCount--,<>,-1)
+		F.Data.DataTable.SaveToDB("JobOp","con","Job_Operations","Job*!*Suffix*!*Seq",7)
+	F.Intrinsic.Control.EndIf
+	F.Data.DataTable.Close("JobOp")
+F.Intrinsic.Control.Next(V.Local.iFor)
+
+f.Data.DataTable.Close("dtMain")
+
+F.Intrinsic.Control.If(V.Local.sWolist.Trim,<>,"")
+	F.Intrinsic.Control.CallSub(Process_APSSchedule,"WOLIST",V.Local.sWolist)
+F.Intrinsic.Control.EndIf
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("Create_WO_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.Control.CallSub(LogError,"CurrentSub",V.Ambient.CurrentSubroutine,"ErrorNumber",V.Ambient.ErrorNumber,"ErrorDescription",V.Ambient.ErrorDescription)
+	F.Intrinsic.Control.CallSub(Call_GAB_Script)
+
+	F.Intrinsic.Control.CallSub(Exit)
+Function.Intrinsic.Control.EndIf
+Program.Sub.New_UploadWO.End
+
+Program.Sub.CalculateInsert.Start
+F.Intrinsic.Control.SetErrorHandler("CalculateInsert_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+V.Local.fBeltWidth.Declare(Float,0)
+V.Local.fInsertLength.Declare(Float,0)
+V.Local.fInsertSF.Declare(Float,0)
+V.Local.fInsertWidth.Declare(Float,0)
+V.Local.fUser10.Declare(Float,0)
+V.Local.fUser11.Declare(Float,0)
+V.Local.fUser12.Declare(Float,0)
+V.Local.fUser13.Declare(Float,0)
+V.Local.iInserts.Declare(Long,0)
+V.Local.iRails.Declare(Long,0)
+V.Local.iRow.Declare(Long,0)
+V.Local.sInsertPC.Declare(String,"")
+V.Local.sInsertSize.Declare(String,"")
+V.Local.sMaterial.Declare(String,"")
+V.Local.sSQL.Declare(String,"")
+
+V.Local.iRow.Set(V.Args.Row)
+
+F.Intrinsic.String.Build("select * from INV_EXTRA where PART = '{0}'",V.DataTable.dtMain(V.Local.iRow).PART_CODE!FieldValTrim,V.Local.sSQL)
+F.ODBC.Connection!con.OpenLocalRecordsetRO("rstSel",V.Local.sSQL)
+F.Intrinsic.Control.If(V.ODBC.con!rstSel.EOF,=,False)
+	F.Intrinsic.Control.SelectCase(V.Args.Type)
+		F.Intrinsic.Control.Case("INSERT")
+			'USER9	Number of Inserts
+			'USER10	Right Rail Width
+			'USER11	Left Rail Width
+			'USER12	Top Stile Width
+			'USER13	Bottom Stile Width
+			'USER14	Middle Belt Width
+			'USER15	Insert Part Code
+			'USER16	Insert Material Code
+
+			F.Intrinsic.Control.If(V.ODBC.con!rstSel.FieldValIsNumeric!USER10,=,True)
+				V.Local.fUser10.Set(V.ODBC.con!rstSel.FieldValFloat!USER10)
+			F.Intrinsic.Control.Else
+				V.Local.fUser10.Set(0)
+			F.Intrinsic.Control.EndIf
+			F.Intrinsic.Control.If(V.ODBC.con!rstSel.FieldValIsNumeric!USER11,=,True)
+				V.Local.fUser11.Set(V.ODBC.con!rstSel.FieldValFloat!USER11)
+			F.Intrinsic.Control.Else
+				V.Local.fUser11.Set(0)
+			F.Intrinsic.Control.EndIf
+			F.Intrinsic.Control.If(V.ODBC.con!rstSel.FieldValIsNumeric!USER12,=,True)
+				V.Local.fUser12.Set(V.ODBC.con!rstSel.FieldValFloat!USER12)
+			F.Intrinsic.Control.Else
+				V.Local.fUser12.Set(0)
+			F.Intrinsic.Control.EndIf
+			F.Intrinsic.Control.If(V.ODBC.con!rstSel.FieldValIsNumeric!USER13,=,True)
+				V.Local.fUser13.Set(V.ODBC.con!rstSel.FieldValFloat!USER13)
+			F.Intrinsic.Control.Else
+				V.Local.fUser13.Set(0)
+			F.Intrinsic.Control.EndIf
+			'Calculate the material length
+			F.Intrinsic.Math.Sub(V.DataTable.dtMain(V.Local.iRow).LENGTH!FieldValFloat,V.Local.fUser12,V.Local.fUser13,V.Local.fInsertLength)
+			'Set iInserts
+			V.Local.iInserts.Set(V.ODBC.con!rstSel.FieldValLong!USER9)
+			F.Intrinsic.Control.If(V.Local.iInserts,>,1)
+				F.Intrinsic.Math.Sub(V.Local.iInserts,1,V.Local.iRails)
+				F.Intrinsic.Math.Mult(V.Local.iRails,V.ODBC.con!rstSel.FieldValFloat!USER14,V.Local.fBeltWidth)
+				F.Intrinsic.Math.Sub(V.Local.fInsertLength,V.Local.fBeltWidth,V.Local.fInsertLength)
+				F.Intrinsic.Math.Div(V.Local.fInsertLength,V.Local.iInserts,V.Local.fInsertLength)
+			F.Intrinsic.Control.Else
+				V.Local.iInserts.Set(1)
+			F.Intrinsic.Control.EndIf
+			F.Intrinsic.Math.Round(V.Local.fInsertLength,3,V.Local.fInsertLength)
+			'Calculate the material width
+			F.Intrinsic.Math.Sub(V.DataTable.dtMain(V.Local.iRow).WIDTH!FieldValFloat,V.Local.fUser10,V.Local.fUser11,V.Local.fInsertWidth)
+			F.Intrinsic.Math.Round(V.Local.fInsertWidth,3,V.Local.fInsertWidth)
+			'Set sInsertSize
+			F.Intrinsic.String.Build("{1} X {0}",V.Local.fInsertLength,V.Local.fInsertWidth,V.Local.sInsertSize)
+			F.Intrinsic.String.Left(V.Local.sInsertSize,30,V.Local.sInsertSize)
+			'Set sInsertPC
+			V.Local.sInsertPC.Set(V.ODBC.con!rstSel.FieldValTrim!USER15)
+			'Set fInsertSF
+			F.Intrinsic.Math.Mult(V.Local.fInsertLength,V.Local.fInsertWidth,V.Local.fInsertSF)
+			F.Intrinsic.Math.Div(V.Local.fInsertSF,144,V.Local.fInsertSF)
+			F.Intrinsic.Math.Round(V.Local.fInsertSF,3,V.Local.fInsertSF)
+			'Set sMaterial
+			V.Local.sMaterial.Set(V.ODBC.con!rstSel.FieldValTrim!USER16)
+
+		F.Intrinsic.Control.Case("5PC-INSERT")
+			'USER24	Panel Width Adjustment
+			'USER25	Panel Length Adjustment
+			'Calculate the material length
+			F.Intrinsic.Math.Add(V.DataTable.dtMain(V.Local.iRow).LENGTH!FieldValFloat,V.ODBC.con!rstSel.FieldValFloat!USER25,V.Local.fInsertLength)
+			'Calculate the material width
+			F.Intrinsic.Math.Add(V.DataTable.dtMain(V.Local.iRow).WIDTH!FieldValFloat,V.ODBC.con!rstSel.FieldValFloat!USER24,V.Local.fInsertWidth)
+			'Set sInsertSize
+			F.Intrinsic.String.Build("{1} X {0}",V.Local.fInsertLength,V.Local.fInsertWidth,V.Local.sInsertSize)
+			F.Intrinsic.String.Left(V.Local.sInsertSize,30,V.Local.sInsertSize)
+			'Set sInsertPC
+			V.Local.sInsertPC.Set("")
+			'Set sInsertSF
+			F.Intrinsic.Math.Mult(V.Local.fInsertLength,V.Local.fInsertWidth,V.Local.fInsertSF)
+			F.Intrinsic.Math.Div(V.Local.fInsertSF,144,V.Local.fInsertSF)
+			F.Intrinsic.Math.Round(V.Local.fInsertSF,3,V.Local.fInsertSF)
+			'Set sMaterial
+			V.Local.sMaterial.Set("")
+			'Set iInserts
+			V.Local.iInserts.Set(V.ODBC.con!rstSel.FieldValLong!USER9)
+			F.Intrinsic.Control.If(V.Local.iInserts,>,1)
+				F.Intrinsic.Math.Sub(V.Local.iInserts,1,V.Local.iRails)
+				F.Intrinsic.Math.Mult(V.Local.iRails,V.ODBC.con!rstSel.FieldValFloat!USER14,V.Local.fBeltWidth)
+				F.Intrinsic.Math.Sub(V.Local.fInsertLength,V.Local.fBeltWidth,V.Local.fInsertLength)
+				F.Intrinsic.Math.Div(V.Local.fInsertLength,V.Local.iInserts,V.Local.fInsertLength)
+			f.Intrinsic.Control.Else
+				V.Local.iInserts.Set(1)
+			F.Intrinsic.Control.EndIf
+	F.Intrinsic.Control.EndSelect
+F.Intrinsic.Control.EndIf
+
+F.Intrinsic.Variable.AddRV("Length",V.Local.fInsertLength)
+F.Intrinsic.Variable.AddRV("Width",V.Local.fInsertWidth)
+F.Intrinsic.Variable.AddRV("SF",V.Local.fInsertSF)
+F.Intrinsic.Variable.AddRV("PC",V.Local.sInsertPC)
+F.Intrinsic.Variable.AddRV("Size",V.Local.sInsertSize)
+F.Intrinsic.Variable.AddRV("Material",V.Local.sMaterial)
+F.Intrinsic.Variable.AddRV("Quantity",V.Local.iInserts)
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("CalculateInsert_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.Control.CallSub(LogError,"CurrentSub",V.Ambient.CurrentSubroutine,"ErrorNumber",V.Ambient.ErrorNumber,"ErrorDescription",V.Ambient.ErrorDescription)
+	F.Intrinsic.Control.CallSub(Call_GAB_Script)
+
+	F.Intrinsic.Control.CallSub(Exit)
+Function.Intrinsic.Control.EndIf
+Program.Sub.CalculateInsert.End
+
+Program.Sub.Process_APSSchedule.Start
+F.Intrinsic.Control.SetErrorHandler("Process_APSSchedule_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+v.Local.sPgm.Declare(String,"")
+V.Local.bExists.Declare(Boolean,False)
+v.Local.iPID.Declare(Long,0)
+
+'Call Gabscript to run APS schedule Async
+f.Intrinsic.String.Build("{0}\GCG_5364_SchJob.g2u",v.Caller.GasDir,v.Local.sPgm)
+F.Intrinsic.File.Exists(v.Local.sPgm,V.Local.bExists)
+F.Intrinsic.Control.If(V.Local.bExists,=,true)
+	f.Global.General.SetPassedDataElement("WO",v.Args.WOLIST)
+'	f.Global.General.CallASyncGAS(v.Local.sPgm,v.Local.iPID)
+	F.Global.General.CallSyncGAS(V.Local.sPgm)
+	F.Intrinsic.UI.Sleep(3)
+F.Intrinsic.Control.EndIf
+		
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("Process_APSSchedule_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.Control.CallSub(LogError,"CurrentSub",V.Ambient.CurrentSubroutine,"ErrorNumber",V.Ambient.ErrorNumber,"ErrorDescription",V.Ambient.ErrorDescription)
+	F.Intrinsic.Control.CallSub(Call_GAB_Script)
+
+	F.Intrinsic.Control.CallSub(Exit)
+Function.Intrinsic.Control.EndIf
+Program.Sub.Process_APSSchedule.End
+
+Program.Sub.isRunning.Start
+F.Intrinsic.Control.SetErrorHandler("isRunning_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+v.Local.sFile.Declare(String,"")
+v.Local.bCheck.Declare(Boolean,False)
+v.Local.bCheck2.Declare(Boolean,False)
+v.Local.sPID.Declare(String,"")
+v.Local.iRet.Declare(Long,0)
+v.Local.dFileDate.Declare(Date)
+
+'track PID and write file to let async program know its running
+F.Intrinsic.Control.If(V.Caller.GlobalDir.Right1,<>,"\")
+	F.Intrinsic.String.Build("{0}\Custom",V.Caller.GlobalDir,V.Local.sFile)
+F.Intrinsic.Control.Else
+	F.Intrinsic.String.Build("{0}Custom",V.Caller.GlobalDir,V.Local.sFile)
+F.Intrinsic.Control.EndIf
+F.Intrinsic.File.DirExists(V.Local.sFile,V.Local.bCheck)
+F.Intrinsic.Control.If(V.Local.bCheck,=,False)
+	F.Intrinsic.File.CreateDir(V.Local.sFile)
+F.Intrinsic.Control.EndIf
+
+F.Intrinsic.String.Build("{0}\5364",v.Local.sFile,v.Local.sFile)
+
+F.Intrinsic.File.DirExists(V.Local.sFile,V.Local.bCheck)
+F.Intrinsic.Control.If(V.Local.bCheck,=,False)
+	F.Intrinsic.File.CreateDir(V.Local.sFile)
+F.Intrinsic.Control.EndIf
+
+F.Intrinsic.String.Build("{0}\{1}_5364.txt",v.Local.sFile,v.Caller.CompanyCode,v.Local.sFile)
+
+v.Global.sPIDFile.Set(v.Local.sFile)
+f.Intrinsic.File.Exists(v.Local.sFile,v.Local.bCheck)
+f.Intrinsic.Control.If(v.local.bCheck,=,True)
+	f.Intrinsic.File.GetFileDateTime(v.Local.sfile,v.Local.dFileDate)
+	f.Intrinsic.Date.DateDiff("N",v.Local.dFileDate,v.Ambient.Now,v.Local.iRet)
+	'set file threshold to 5 minutes, since we are limiting to 10 records at a time.
+	f.Intrinsic.Control.If(v.Local.iRet,>,30)
+		'terminate if hung up 
+		f.Intrinsic.File.File2String(v.Local.sFile,v.Local.sPID)
+		F.Intrinsic.Control.Try
+			F.Intrinsic.Task.KillPID(V.Local.sPID)
+		F.Intrinsic.Control.Catch
+		F.Intrinsic.Control.EndTry
+		f.Intrinsic.File.DeleteFile(v.Local.sFile)
+		'write file for check every time 38130 hook fires on the OLU set interval
+		f.Intrinsic.File.String2File(v.Local.sFile,v.Ambient.PID)	
+	F.Intrinsic.Control.Else
+		'end if program is still running an the isrunning file is not older than the threshold set above.
+		f.Intrinsic.Control.End
+	f.Intrinsic.Control.EndIf
+f.Intrinsic.Control.Else
+	'write file for check every time 38130 hook fires on the OLU set interval
+	f.Intrinsic.File.String2File(v.Local.sFile,v.Ambient.PID)	
+f.Intrinsic.Control.EndIf
+	
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("isRunning_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.Control.CallSub(LogError,"CurrentSub",V.Ambient.CurrentSubroutine,"ErrorNumber",V.Ambient.ErrorNumber,"ErrorDescription",V.Ambient.ErrorDescription)
+	F.Intrinsic.Control.CallSub(Call_GAB_Script)
+
+	F.Intrinsic.Control.CallSub(Exit)
+Function.Intrinsic.Control.EndIf
+Program.Sub.isRunning.End
+
+Program.Sub.LogError.Start
+F.Intrinsic.Control.SetErrorHandler("LogError_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+v.Local.sSQL.Declare(String,"")
+V.Local.bRet.Declare(Boolean,False)
+V.Local.sUser.Declare(String,"")
+V.Local.sEmail.Declare(String,"")
+V.Local.i.Declare(Long,0)
+V.Local.sTemp.Declare(String,"")
+V.Local.iSize.Declare(Long,0)
+
+F.ODBC.Connection!ConE.OpenCompanyConnection
+
+'checking if the error table exists
+F.ODBC.Connection!ConE.TableExists("GCG_5364_Error_Log",V.Local.bRet)
+
+'if table doesn't create the table.
+F.Intrinsic.Control.If(V.Local.bRet,=,False)
+	F.Intrinsic.String.Build("Create Table GCG_5364_Error_Log({0}Current_Sub{0} CHAR(20),{0}Error_Num{0} CHAR(20),{0}Error_Desc{0} CHAR(100),{0}Error_Date{0} DATE);",V.Ambient.DblQuote,V.Local.sSQL)
+	F.ODBC.Connection!ConE.Execute(V.Local.sSQL)
+F.Intrinsic.Control.EndIf
+
+f.Intrinsic.String.Build("Insert into GCG_5364_Error_Log values ('{0}','{1}','{2}','{3}')",V.Args.CurrentSub,V.Args.ErrorNumber,V.Args.ErrorDescription.PSQLFriendly,v.Ambient.Now.PervasiveDate,v.Local.sSQL)
+f.ODBC.Connection!conE.Execute(v.Local.sSQL)
+
+'F.ODBC.Connection!ConC.OpenCommonConnection
+'F.ODBC.Connection!ConC.ExecuteAndReturn("Select rtrim(Email) From User_Information Where Email <> '' and Menu_type = 4",V.Local.sEmail)
+'F.Intrinsic.String.Replace(V.Local.sEmail,"#$#",",",V.Local.sEmail)
+'F.Intrinsic.Control.If(V.Local.sEmail.Length,>,100)
+'	F.Intrinsic.String.Split(V.Local.sEmail,",",V.Local.sTemp)
+'	F.Intrinsic.Control.For(V.Local.i,0,V.Local.sTemp.UBound,1)
+'		F.Intrinsic.Control.If(V.Local.sEmail(V.Local.sEmail.UBound),=,"")
+'			V.Local.sEmail(V.Local.sEmail.UBound).Set(V.Local.sTemp(V.Local.i))
+'		F.Intrinsic.Control.Else
+'			F.Intrinsic.Math.Add(V.Local.sEmail(V.Local.sEmail.UBound).Length,V.Local.sTemp(V.Local.i).Length,V.Local.iSize)
+'			F.Intrinsic.Control.If(V.Local.iSize,<,100)
+'				F.Intrinsic.String.Build("{0},{2}",V.Local.sEmail(V.Local.sEmail.UBound),V.Local.sTemp(V.Local.i),V.Local.sEmail)
+'			F.Intrinsic.Control.Else
+'				F.Intrinsic.Math.Add(V.Local.sEmail.UBound,1,V.Local.iSize)
+'				V.Local.sEmail.RedimPreserve(0,V.Local.iSize)
+'				V.Local.sEmail(V.Local.sEmail.UBound).Set(V.Local.sTemp(V.Local.i))
+'			F.Intrinsic.Control.EndIf
+'		F.Intrinsic.Control.EndIf
+'	F.Intrinsic.Control.Next(V.Local.i)
+'F.Intrinsic.Control.EndIf
+'F.ODBC.Connection!ConC.Close
+'F.ODBC.Connection!ConE.Close
+
+'F.Intrinsic.Control.For(V.Local.i,0,V.Local.sEmail.UBound,1)
+''	F.Global.Messaging.QueueMessage(V.Caller.CompanyCode,V.Global.iUser,"GAB Errors on GCG_5364_Auto_WO_Gen.g2u","NoReplay@jbcutting.com",V.Local.sEmail(V.Local.i),"GAB Errors have occured on GCG_5364_Auto_WO_Gen.g2u.  Work Orders may not be getting created.  Check Menu Item Shop Floor Control > View > Work Order Generation View (5364) ")
+'F.Intrinsic.Control.Next(v.Local.i)
+f.Intrinsic.Control.ExitSub
+F.Intrinsic.Control.Label("LogError_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.Control.CallSub(Call_GAB_Script)
+
+	F.Intrinsic.Control.CallSub(Exit)
+Function.Intrinsic.Control.EndIf
+Program.Sub.LogError.End
+
+Program.Sub.Get_Non_Door_WOs.Start
+F.Intrinsic.Control.SetErrorHandler("Get_Non_Door_WOs_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+V.Local.sSql.Declare(String,"")
+
+V.Local.sSql.Set("Select Job+Suffix as JS, Job, Suffix, a.Part, Cast(0 as Bit) as Job_Released From V_Job_Header a Left Join V_Inventory_Mstr b on a.Part = b.Part where UCASE(b.CODE_SORT) IN(Select UCase(Sort_Code) From GCG_5364_SORT_MAINT Where UCASE(Status) like 'NON-DOOR%')")
+
+F.Data.DataTable.CreateFromSQL("NONDOOR","con",V.Local.sSql,True)
+
+V.Local.sSql.Set("Select Job+Suffix as JS, Cast(1 as Bit) as In_Que From GCG_5364_NON_DOOR_WO")
+F.Data.DataTable.CreateFromSQL("TempNonDoor","con",V.Local.sSql,True)
+F.Data.Dictionary.CreateFromDataTable("DicJS","TempNonDoor","JS","In_Que")
+F.Data.DataTable.Close("TempNonDoor")
+F.Data.Dictionary.SetDefaultReturn("DicJS",False)
+
+F.Data.DataTable.FillFromDictionary("NONDOOR","DicJS","JS","Job_Released")
+
+F.Data.Dictionary.Close("DicJS")
+
+F.Data.DataView.Create("NONDOOR","VNONDOOR",22,"Job_Released = 0","")
+F.Data.DataView.ToDataTable("NONDOOR","VNONDOOR","SNONDOOR")
+F.Data.DataView.Close("NONDOOR","VNONDOOR")
+
+F.Intrinsic.Control.If(V.DataTable.SNONDOOR.RowCount--,<>,-1)
+	F.Data.DataTable.SaveToDB("SNONDOOR","con","GCG_5364_NON_DOOR_WO","Job*!*Suffix",256,"Job@!@Job*!*Suffix@!@Suffix*!*Part@!@Part*!*Job_Released@!@Job_Released")
+F.Intrinsic.Control.EndIf
+
+F.Data.DataTable.Close("SNONDOOR")
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("Get_Non_Door_WOs_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.Control.CallSub(LogError,"CurrentSub",V.Ambient.CurrentSubroutine,"ErrorNumber",V.Ambient.ErrorNumber,"ErrorDescription",V.Ambient.ErrorDescription)
+	F.Intrinsic.Control.CallSub(Call_GAB_Script)
+
+	F.Intrinsic.Control.CallSub(Exit)
+Function.Intrinsic.Control.EndIf
+Program.Sub.Get_Non_Door_WOs.End
+
+Program.Sub.Call_GAB_Script.Start
+F.Intrinsic.Control.SetErrorHandler("Call_GAB_Script_Err")
+F.Intrinsic.Control.ClearErrors
+V.Local.sError.Declare(String,"")
+V.Local.sGab.Declare(String,"")
+V.Local.iRet.Declare(Long,0)
+V.Local.sSql.Declare(String,"")
+
+F.Intrinsic.String.Build("{0}\GAB\GAS\GCG_5364_Auto_WO_Gen.g2u",V.Caller.PluginsDir,V.Local.sGab)
+	
+F.Global.Task.CallAsyncGas(V.Local.sGab,"",2,V.Local.iRet)
+	
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("Call_GAB_Script_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: {0}{1}Subroutine: {2}{1}Error Occurred {3} with description {4}","GCG_5182_P21_Integration.g2u",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(Exit)
+F.Intrinsic.Control.EndIf
+Program.Sub.Call_GAB_Script.End
+
+Program.Sub.File_Cleanup.Start
+F.Intrinsic.Control.SetErrorHandler("File_Cleanup_Err")
+F.Intrinsic.Control.ClearErrors
+V.Local.sError.Declare(String,"")
+V.Local.sFiles.Declare(String)
+V.Local.iCount.Declare(Long)
+V.Local.dRemove.Declare(Date)
+V.Local.dTime.Declare(Date)
+V.Local.iRet.Declare(Long)
+
+F.Intrinsic.Date.DateAdd("N",-5,V.Ambient.Now,V.Local.dRemove)
+F.Intrinsic.File.GetFileList(V.Caller.LocalGSSTempDir,V.Local.sFiles)
+
+F.Data.DataTable.CreateFromString("Files",V.Local.sFiles,"File",String,V.Ambient.NewLine,":",True)
+
+F.Data.DataView.Create("Files","VFile",22,"File like 'Callwrapper_JB0010GB*' or File like 'Jobstream_*' or File like 'CompList*'","")
+F.Intrinsic.Control.If(V.DataView.Files!VFile.RowCount--,<>,-1)
+	F.Intrinsic.Control.For(V.Local.iCount,0,V.DataView.Files!VFile.RowCount--,1)
+		F.Intrinsic.String.Build("{0}{1}",V.Caller.LocalGSSTempDir,V.DataView.Files!VFile(V.Local.iCount).File!FieldValTrim,V.Local.sFiles)
+		F.Intrinsic.File.GetFileDateTimeExtended(V.Local.sFiles,1,True,V.Local.dTime)
+		F.Intrinsic.Date.DateDiff("N",V.Local.dTime,V.Local.dRemove,V.Local.iRet)
+		F.Intrinsic.Control.If(V.Local.iRet,>,0)
+			F.Intrinsic.Control.Try
+				F.Intrinsic.File.DeleteFile(V.Local.sFiles)
+			F.Intrinsic.Control.Catch
+			F.Intrinsic.Control.EndTry
+		F.Intrinsic.Control.EndIf
+	F.Intrinsic.Control.Next(V.Local.iCount)
+F.Intrinsic.Control.EndIf
+
+F.Data.DataView.Close("Files","VFile")
+F.Data.DataTable.Close("Files")
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("File_Cleanup_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.Control.ExitSub
+F.Intrinsic.Control.EndIf
+Program.Sub.File_Cleanup.End
