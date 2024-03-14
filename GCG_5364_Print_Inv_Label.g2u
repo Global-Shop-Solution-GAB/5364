@@ -1,0 +1,367 @@
+Program.Sub.ScreenSU.Start
+Gui.FormInvLabel..Create
+Gui.FormInvLabel..Caption("Select Part -> Print Label")
+Gui.FormInvLabel..Size(14280,10050)
+Gui.FormInvLabel..MinX(0)
+Gui.FormInvLabel..MinY(0)
+Gui.FormInvLabel..Position(0,0)
+Gui.FormInvLabel..BackColor(-2147483633)
+Gui.FormInvLabel..MaxButton(False)
+Gui.FormInvLabel..MinButton(False)
+Gui.FormInvLabel..MousePointer(0)
+Gui.FormInvLabel..Sizeable(False)
+Gui.FormInvLabel..Event(UnLoad,FormInvLabel)
+Gui.FormInvLabel.lblSO.Create(Label,"Sales Order",True,1935,375,0,240,150,True,0,"Arial",12,-2147483633,0)
+Gui.FormInvLabel.txtSO.Create(TextBox,"",True,3975,390,0,255,525,True,0,"Arial",12,-2147483643,1)
+Gui.FormInvLabel.cmdSO.Create(Button)
+Gui.FormInvLabel.cmdSO.Size(525,420)
+Gui.FormInvLabel.cmdSO.Position(4365,510)
+Gui.FormInvLabel.cmdSO.Caption("^")
+Gui.FormInvLabel.cmdSO.Event(Click,cmdSO_Click)
+Gui.FormInvLabel.GsGridControl1.Create(GsGridControl)
+Gui.FormInvLabel.GsGridControl1.Size(13680,8070)
+Gui.FormInvLabel.GsGridControl1.Position(270,1140)
+Gui.FormInvLabel.GsGridControl1.Event(RowCellClick,GsGridControl1_RowCellClick)
+Gui.FormInvLabel.cmdPrint.Create(Button)
+Gui.FormInvLabel.cmdPrint.Size(1965,420)
+Gui.FormInvLabel.cmdPrint.Position(11985,510)
+Gui.FormInvLabel.cmdPrint.Caption("Print Selected")
+Gui.FormInvLabel.cmdPrint.Event(Click,cmdPrint_Click)
+Gui.FormInvLabel.lblPrinter.Create(Label,"Printer",True,1935,375,0,8805,165,True,0,"Arial",12,-2147483633,0)
+Gui.FormInvLabel.ddlPrinter.Create(DropDownList)
+Gui.FormInvLabel.ddlPrinter.Size(2850,330)
+Gui.FormInvLabel.ddlPrinter.Position(8880,555)
+Program.Sub.ScreenSU.End
+
+Program.Sub.Preflight.Start
+v.Global.sPart.Declare(String)
+Program.Sub.Preflight.End
+
+Program.Sub.Main.Start
+F.Intrinsic.Control.SetErrorHandler("Sub_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String)
+V.Local.sSql.Declare(String,"")
+
+F.ODBC.Connection!ConC.OpenCommonConnection
+
+'creating dictionary for sentinel enabled printers
+V.Local.sSql.Set("Select PrinterName, rtrim(Sentinelalias) From Server_Printers Where Sentinelenabled = 1 and Sentinelalias <> '' Order By Sentinelalias")
+F.Data.Dictionary.CreateFromSQL("Printer","ConC",V.Local.sSql)
+
+Gui.FormInvLabel.ddlPrinter.AddItem("",0)
+Gui.FormInvLabel.ddlPrinter.AddItems("Dictionary","Printer")
+
+F.Data.Dictionary.Close("Printer")
+
+F.ODBC.Connection!ConC.Close
+
+F.Intrinsic.Control.CallSub(Populate_Grid)
+
+gui.FormInvLabel..Show
+gui.FormInvLabel.txtSO.SetFocus
+gui.FormInvLabel..AlwaysOnTop(True)
+Gui.FormInvLabel..AlwaysOnTop(False)
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("Sub_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	Function.Intrinsic.String.Concat("Project: GCG_5364_Print_Inv_Label.g2u",V.Ambient.Newline,V.Ambient.Newline,"Subroutine: ",V.Ambient.CurrentSubroutine,V.Ambient.NewLine,"Error Occurred ",V.Ambient.ErrorNumber," with description ",V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+Function.Intrinsic.Control.EndIf
+
+Program.Sub.Main.End
+
+Program.Sub.FormInvLabel.Start
+F.Intrinsic.Control.SetErrorHandler("Sub_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String)
+	f.Intrinsic.Control.End
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("Sub_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	Function.Intrinsic.String.Concat("Project: GCG_5364_Print_Inv_Label.g2u",V.Ambient.Newline,V.Ambient.Newline,"Subroutine: ",V.Ambient.CurrentSubroutine,V.Ambient.NewLine,"Error Occurred ",V.Ambient.ErrorNumber," with description ",V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+Function.Intrinsic.Control.EndIf
+Program.Sub.FormInvLabel.End
+
+Program.Sub.cmdSO_Click.Start
+F.Intrinsic.Control.SetErrorHandler("cmdSO_Click_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String)
+V.Local.sSql.Declare(String,"")
+V.Local.sTitles.Declare(String,"")
+V.Local.sWidths.Declare(String,"")
+V.Local.sRet.Declare(String,"")
+
+F.Intrinsic.UI.SetBrowserHotTypeAhead(True)
+
+'custom browswer to select sales order
+V.Local.sSql.Set("Select Order_No, Customer From V_Order_Header Order by Order_No") 
+V.Local.sTitles.Set("Order*!*Customer")
+V.Local.sWidths.Set("1800*!*6250")
+
+F.Intrinsic.String.Split(V.Local.sTitles,"*!*",V.Local.sTitles)
+F.Intrinsic.String.Split(V.Local.sWidths,"*!*",V.Local.sWidths)
+
+F.ODBC.Connection!Con.OpenCompanyConnection
+
+F.Intrinsic.UI.Browser("Select Sales Order","con",V.Local.sSql,V.Local.sTitles,V.Local.sWidths,10200,9000,V.Local.sRet)
+
+F.ODBC.Connection!Con.Close
+
+F.Intrinsic.Control.If(V.Local.sRet,<>,V.Ambient.Cancel)
+	F.Intrinsic.String.Split(V.Local.sRet,"*!*",V.Local.sRet)
+	gui.FormInvLabel.txtSO.Text(V.Local.sRet)
+	F.Intrinsic.Control.CallSub(Populate_Grid)
+F.Intrinsic.Control.EndIf
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("cmdSO_Click_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	Function.Intrinsic.String.Concat("Project: GCG_5364_Print_Inv_Label.g2u",V.Ambient.Newline,V.Ambient.Newline,"Subroutine: ",V.Ambient.CurrentSubroutine,V.Ambient.NewLine,"Error Occurred ",V.Ambient.ErrorNumber," with description ",V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+Function.Intrinsic.Control.EndIf
+Program.Sub.cmdSO_Click.End
+
+Program.Sub.Populate_Grid.Start
+F.Intrinsic.Control.SetErrorHandler("Populate_Grid_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String)
+V.Local.sSql.Declare(String)
+
+F.ODBC.Connection!con.OpenCompanyConnection
+F.Intrinsic.Control.If(V.DataTable.Lines.Exists)
+	F.Intrinsic.String.Build("Select Record_No as Order_Line, Part, Description, Qty_Ordered as SO_QTY, Customer From V_Order_Lines A Where Order_NO = '{0}' and rtrim(Part) NOT in(Select distinct rtrim(B.Part) From GCG_5364_Label_Data B Where B.Order_No = '{0}')",V.Screen.FormInvLabel!txtSO.Text,V.Local.sSql)
+	F.Data.DataTable.CreateFromSQL("Temp","con",V.Local.sSql,True)
+	F.Data.DataTable.DeleteRow("Lines")
+	F.Data.DataTable.Merge("Temp","Lines",False,4)
+	F.Data.DataTable.Close("Temp")
+	F.Data.DataTable.SetValue("Lines",-1,"Selection",False)
+F.Intrinsic.Control.Else
+	F.Intrinsic.String.Build("Select Record_No as Order_Line, Part, Description, Qty_Ordered as SO_QTY, Customer From V_Order_Lines A Where Order_NO = '{0}' and rtrim(Part) NOT in(Select distinct rtrim(B.Part) From GCG_5364_Label_Data B Where B.Order_No = '{0}')","-1",V.Local.sSql)
+	F.Data.DataTable.CreateFromSQL("Lines","con",V.Local.sSql,True)
+	F.Data.DataTable.AddColumn("Lines","Print",String)
+	F.Data.DataTable.AddColumn("Lines","Selection",Boolean)
+	F.Data.DataTable.SetValue("Lines",-1,"Selection",False)
+	F.Intrinsic.Control.CallSub(Set_Prop)
+F.Intrinsic.Control.EndIf
+F.ODBC.Connection!Con.Close
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("Populate_Grid_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	Function.Intrinsic.String.Concat("Project: GCG_5364_Print_Inv_Label.g2u",V.Ambient.Newline,V.Ambient.Newline,"Subroutine: ",V.Ambient.CurrentSubroutine,V.Ambient.NewLine,"Error Occurred ",V.Ambient.ErrorNumber," with description ",V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+Function.Intrinsic.Control.EndIf
+Program.Sub.Populate_Grid.End
+
+Program.Sub.Set_Prop.Start
+F.Intrinsic.Control.SetErrorHandler("Set_Prop_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String)
+
+Gui.FormInvLabel.GsGridControl1.AddGridviewFromDatatable("Glines","Lines")
+Gui.FormInvLabel.GsGridControl1.SetGridviewProperty("Glines","Editable",False)
+Gui.FormInvLabel.GsGridControl1.SetGridviewProperty("Glines","ReadOnly",True)
+
+Gui.FormInvLabel.GsGridControl1.SetColumnProperty("Glines","Selection","Caption"," ")
+Gui.FormInvLabel.GsGridControl1.SetColumnProperty("Glines","Selection","Fixed","Left")
+Gui.FormInvLabel.GsGridControl1.SetColumnProperty("Glines","Order_Line","Caption","Line")
+Gui.FormInvLabel.GsGridControl1.SetColumnProperty("Glines","Part","Caption","Part")
+Gui.FormInvLabel.GsGridControl1.SetColumnProperty("Glines","Description","Caption","Description")
+Gui.FormInvLabel.GsGridControl1.SetColumnProperty("Glines","SO_QTY","Caption","SO QTY")
+Gui.FormInvLabel.GsGridControl1.SetColumnProperty("Glines","Customer","Caption","Customer")
+Gui.FormInvLabel.GsGridControl1.SetColumnProperty("Glines","Print","Caption"," ")
+Gui.FormInvLabel.GsGridControl1.ColumnEdit("Glines","Print","EditorButton","Print Label")
+
+Gui.FormInvLabel.GsGridControl1.SetColumnProperty("Glines","Customer","Visible",False)
+
+Gui.FormInvLabel.GsGridControl1.MainView("GLines")
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("Set_Prop_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	Function.Intrinsic.String.Concat("Project: GCG_5364_Print_Inv_Label.g2u",V.Ambient.Newline,V.Ambient.Newline,"Subroutine: ",V.Ambient.CurrentSubroutine,V.Ambient.NewLine,"Error Occurred ",V.Ambient.ErrorNumber," with description ",V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+Function.Intrinsic.Control.EndIf
+Program.Sub.Set_Prop.End
+
+Program.Sub.GsGridControl1_RowCellClick.Start
+F.Intrinsic.Control.SetErrorHandler("GsGridControl1_RowCellClick_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String)
+V.Local.sSql.Declare(String,"")
+V.Local.iBiRunID.Declare(Long,0)
+V.Local.iRptID.Declare(Long,0)
+V.Local.iLogID.Declare(Long,0)
+V.Local.sPrinter.Declare(String,"")
+
+F.Intrinsic.Control.If(V.Args.column.UCase,=,"PRINT")
+	V.Local.sPrinter.Set(V.Screen.FormInvLabel!ddlPrinter.Value)
+	Gui.FormInvLabel..Enabled(False)
+	F.ODBC.Connection!Con.OpenCompanyConnection
+	F.Intrinsic.String.Build("Select Job, Suffix, Instance, Part, Description, Order_No, Order_Line, Qty, Due_Date, TotalLength, TotalWidth, WKG1, WKG2, WKG3, WKG4, WKG5, Drill_Code, Jssi From GCG_5364_Label_Data Where JSSI = '{0}'","-1",V.Local.sSql)
+	F.Data.DataTable.CreateFromSQL("Label","con",V.Local.sSql,True)
+	
+	'adding po, customer name and text to label data
+	F.Data.DataTable.AddColumn("Label","PO","String")
+	F.Data.DataTable.AddColumn("Label","Customer","String")
+	F.Data.DataTable.AddColumn("Label","Name_Customer","String")
+	F.Data.DataTable.AddColumn("Label","Text","String")
+	F.Data.DataTable.AddColumn("Label","MATL","String")
+	F.Data.DataTable.AddColumn("Label","Finish","String")
+	F.Data.DataTable.AddColumn("Label","Mat_Desc","String")
+	F.Data.DataTable.AddColumn("Label","Fin_Desc","String")
+	F.Data.DataTable.AddColumn("Label","SO_QTY","String")
+	
+	F.Data.DataTable.AddRow("Label","Order_No",V.Screen.FormInvLabel!txtSO.Text,"Part",V.DataTable.Lines(V.Args.RowIndex).Part!FieldValTrim,"Description",V.DataTable.Lines(V.Args.RowIndex).Description!FieldValTrim,"SO_QTY",V.DataTable.Lines(V.Args.RowIndex).SO_QTY!FieldVal,"Order_Line",V.DataTable.Lines(V.Args.RowIndex).Order_Line!FieldValTrim,"Customer",V.DataTable.Lines(V.Args.RowIndex).Customer!FieldValTrim)
+	
+	'populating po
+	F.Intrinsic.String.Build("Select Order_No, Customer_Po as PO From V_Order_Header Where Order_No = '{0}'",V.Screen.FormInvLabel!txtSO.Text,V.Local.sSql)
+	F.Data.Dictionary.CreateFromSQL("PO","con",V.Local.sSql)
+	F.Data.Dictionary.SetDefaultReturn("PO"," ")
+	F.Data.DataTable.FillFromDictionary("Label","PO","Order_No","PO")
+	
+	F.Data.Dictionary.Close("PO")
+	
+	'populating customer name
+	F.Intrinsic.String.Build("Select Order_No, Name_Customer From V_Order_Header A Left Join V_Customer_Master B on A.Customer = B.Customer Where Order_No = '{0}'",V.Screen.FormInvLabel!txtSO.Text,V.Local.sSql)
+	F.Data.Dictionary.CreateFromSQL("Cust","con",V.Local.sSql)
+	F.Data.Dictionary.SetDefaultReturn("Cust"," ")
+	F.Data.DataTable.FillFromDictionary("Label","Cust","Order_No","Name_Customer")
+	
+	F.Data.Dictionary.Close("Cust")
+	
+	'populating customer name
+	F.Intrinsic.String.Build("Select Order_No, Date_Due From V_Order_Header A Left Join V_Customer_Master B on A.Customer = B.Customer Where Order_No = '{0}'",V.Screen.FormInvLabel!txtSO.Text,V.Local.sSql)
+	F.Data.Dictionary.CreateFromSQL("DD","con",V.Local.sSql)
+	F.Data.Dictionary.SetDefaultReturn("DD"," ")
+	F.Data.DataTable.FillFromDictionary("Label","DD","Order_No","Due_Date")
+	
+	F.Data.Dictionary.Close("DD")
+	
+	'printing codesoft label
+	F.Global.BI.GetRunID(V.Local.iBiRunID)
+	F.Global.BI.GetIDFromName("GCG_5364_Cutrite.lab",V.Local.iRptID)
+	F.Global.BI.StartLogging(V.Local.iBiRunID,V.Local.iRptID,-1,"GCG_5364_Cutrite",V.Local.iLogID)
+	
+	F.Global.BI.StopLogging(V.Local.iLogID)
+	
+	F.Global.BI.PrintCodesoftLabelFromDataTable(V.Local.iBiRunID,V.Local.iLogID,"Label",V.Local.sPrinter,True)
+	
+	F.ODBC.Connection!Con.Close
+	F.Data.DataTable.Close("Label")
+	Gui.FormInvLabel..Enabled(True)
+F.Intrinsic.Control.ElseIf(V.Args.column.UCase,=,"SELECTION")
+	F.Data.DataTable.SetValue("Lines",V.Args.RowIndex,"Selection",V.DataTable.Lines(V.Args.RowIndex).Selection!FieldValNot)
+F.Intrinsic.Control.EndIf
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("GsGridControl1_RowCellClick_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	Function.Intrinsic.String.Concat("Project: GCG_5364_Print_Inv_Label.g2u",V.Ambient.Newline,V.Ambient.Newline,"Subroutine: ",V.Ambient.CurrentSubroutine,V.Ambient.NewLine,"Error Occurred ",V.Ambient.ErrorNumber," with description ",V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+Function.Intrinsic.Control.EndIf
+Program.Sub.GsGridControl1_RowCellClick.End
+
+Program.Sub.cmdPrint_Click.Start
+F.Intrinsic.Control.SetErrorHandler("Set_Prop_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String)
+V.Local.sSql.Declare(String,"")
+V.Local.iBiRunID.Declare(Long,0)
+V.Local.iRptID.Declare(Long,0)
+V.Local.iLogID.Declare(Long,0)
+V.Local.sPrinter.Declare(String,"")
+V.Local.i.Declare(Long)
+
+V.Local.sPrinter.Set(V.Screen.FormInvLabel!ddlPrinter.Value)
+
+Gui.FormInvLabel..Enabled(False)
+
+F.Data.DataView.Create("Lines","VLines",22,"Selection = True","")
+
+F.ODBC.Connection!Con.OpenCompanyConnection
+
+F.Intrinsic.Control.For(V.Local.i,0,V.DataView.Lines!VLines.RowCount--,1)
+	F.Intrinsic.String.Build("Select Job, Suffix, Instance, Part, Description, Order_No, Order_Line, Qty, Due_Date, TotalLength, TotalWidth, WKG1, WKG2, WKG3, WKG4, WKG5, Drill_Code, Jssi From GCG_5364_Label_Data Where JSSI = '{0}'","-1",V.Local.sSql)
+	F.Data.DataTable.CreateFromSQL("Label","con",V.Local.sSql,True)
+	
+	'adding po, customer name and text to label data
+	F.Data.DataTable.AddColumn("Label","PO","String")
+	F.Data.DataTable.AddColumn("Label","Customer","String")
+	F.Data.DataTable.AddColumn("Label","Name_Customer","String")
+	F.Data.DataTable.AddColumn("Label","Text","String")
+	F.Data.DataTable.AddColumn("Label","MATL","String")
+	F.Data.DataTable.AddColumn("Label","Finish","String")
+	F.Data.DataTable.AddColumn("Label","Mat_Desc","String")
+	F.Data.DataTable.AddColumn("Label","Fin_Desc","String")
+	F.Data.DataTable.AddColumn("Label","SO_QTY","String")
+	
+	F.Data.DataTable.AddRow("Label","Order_No",V.Screen.FormInvLabel!txtSO.Text,"Part",V.DataView.Lines!VLines(V.Local.i).Part!FieldValTrim,"Description",V.DataView.Lines!VLines(V.Local.i).Description!FieldValTrim,"SO_QTY",V.DataView.Lines!VLines(V.Local.i).SO_QTY!FieldVal,"Order_Line",V.DataView.Lines!VLines(V.Local.i).Order_Line!FieldValTrim,"Customer",V.DataView.Lines!VLines(V.Local.i).Customer!FieldValTrim)
+	
+	'populating po
+	F.Intrinsic.String.Build("Select Order_No, Customer_Po as PO From V_Order_Header Where Order_No = '{0}'",V.Screen.FormInvLabel!txtSO.Text,V.Local.sSql)
+	F.Data.Dictionary.CreateFromSQL("PO","con",V.Local.sSql)
+	F.Data.Dictionary.SetDefaultReturn("PO"," ")
+	F.Data.DataTable.FillFromDictionary("Label","PO","Order_No","PO")
+	
+	F.Data.Dictionary.Close("PO")
+	
+	'populating customer name
+	F.Intrinsic.String.Build("Select Order_No, Name_Customer From V_Order_Header A Left Join V_Customer_Master B on A.Customer = B.Customer Where Order_No = '{0}'",V.Screen.FormInvLabel!txtSO.Text,V.Local.sSql)
+	F.Data.Dictionary.CreateFromSQL("Cust","con",V.Local.sSql)
+	F.Data.Dictionary.SetDefaultReturn("Cust"," ")
+	F.Data.DataTable.FillFromDictionary("Label","Cust","Order_No","Name_Customer")
+	
+	F.Data.Dictionary.Close("Cust")
+	
+	'populating customer name
+	F.Intrinsic.String.Build("Select Order_No, Date_Due From V_Order_Header A Left Join V_Customer_Master B on A.Customer = B.Customer Where Order_No = '{0}'",V.Screen.FormInvLabel!txtSO.Text,V.Local.sSql)
+	F.Data.Dictionary.CreateFromSQL("DD","con",V.Local.sSql)
+	F.Data.Dictionary.SetDefaultReturn("DD"," ")
+	F.Data.DataTable.FillFromDictionary("Label","DD","Order_No","Due_Date")
+	
+	F.Data.Dictionary.Close("DD")
+	
+	'printing codesoft label
+	F.Global.BI.GetRunID(V.Local.iBiRunID)
+	F.Global.BI.GetIDFromName("GCG_5364_Cutrite.lab",V.Local.iRptID)
+	F.Global.BI.StartLogging(V.Local.iBiRunID,V.Local.iRptID,-1,"GCG_5364_Cutrite",V.Local.iLogID)
+	
+	F.Global.BI.StopLogging(V.Local.iLogID)
+	
+	F.Global.BI.PrintCodesoftLabelFromDataTable(V.Local.iBiRunID,V.Local.iLogID,"Label",V.Local.sPrinter,True)
+	
+	F.Data.DataTable.Close("Label")
+F.Intrinsic.Control.Next(V.Local.i)
+
+F.ODBC.Connection!Con.Close
+
+F.Data.DataView.Close("Lines","VLines")
+F.Data.DataTable.SetValue("Lines",-1,"Selection",False)
+
+Gui.FormInvLabel..Enabled(True)
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("Set_Prop_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	Function.Intrinsic.String.Concat("Project: GCG_5364_Print_Inv_Label.g2u",V.Ambient.Newline,V.Ambient.Newline,"Subroutine: ",V.Ambient.CurrentSubroutine,V.Ambient.NewLine,"Error Occurred ",V.Ambient.ErrorNumber," with description ",V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+Function.Intrinsic.Control.EndIf
+Program.Sub.cmdPrint_Click.End
