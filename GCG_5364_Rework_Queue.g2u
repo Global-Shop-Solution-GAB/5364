@@ -1,0 +1,345 @@
+Program.Sub.ScreenSU.Start
+Gui.FormRework..Create
+Gui.FormRework..Caption("Rework Work Order Queue")
+Gui.FormRework..Size(15360,10590)
+Gui.FormRework..MinX(0)
+Gui.FormRework..MinY(0)
+Gui.FormRework..Position(0,0)
+Gui.FormRework..BackColor(-2147483633)
+Gui.FormRework..MousePointer(0)
+Gui.FormRework..Event(UnLoad,FormRework_UnLoad)
+Gui.FormRework.GsGridControlRework.Create(GsGridControl)
+Gui.FormRework.GsGridControlRework.Size(15000,9285)
+Gui.FormRework.GsGridControlRework.Position(105,420)
+Gui.FormRework.GsGridControlRework.Event(CellValueChanged,GsGridControlRework_CellValueChanged)
+Gui.FormRework.cmdUpdate.Create(Button)
+Gui.FormRework.cmdUpdate.Size(1155,375)
+Gui.FormRework.cmdUpdate.Position(135,9780)
+Gui.FormRework.cmdUpdate.Caption("Update")
+Gui.FormRework.cmdUpdate.Event(Click,cmdUpdate_Click)
+Gui.FormRework.cmdRefresh.Create(Button)
+Gui.FormRework.cmdRefresh.Size(855,375)
+Gui.FormRework.cmdRefresh.Position(14250,15)
+Gui.FormRework.cmdRefresh.Caption("REFRESH")
+Gui.FormRework.cmdRefresh.Event(Click,cmdRefresh_Click)
+Program.Sub.ScreenSU.End
+
+Program.Sub.Preflight.Start
+Program.Sub.Preflight.End
+
+Program.Sub.Main.Start
+F.Intrinsic.Control.SetErrorHandler("Main_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+
+F.Intrinsic.Control.CallSub(Get_Work_Orders)
+F.Intrinsic.Control.CallSub(Set_Properties)
+
+Gui.FormRework..Show
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("Main_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_5364_Rework_Queue.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(FormRework_UnLoad)
+Function.Intrinsic.Control.EndIf
+Program.Sub.Main.End
+
+Program.Sub.FormRework_UnLoad.Start
+F.Intrinsic.Control.SetErrorHandler("FormRework_UnLoad_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+
+F.Intrinsic.Control.End
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("FormRework_UnLoad_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_5364_Rework_Queue.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.End
+Function.Intrinsic.Control.EndIf
+Program.Sub.FormRework_UnLoad.End
+
+Program.Sub.cmdUpdate_Click.Start
+F.Intrinsic.Control.SetErrorHandler("cmdUpdate_Click_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+V.Local.i.Declare(Long,0)
+V.Local.sJobSuffix.Declare(String,"")
+V.Local.sSql.Declare(String,"")
+V.Local.iC.Declare(String,"")
+V.Local.iQty.Declare(Long,0)
+V.Local.sReason.Declare(String,"")
+
+Gui.FormRework..Enabled(False)
+
+'removing scrap flag in Custom Job Detail Table
+F.Data.DataView.Create("Rework","NRework",22,"Not_Scrap = 1","")
+F.Data.DataView.SetValue("Rework","NRework",-1,"Scrap","N","Scrap_Reason","")
+
+F.Intrinsic.Control.If(V.DataView.Rework!NRework.RowCount--,<>,-1)
+	F.Data.DataView.ToDataTable("Rework","NRework","NUpdate")
+	F.ODBC.Connection!con.OpenCompanyConnection
+	'doing this since saveto db doesn't update all records that match
+	F.Intrinsic.Control.For(V.Local.i,0,V.DataTable.NUpdate.RowCount--,1)
+		F.Intrinsic.String.Build("Update GCG_5364_Job_Dtl Set Scrap = 'N', Scrap_Qty = 0, Scrap_Reason = '' Where Job = '{0}' and Suffix = '{1}' and Seq = '{2}' and ltrim(rtrim(Jssi)) = '{3}'",V.DataTable.NUpdate(V.Local.i).Job!FieldValTrim,V.DataTable.NUpdate(V.Local.i).Suffix!FieldValTrim,V.DataTable.NUpdate(V.Local.i).Seq!FieldValTrim,V.DataTable.NUpdate(V.Local.i).Jssi!FieldValTrim,V.Local.sSql)
+		F.ODBC.Connection!Con.Execute(V.Local.sSql)
+	F.Intrinsic.Control.Next(V.Local.i)
+	
+'	F.Data.DataTable.SaveToDB("NUpdate","con","GCG_5364_Job_Dtl","Job*!*Suffix*!*Seq*!*JSSI",256,"Job@!@Job*!*Suffix@!@Suffix*!*Seq@!@Seq*!*Part@!@Part*!*Description@!@Description*!*Jssi@!@Jssi*!*Scrap@!@Scrap*!*Scrap_Reason@!@Scrap_Reason")
+	F.ODBC.Connection!Con.Close
+	F.Data.DataTable.Close("NUpdate")
+F.Intrinsic.Control.EndIf
+
+F.Data.DataView.Close("Rework","NRework")
+
+'updating scrap qty to order qty in the custom job detail table
+F.Data.DataView.Create("Rework","NRework",22,"Rework = 1","")
+F.Intrinsic.Control.For(V.Local.i,0,V.DataView.Rework!NRework.RowCount--,1)
+	F.Data.DataView.SetValue("Rework","NRework",V.Local.i,"Scrap_Qty",V.DataView.Rework!NRework(V.Local.i).Order_Qty!FieldVal)
+F.Intrinsic.Control.Next(V.Local.i)
+
+'saving rework job suffix to rework table and updating scrap qty in the job dtl table.
+F.Intrinsic.Control.If(V.DataView.Rework!NRework.RowCount--,<>,-1)
+	F.Data.DataView.ToDataTable("Rework","NRework","NUpdate")
+	F.ODBC.Connection!con.OpenCompanyConnection
+	'doing this since saveto db doesn't update all records that match
+	F.Intrinsic.Control.For(V.Local.i,0,V.DataTable.NUpdate.RowCount--,1)
+		V.Local.sReason.Set(V.DataTable.NUpdate(V.Local.i).Scrap_Reason!FieldValTrim)
+		F.Intrinsic.String.Build("Update GCG_5364_Job_Dtl Set Scrap_Qty = {4}, Scrap_Reason = '{5}' Where Job = '{0}' and Suffix = '{1}' and Seq = '{2}' and ltrim(rtrim(Jssi)) = '{3}'",V.DataTable.NUpdate(V.Local.i).Job!FieldValTrim,V.DataTable.NUpdate(V.Local.i).Suffix!FieldValTrim,V.DataTable.NUpdate(V.Local.i).Seq!FieldValTrim,V.DataTable.NUpdate(V.Local.i).Jssi!FieldValTrim,V.DataTable.NUpdate(V.Local.i).Scrap_Qty!FieldVal,V.Local.sReason.PSQLFriendly,V.Local.sSql)
+		F.ODBC.Connection!Con.Execute(V.Local.sSql)
+	F.Intrinsic.Control.Next(V.Local.i)
+'	F.Data.DataTable.SaveToDB("NUpdate","con","GCG_5364_Job_Dtl","Job*!*Suffix*!*JSSI*!*Seq",256,"Job@!@Job*!*Suffix@!@Suffix*!*Seq@!@Seq*!*Part@!@Part*!*Description@!@Description*!*Jssi@!@Jssi*!*Scrap_Qty@!@Scrap_Qty*!*Scrap_Reason@!@Scrap_Reason")
+'	F.Data.DataTable.SaveToDB("NUpdate","con","GCG_5364_Rework","Job*!*Suffix",256,"Job@!@Job*!*Suffix@!@Suffix*!*Scrap_Qty@!@Rework_Qty")
+	F.ODBC.Connection!Con.Close
+	F.Data.DataTable.Close("NUpdate")
+F.Intrinsic.Control.EndIf
+
+F.Intrinsic.Control.If(v.DataTable.JobSuffix.Exists)
+	F.Data.DataTable.Close("JobSuffix")
+F.Intrinsic.Control.EndIf
+
+F.Data.DataView.ToDataTableDistinct("Rework","NRework","JobSuffix","Job*!*Suffix",True)
+F.Data.DataView.ToDataTable("Rework","NRework","NUpdate")
+
+F.Data.DataView.Close("Rework","NRework")
+
+F.ODBC.Connection!con.OpenCompanyConnection
+
+F.Intrinsic.Control.For(V.Local.i,0,V.DataTable.JobSuffix.RowCount--,1)
+	F.Intrinsic.String.Build("Job = '{0}' and Suffix = '{1}'",V.DataTable.JobSuffix(V.Local.i).Job!FieldValTrim,V.DataTable.JobSuffix(V.Local.i).Suffix!FieldValTrim,V.Local.sSql)
+	F.Data.DataView.Create("NUpdate","Temp",22,V.Local.sSql,"")
+	V.Local.iQty.Set(0)
+	F.Intrinsic.Control.For(V.Local.iC,0,V.DataView.NUpdate!Temp.RowCount--,1)
+		F.Intrinsic.Math.Add(V.Local.iQty,V.DataView.NUpdate!Temp(V.Local.iC).Scrap_Qty!FieldValLong,V.Local.iQty)
+	F.Intrinsic.Control.Next(V.Local.iC)
+	F.Data.DataView.Close("NUpdate","Temp")
+	F.Intrinsic.String.Build("Select Job, Suffix, Rework_Qty From GCG_5364_Rework Where Job = '{0}' and Suffix = '{1}'",V.DataTable.JobSuffix(V.Local.i).Job!FieldValTrim,V.DataTable.JobSuffix(V.Local.i).Suffix!FieldValTrim,V.Local.sSql)
+	F.Data.DataTable.CreateFromSQL("JRework","con",V.Local.sSql,True)
+	F.Intrinsic.Control.If(V.DataTable.JRework.RowCount--,=,-1)
+		F.Data.DataTable.AddRow("JRework","Job",V.DataTable.JobSuffix(V.Local.i).Job!FieldValTrim,"Suffix",V.DataTable.JobSuffix(V.Local.i).Suffix!FieldValTrim,"Rework_Qty",V.Local.iQty)
+	F.Intrinsic.Control.Else
+		F.Intrinsic.Math.Add(V.Local.iQty,V.DataTable.JRework(V.DataTable.JRework.RowCount--).Rework_Qty!FieldValLong,V.Local.iQty)
+		F.Data.DataTable.SetValue("JRework",V.DataTable.JRework.RowCount--,"Rework_Qty",V.Local.iQty)
+	F.Intrinsic.Control.EndIf
+	F.Intrinsic.String.Build("Update Job_Header Set Date_Closed = '000000' Where Job = '{0}' and Suffix = '{1}'",V.DataTable.JobSuffix(V.Local.i).Job!FieldValTrim,V.DataTable.JobSuffix(V.Local.i).Suffix!FieldValTrim,V.Local.sSql)
+	F.ODBC.Connection!Con.Execute(V.Local.sSql)
+	F.Data.DataTable.SaveToDB("JRework","con","GCG_5364_Rework","Job*!*Suffix",256,"Job@!@Job*!*Suffix@!@Suffix*!*Rework_Qty@!@Rework_Qty")
+	F.Data.DataTable.Close("JRework")
+F.Intrinsic.Control.Next(v.Local.i)
+
+F.ODBC.Connection!Con.Close
+
+Gui.FormRework.GsGridControlRework.SuspendLayout
+
+F.Intrinsic.Control.CallSub(Get_Work_Orders)
+
+Gui.FormRework.GsGridControlRework.ResumeLayout
+
+Gui.FormRework..Enabled(True)
+
+'Updating 
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("cmdUpdate_Click_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_5364_Rework_Queue.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(FormRework_UnLoad)
+Function.Intrinsic.Control.EndIf
+Program.Sub.cmdUpdate_Click.End
+
+Program.Sub.Get_Work_Orders.Start
+F.Intrinsic.Control.SetErrorHandler("Get_Work_Orders_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+
+F.ODBC.Connection!Con.OpenCompanyConnection
+
+F.Intrinsic.Control.If(V.DataTable.Rework.Exists)
+	F.Data.DataTable.DeleteRow("Rework")
+	F.Data.DataTable.AcceptChanges("Rework")
+	F.Data.DataTable.CreateFromSQL("TempRework","con","Select Job, Suffix, Seq, Part, Description, rtrim(Jssi) as Jssi, Order_Qty, Scrap, Scrap_Qty, Scrap_Reason, Cast(0 as Bit) as Rework, Cast(0 as Bit) as Not_Scrap From GCG_5364_Job_Dtl Where Scrap = 'Y'  and Scrap_Qty is null",True)
+	F.Data.DataTable.Merge("TempRework","Rework",False,4)
+	F.Data.DataTable.Close("TempRework")
+F.Intrinsic.Control.Else
+	F.Data.DataTable.CreateFromSQL("Rework","con","Select Job, Suffix, Seq, Part, Description, rtrim(Jssi) as Jssi, Scrap, Scrap_Qty, Order_Qty, Scrap_Reason, Cast(0 as Bit) as Rework, Cast(0 as Bit) as Not_Scrap From GCG_5364_Job_Dtl Where Scrap = 'Y'  and Scrap_Qty is null",True)
+F.Intrinsic.Control.EndIf
+
+F.ODBC.Connection!Con.Close
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("Get_Work_Orders_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_5364_Rework_Queue.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(FormRework_UnLoad)
+Function.Intrinsic.Control.EndIf
+Program.Sub.Get_Work_Orders.End
+
+Program.Sub.Set_Properties.Start
+F.Intrinsic.Control.SetErrorHandler("Set_Properties_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+V.Local.sScrap.Declare(String,"")
+
+F.ODBC.Connection!Con.OpenCompanyConnection
+F.Intrinsic.String.Build("select Distinct Scrap_Code_Desc from V_RJCT_SCRP_CODES Order By Scrap_Code_Desc","",V.Local.sScrap)
+F.ODBC.Connection!Con.ExecuteAndReturn(V.Local.sScrap,V.Local.sScrap)
+F.Intrinsic.String.Replace(V.Local.sScrap,"#$#","*!*",V.Local.sScrap)
+F.Intrinsic.String.Build("*!*{0}",V.Local.sScrap,V.Local.sScrap)
+F.ODBC.Connection!Con.Close
+
+Gui.FormRework.GsGridControlRework.AddGridviewFromDatatable("GRework","Rework")
+
+Gui.FormRework.GsGridControlRework.SetColumnProperty("GRework","Job","HeaderBackColor","MediumSeaGreen")
+Gui.FormRework.GsGridControlRework.SetColumnProperty("GRework","Job","HeaderFontBold",True)
+Gui.FormRework.GsGridControlRework.SetColumnProperty("GRework","Suffix","HeaderBackColor","MediumSeaGreen")
+Gui.FormRework.GsGridControlRework.SetColumnProperty("GRework","Suffix","HeaderFontBold",True)
+Gui.FormRework.GsGridControlRework.SetColumnProperty("GRework","Seq","HeaderBackColor","MediumSeaGreen")
+Gui.FormRework.GsGridControlRework.SetColumnProperty("GRework","Seq","HeaderFontBold",True)
+Gui.FormRework.GsGridControlRework.SetColumnProperty("GRework","Part","HeaderBackColor","MediumSeaGreen")
+Gui.FormRework.GsGridControlRework.SetColumnProperty("GRework","Part","HeaderFontBold",True)
+Gui.FormRework.GsGridControlRework.SetColumnProperty("GRework","Description","HeaderBackColor","MediumSeaGreen")
+Gui.FormRework.GsGridControlRework.SetColumnProperty("GRework","Description","HeaderFontBold",True)
+Gui.FormRework.GsGridControlRework.SetColumnProperty("GRework","Jssi","HeaderBackColor","MediumSeaGreen")
+Gui.FormRework.GsGridControlRework.SetColumnProperty("GRework","Jssi","HeaderFontBold",True)
+Gui.FormRework.GsGridControlRework.SetColumnProperty("GRework","Scrap","HeaderBackColor","MediumSeaGreen")
+Gui.FormRework.GsGridControlRework.SetColumnProperty("GRework","Scrap","HeaderFontBold",True)
+Gui.FormRework.GsGridControlRework.SetColumnProperty("GRework","Scrap_Qty","HeaderBackColor","MediumSeaGreen")
+Gui.FormRework.GsGridControlRework.SetColumnProperty("GRework","Scrap_Qty","HeaderFontBold",True)
+Gui.FormRework.GsGridControlRework.SetColumnProperty("GRework","Order_Qty","HeaderBackColor","MediumSeaGreen")
+Gui.FormRework.GsGridControlRework.SetColumnProperty("GRework","Order_Qty","HeaderFontBold",True)
+Gui.FormRework.GsGridControlRework.SetColumnProperty("GRework","Scrap_Reason","HeaderBackColor","MediumSeaGreen")
+Gui.FormRework.GsGridControlRework.SetColumnProperty("GRework","Scrap_Reason","HeaderFontBold",True)
+Gui.FormRework.GsGridControlRework.SetColumnProperty("GRework","Rework","HeaderBackColor","MediumSeaGreen")
+Gui.FormRework.GsGridControlRework.SetColumnProperty("GRework","Rework","HeaderFontBold",True)
+Gui.FormRework.GsGridControlRework.SetColumnProperty("GRework","Not_Scrap","HeaderBackColor","MediumSeaGreen")
+Gui.FormRework.GsGridControlRework.SetColumnProperty("GRework","Not_Scrap","HeaderFontBold",True)
+
+Gui.FormRework.GsGridControlRework.SetColumnProperty("GRework","Jssi","Caption","SERIAL #")
+Gui.FormRework.GsGridControlRework.SetColumnProperty("GRework","Scrap_Qty","Caption","SCRAP QTY")
+Gui.FormRework.GsGridControlRework.SetColumnProperty("GRework","Scrap_Reason","Caption","SCRAP REASON")
+Gui.FormRework.GsGridControlRework.SetColumnProperty("GRework","Rework","Caption","REMAKE")
+Gui.FormRework.GsGridControlRework.SetColumnProperty("GRework","Not_Scrap","Caption","NOT SCRAP")
+
+Gui.FormRework.GsGridControlRework.SetColumnProperty("GRework","Scrap_Qty","Visible",False)
+Gui.FormRework.GsGridControlRework.SetColumnProperty("GRework","Order_Qty","Visible",False)
+Gui.FormRework.GsGridControlRework.SetColumnProperty("GRework","Scrap","Visible",False)
+
+Gui.FormRework.GsGridControlRework.SetColumnProperty("GRework","Not_Scrap","Readonly",False)
+Gui.FormRework.GsGridControlRework.SetColumnProperty("GRework","Rework","Readonly",False)
+Gui.FormRework.GsGridControlRework.SetColumnProperty("GRework","Scrap_Reason","Readonly",False)
+Gui.FormRework.GsGridControlRework.SetColumnProperty("GRework","Not_Scrap","AllowEdit",True)
+Gui.FormRework.GsGridControlRework.SetColumnProperty("GRework","Rework","AllowEdit",True)
+Gui.FormRework.GsGridControlRework.SetColumnProperty("GRework","Scrap_Reason","AllowEdit",True)
+
+Gui.FormRework.GsGridControlRework.SetColumnProperty("GRework","Job","Readonly",True)
+Gui.FormRework.GsGridControlRework.SetColumnProperty("GRework","Suffix","Readonly",True)
+Gui.FormRework.GsGridControlRework.SetColumnProperty("GRework","Seq","Readonly",True)
+Gui.FormRework.GsGridControlRework.SetColumnProperty("GRework","Part","Readonly",True)
+Gui.FormRework.GsGridControlRework.SetColumnProperty("GRework","Description","Readonly",True)
+Gui.FormRework.GsGridControlRework.SetColumnProperty("GRework","Jssi","Readonly",True)
+Gui.FormRework.GsGridControlRework.SetColumnProperty("GRework","Scrap","Readonly",True)
+Gui.FormRework.GsGridControlRework.SetColumnProperty("GRework","Scrap_Qty","Readonly",True)
+Gui.FormRework.GsGridControlRework.SetColumnProperty("GRework","Order_Qty","Readonly",True)
+Gui.FormRework.GsGridControlRework.SetColumnProperty("GRework","Job","AllowEdit",False)
+Gui.FormRework.GsGridControlRework.SetColumnProperty("GRework","Suffix","AllowEdit",False)
+Gui.FormRework.GsGridControlRework.SetColumnProperty("GRework","Part","AllowEdit",False)
+Gui.FormRework.GsGridControlRework.SetColumnProperty("GRework","Description","AllowEdit",False)
+Gui.FormRework.GsGridControlRework.SetColumnProperty("GRework","Jssi","AllowEdit",False)
+Gui.FormRework.GsGridControlRework.SetColumnProperty("GRework","Scrap","AllowEdit",False)
+Gui.FormRework.GsGridControlRework.SetColumnProperty("GRework","Scrap_Qty","AllowEdit",False)
+Gui.FormRework.GsGridControlRework.SetColumnProperty("GRework","Order_Qty","AllowEdit",False)
+
+Gui.FormRework.GsGridControlRework.ColumnEdit("GRework","Scrap_Reason","ComboBox",V.Local.sScrap)
+
+Gui.FormRework.GsGridControlRework.MainView("GRework")
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("Set_Properties_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_5364_Rework_Queue.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(FormRework_UnLoad)
+Function.Intrinsic.Control.EndIf
+Program.Sub.Set_Properties.End
+
+Program.Sub.cmdRefresh_Click.Start
+F.Intrinsic.Control.SetErrorHandler("cmdRefresh_Click_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+
+Gui.FormRework..Enabled(False)
+
+Gui.FormRework.GsGridControlRework.SuspendLayout
+
+F.Intrinsic.Control.CallSub(Get_Work_Orders)
+
+Gui.FormRework.GsGridControlRework.ResumeLayout
+
+Gui.FormRework..Enabled(True)
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("cmdRefresh_Click_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_5364_Rework_Queue.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(FormRework_UnLoad)
+Function.Intrinsic.Control.EndIf
+Program.Sub.cmdRefresh_Click.End
+
+Program.Sub.GsGridControlRework_CellValueChanged.Start
+F.Intrinsic.Control.SetErrorHandler("GsGridControlRework_CellValueChanged_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+
+F.Intrinsic.Control.SelectCase(V.Args.Column.UCase)
+	F.Intrinsic.Control.Case("SCRAP_REASON")
+		F.Data.DataTable.SetValue("Rework",V.Args.RowIndex,"Rework",True)
+		
+F.Intrinsic.Control.EndSelect
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("GsGridControlRework_CellValueChanged_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_5364_Rework_Queue.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(FormRework_UnLoad)
+Function.Intrinsic.Control.EndIf
+Program.Sub.GsGridControlRework_CellValueChanged.End
