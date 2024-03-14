@@ -1,0 +1,142 @@
+Program.Sub.Preflight.Start
+Program.Sub.Preflight.End
+
+Program.Sub.Main.Start
+F.Intrinsic.Control.SetErrorHandler("Main_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+V.Local.sRet.Declare(String,"")
+V.Local.sOrder.Declare(String,"")
+V.Local.sSql.Declare(String,"")
+V.Local.sStatus.Declare(String,"")
+V.Local.iRet.Declare(Long,0)
+
+F.Intrinsic.Control.SelectCase(V.Caller.Hook)
+	'Order Entry Line Populate Short Form
+'	F.Intrinsic.Control.Case(12440)
+'		V.Passed.GAB-LBL-1.Set("Order Status")
+'		F.Intrinsic.UI.ChangeCallerProperty(V.Passed.GAB-LBL-1,"HIDE",0)
+'		F.Intrinsic.UI.ChangeCallerProperty(V.Passed.GAB-LBL-1,"LOCK",0)
+'		F.Intrinsic.Variable.SetProperty("GAB-LBL-1","PL",24)
+'		F.Intrinsic.Variable.SetProperty("GAB-LBL-1","PT",102)
+'		F.Intrinsic.Variable.SetProperty("GAB-LBL-1","PW",65)
+'		
+'		F.ODBC.Connection!Con.OpenCompanyConnection
+'		F.Intrinsic.String.LPad(V.Passed.000005,"0",7,V.Local.sOrder)
+'		F.Intrinsic.String.Build("Select Status From GCG_5364_Ord_Status Where Order_No = '{0}'",V.Local.sOrder,V.Local.sRet)
+'		F.ODBC.Connection!Con.ExecuteAndReturn(V.Local.sRet,V.Local.sRet)
+'		F.ODBC.Connection!Con.Close
+'		F.Intrinsic.Control.If(V.Local.sRet,<>,"")
+'			V.Passed.GAB-TEXT-1.Set(V.Local.sRet.Trim)
+'		F.Intrinsic.Control.Else
+'			V.Passed.GAB-TEXT-1.Set("Hold")
+'		F.Intrinsic.Control.EndIf
+'		
+'		F.Intrinsic.UI.ChangeCallerProperty(V.Passed.GAB-TEXT-1,"HIDE",0)
+'		F.Intrinsic.UI.ChangeCallerProperty(V.Passed.GAB-TEXT-1,"LOCK",1)
+'		F.Intrinsic.Variable.SetProperty("GAB-TEXT-1","PL",24)
+'		F.Intrinsic.Variable.SetProperty("GAB-TEXT-1","PT",120)
+'		F.Intrinsic.Variable.SetProperty("GAB-TEXT-1","PW",105)
+'		
+'		V.Passed.GAB-BTN-1.Set("^")
+'		F.Intrinsic.UI.ChangeCallerProperty(V.Passed.GAB-BTN-1,"HIDE",0)
+'		F.Intrinsic.UI.ChangeCallerProperty(V.Passed.GAB-BTN-1,"LOCK",0)
+'		F.Intrinsic.Variable.SetProperty("GAB-BTN-1","PL",135)
+'		F.Intrinsic.Variable.SetProperty("GAB-BTN-1","PT",117)
+'		F.Intrinsic.Variable.SetProperty("GAB-BTN-1","PW",25)
+'		
+'		F.Intrinsic.Control.CallSub(Exit)
+		
+	'GAB button 1 Hook on Order Line Screen
+	F.Intrinsic.Control.Case(51589)
+		F.Intrinsic.UI.SetBrowserOOT(True)
+		F.Intrinsic.UI.BrowserFromString("Select Order Status","STARTED*!*NEW*!*EXPORTED*!*HOLD*!*QUOTE*!*REVIEW","!*!","*!*","Order Status",3500,4500,4000,V.Local.sStatus)
+		F.Intrinsic.Control.If(V.Local.sStatus,<>,"***CANCEL***")
+		
+			F.ODBC.Connection!Con.OpenCompanyConnection
+			F.Intrinsic.String.LPad(V.Passed.000005,"0",7,V.Local.sOrder)
+			F.Intrinsic.Control.If(V.Local.sStatus.Trim,=,"NEW")
+				F.Intrinsic.String.Build("select * from GCG_5364_OE_LINES where Order_No = '{0}'",V.Local.sOrder,V.Local.sSql)
+				F.ODBC.Connection!Con.ExecuteAndReturn(V.Local.sSql,V.Local.sRet)
+				F.Intrinsic.Control.If(V.Local.sRet.Trim,<>,"")
+					F.Intrinsic.String.Build("select * from GCG_5364_OE_LINES where ((MATL = '' or MATL is null) or (FINISH = '' or FINISH is null)) and export = 1 and Order_No = '{0}'",V.Local.sOrder,V.Local.sSql)
+					F.ODBC.Connection!Con.ExecuteAndReturn(V.Local.sSql,V.Local.sRet)
+					F.Intrinsic.Control.If(V.Local.sRet.Trim,<>,"")
+						F.Intrinsic.UI.Msgbox("OE form may be missing necessary fields.  Do still want to flip the status to NEW?","Attention",4,V.Local.iRet)
+						F.Intrinsic.Control.If(V.Local.iRet,<>,6)
+							F.ODBC.Connection!Con.Close
+			
+							F.Intrinsic.Control.CallSub(Exit)
+						F.Intrinsic.Control.EndIf
+					F.Intrinsic.Control.Else
+						F.Intrinsic.String.Build("select * from GCG_5364_OE_LINES where ((MATL = '' or MATL is null) or (FINISH = '' or FINISH is null)) and Part like 'A%' and Order_No = '{0}'",V.Local.sOrder,V.Local.sSql)
+						F.ODBC.Connection!Con.ExecuteAndReturn(V.Local.sSql,V.Local.sRet)
+						F.Intrinsic.Control.If(V.Local.sRet.Trim,<>,"")
+							F.Intrinsic.UI.Msgbox("OE form may be missing necessary fields.  Do still want to flip the status to NEW?","Attention",4,V.Local.iRet)
+							F.Intrinsic.Control.If(V.Local.iRet,<>,6)
+								F.ODBC.Connection!Con.Close
+			
+								F.Intrinsic.Control.CallSub(Exit)
+							F.Intrinsic.Control.EndIf
+						F.Intrinsic.Control.EndIf
+					F.Intrinsic.Control.EndIf
+				F.Intrinsic.Control.Else
+					F.Intrinsic.UI.Msgbox("OE form may be missing necessary fields.  Do still want to flip the status to NEW?","Attention",4,V.Local.iRet)
+					F.Intrinsic.Control.If(V.Local.iRet,<>,6)
+						F.ODBC.Connection!Con.Close
+			
+						F.Intrinsic.Control.CallSub(Exit)
+					F.Intrinsic.Control.EndIf
+				F.Intrinsic.Control.EndIf
+			F.Intrinsic.Control.EndIf
+			V.Passed.GAB-TEXT-1.Set(V.Local.sStatus.Trim)
+			
+			F.Intrinsic.String.Build("Select Order_No, Status From GCG_5364_Ord_Status Where Order_No = '{0}'",V.Local.sOrder,V.Local.sSql)
+			F.Data.DataTable.CreateFromSQL("Status","con",V.Local.sSql,True)
+			F.Intrinsic.Control.If(V.DataTable.Status.RowCount--,=,-1)
+				F.Data.DataTable.AddRow("Status","Order_No",V.Local.sOrder,"Status",V.Passed.GAB-TEXT-1)
+			F.Intrinsic.Control.Else
+				F.Data.DataTable.SetValue("Status",-1,"Status",V.Passed.GAB-TEXT-1)
+			F.Intrinsic.Control.EndIf
+			
+			F.Data.DataTable.SaveToDB("Status","Con","GCG_5364_Ord_Status","Order_No",3,"Order_No@!@Order_No*!*Status@!@Status")
+			
+			F.ODBC.Connection!Con.Close
+			
+			F.Intrinsic.Control.CallSub(Exit)
+			
+		F.Intrinsic.Control.EndIf
+	
+	F.Intrinsic.Control.CaseElse
+		F.Intrinsic.Control.CallSub(Exit)
+		
+F.Intrinsic.Control.EndSelect
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("Main_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_5364_Order_Status.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(Exit)
+Function.Intrinsic.Control.EndIf
+Program.Sub.Main.End
+
+Program.Sub.Exit.Start
+F.Intrinsic.Control.SetErrorHandler("Exit_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+
+F.Intrinsic.Control.End
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("Exit_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_5364_Order_Status.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.End
+Function.Intrinsic.Control.EndIf
+Program.Sub.Exit.End
