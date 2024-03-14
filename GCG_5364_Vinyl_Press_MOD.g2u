@@ -1,0 +1,2323 @@
+﻿Program.Sub.ScreenSU.Start
+Gui.frmVinylPress..Create(BaseForm)
+Gui.frmVinylPress..Caption("Vinyl Press SFDC")
+Gui.frmVinylPress..Size(19770,11475)
+Gui.frmVinylPress..MinX(0)
+Gui.frmVinylPress..MinY(0)
+Gui.frmVinylPress..Position(0,0)
+Gui.frmVinylPress..BackColor(-2147483633)
+Gui.frmVinylPress..MousePointer(0)
+Gui.frmVinylPress..Event(UnLoad,frmVinylPress_Unload)
+Gui.frmVinylPress..FontSize(14)
+Gui.frmVinylPress..AlwaysOnTop(False)
+Gui.frmVinylPress..FontName("Tahoma")
+Gui.frmVinylPress..ControlBox(True)
+Gui.frmVinylPress..MaxButton(True)
+Gui.frmVinylPress..MinButton(True)
+Gui.frmVinylPress..Moveable(True)
+Gui.frmVinylPress..Sizeable(True)
+Gui.frmVinylPress..ShowInTaskBar(True)
+Gui.frmVinylPress..TitleBar(True)
+Gui.frmVinylPress.GsGcJobs.Create(GsGridControl)
+Gui.frmVinylPress.GsGcJobs.Size(19320,8130)
+Gui.frmVinylPress.GsGcJobs.Position(60,1395)
+Gui.frmVinylPress.GsGcJobs.Anchor(15)
+Gui.frmVinylPress.GsGcJobs.Enabled(True)
+Gui.frmVinylPress.GsGcJobs.Visible(True)
+Gui.frmVinylPress.GsGcJobs.Zorder(0)
+Gui.frmVinylPress.ddlWC.Create(DropDownList)
+Gui.frmVinylPress.ddlWC.Size(2445,450)
+Gui.frmVinylPress.ddlWC.Position(60,495)
+Gui.frmVinylPress.ddlWC.FontSize(14)
+Gui.frmVinylPress.ddlWC.Event(Click,ddlWC_Click)
+Gui.frmVinylPress.ddlWC.FontName("Tahoma")
+Gui.frmVinylPress.ddlWC.Enabled(True)
+Gui.frmVinylPress.ddlWC.Visible(True)
+Gui.frmVinylPress.ddlWC.Zorder(0)
+Gui.frmVinylPress.ddlWC.Event(Change,ddlWC_Change)
+Gui.frmVinylPress.lblWC.Create(Label,"Workcenter:",True,2565,405,0,60,135,True,0,"Arial",14,-2147483633,0,0)
+Gui.frmVinylPress.lblWC.BorderStyle(0)
+Gui.frmVinylPress.lblActiveEmployee.Create(Label,"Employee:",True,3120,405,0,2670,135,True,0,"Arial",14,-2147483633,0,0)
+Gui.frmVinylPress.lblActiveEmployee.BorderStyle(0)
+Gui.frmVinylPress.ddlActiveEmployee.Create(DropDownList)
+Gui.frmVinylPress.ddlActiveEmployee.Size(3285,465)
+Gui.frmVinylPress.ddlActiveEmployee.Position(2670,495)
+Gui.frmVinylPress.ddlActiveEmployee.Event(Click,ddlActiveEmployee_Click)
+Gui.frmVinylPress.ddlActiveEmployee.FontSize(14)
+Gui.frmVinylPress.ddlActiveEmployee.FontName("Tahoma")
+Gui.frmVinylPress.ddlActiveEmployee.Enabled(True)
+Gui.frmVinylPress.ddlActiveEmployee.Visible(True)
+Gui.frmVinylPress.ddlActiveEmployee.Zorder(0)
+Gui.frmVinylPress.lblPieceSerial.Create(Label,"Piece Serial Number:",True,3120,405,0,6105,135,True,0,"Arial",14,-2147483633,0,0)
+Gui.frmVinylPress.lblPieceSerial.BorderStyle(0)
+Gui.frmVinylPress.txtPieceSerial.Create(TextBox,"",True,3405,435,0,6105,495,True,0,"Arial",14,-2147483643,1)
+Gui.frmVinylPress.txtPieceSerial.Event(KeyPressEnter,txtPieceSerial_Scan)
+Gui.frmVinylPress.cmdStart.Create(Button)
+Gui.frmVinylPress.cmdStart.Size(1680,1005)
+Gui.frmVinylPress.cmdStart.Position(17700,165)
+Gui.frmVinylPress.cmdStart.Caption("Start")
+Gui.frmVinylPress.cmdStart.Event(Click,cmdStart_Click)
+Gui.frmVinylPress.cmdStart.FontSize(30)
+Gui.frmVinylPress.cmdStart.Anchor(9)
+Gui.frmVinylPress.cmdStart.FontName("Tahoma")
+Gui.frmVinylPress.cmdStart.Enabled(True)
+Gui.frmVinylPress.cmdStart.Visible(True)
+Gui.frmVinylPress.cmdStart.Zorder(0)
+Gui.frmVinylPress.cmdReprint.Create(Button)
+Gui.frmVinylPress.cmdReprint.Size(3675,885)
+Gui.frmVinylPress.cmdReprint.Position(3840,9735)
+Gui.frmVinylPress.cmdReprint.Caption("Reprint Selected Labels")
+Gui.frmVinylPress.cmdReprint.Event(Click,cmdReprint_Click)
+Gui.frmVinylPress.cmdReprint.Anchor(6)
+Gui.frmVinylPress.cmdReprint.FontSize(16)
+Gui.frmVinylPress.cmdReprint.FontName("Tahoma")
+Gui.frmVinylPress.cmdReprint.Enabled(True)
+Gui.frmVinylPress.cmdReprint.Visible(True)
+Gui.frmVinylPress.cmdReprint.Zorder(0)
+Gui.frmVinylPress.cmdRemove.Create(Button)
+Gui.frmVinylPress.cmdRemove.Size(3675,885)
+Gui.frmVinylPress.cmdRemove.Position(75,9735)
+Gui.frmVinylPress.cmdRemove.Caption("Remove Selected Pieces")
+Gui.frmVinylPress.cmdRemove.Event(Click,cmdRemove_Click)
+Gui.frmVinylPress.cmdRemove.Anchor(6)
+Gui.frmVinylPress.cmdRemove.FontSize(16)
+Gui.frmVinylPress.cmdRemove.FontName("Tahoma")
+Gui.frmVinylPress.cmdRemove.Enabled(True)
+Gui.frmVinylPress.cmdRemove.Visible(True)
+Gui.frmVinylPress.cmdRemove.Zorder(0)
+Gui.frmVinylPress.lblTotalArea.Create(Label,"Target Area:",True,1575,405,0,9630,135,True,0,"Arial",14,-2147483633,0,0)
+Gui.frmVinylPress.lblTotalArea.BorderStyle(0)
+Gui.frmVinylPress.lblTotalAreaUsed.Create(Label,"Area Used:",True,1695,405,0,11475,135,True,0,"Arial",14,-2147483633,0,0)
+Gui.frmVinylPress.lblTotalAreaUsed.BorderStyle(0)
+Gui.frmVinylPress.txtAreaAvail.Create(TextBox,"",True,1695,420,0,9630,495,False,0,"Arial",14,-2147483643,1)
+Gui.frmVinylPress.txtAreaAvail.Locked(True)
+Gui.frmVinylPress.txtAreaAvail.Mask("0.00")
+Gui.frmVinylPress.txtAreaUsed.Create(TextBox,"",True,1695,420,0,11475,495,False,0,"Arial",14,-2147483643,1)
+Gui.frmVinylPress.txtAreaUsed.Locked(True)
+Gui.frmVinylPress.txtAreaUsed.Mask("0.00")
+Gui.frmVinylPress.lblUtilizationPB.Create(Label,"Utilization",True,2430,855,0,13305,255,True,11,"Arial",26,-2147483633,0,0)
+Gui.frmVinylPress.lblUtilizationPB.Anchor(13)
+Gui.frmVinylPress.lblUtilizationPB.BorderStyle(0)
+Gui.frmVinylPress.frmKey.Create(Frame)
+Gui.frmVinylPress.frmKey.Size(1665,1260)
+Gui.frmVinylPress.frmKey.Position(15870,30)
+Gui.frmVinylPress.frmKey.Anchor(9)
+Gui.frmVinylPress.frmKey.Enabled(True)
+Gui.frmVinylPress.frmKey.Visible(True)
+Gui.frmVinylPress.frmKey.Zorder(0)
+Gui.frmVinylPress.frmKey.Caption("")
+Gui.frmVinylPress.frmKey.FontName("Tahoma")
+Gui.frmVinylPress.frmKey.FontSize(8.25)
+Gui.frmVinylPress.lblTotal.Create(Label,"91 - 100%",True,1320,330,0,105,945,True,2,"Arial",14,-2147483633,0,0)
+Gui.frmVinylPress.lblTotal.Parent("frmKey")
+Gui.frmVinylPress.lblTotal.ForeColor(32768)
+Gui.frmVinylPress.lblTotal.BorderStyle(0)
+Gui.frmVinylPress.lblMid.Create(Label," 75 - 90% ",True,1305,330,0,105,570,True,2,"Arial",14,-2147483633,0,0)
+Gui.frmVinylPress.lblMid.Parent("frmKey")
+Gui.frmVinylPress.lblMid.ForeColor(65535)
+Gui.frmVinylPress.lblMid.BorderStyle(0)
+Gui.frmVinylPress.lblUnder.Create(Label," 01 - 74% ",True,1305,330,0,105,210,True,2,"Arial",14,-2147483633,0,0)
+Gui.frmVinylPress.lblUnder.Parent("frmKey")
+Gui.frmVinylPress.lblUnder.ForeColor(255)
+Gui.frmVinylPress.lblUnder.BorderStyle(0)
+Gui.frmVinylPress.cmdScrap.Create(Button)
+Gui.frmVinylPress.cmdScrap.Size(2835,885)
+Gui.frmVinylPress.cmdScrap.Position(16530,9735)
+Gui.frmVinylPress.cmdScrap.Anchor(10)
+Gui.frmVinylPress.cmdScrap.Caption("Quarantine Pieces")
+Gui.frmVinylPress.cmdScrap.FontSize(16)
+Gui.frmVinylPress.cmdScrap.Event(Click,cmdScrap_Click)
+Gui.frmVinylPress.cmdScrap.FontName("Tahoma")
+Gui.frmVinylPress.cmdScrap.BackColor(14524637)
+Gui.frmVinylPress.cmdScrap.Enabled(True)
+Gui.frmVinylPress.cmdScrap.Visible(True)
+Gui.frmVinylPress.cmdScrap.Zorder(0)
+Gui.frmVinylPress.lblSqFt1.Create(Label,"(Sq. Ft.)",True,1440,330,0,9675,1050,True,0,"Arial",10,-2147483633,0,0)
+Gui.frmVinylPress.lblSqFt1.BorderStyle(0)
+Gui.frmVinylPress.lblSqFt2.Create(Label,"(Sq. Ft.)",True,960,360,0,11550,1050,True,0,"Arial",10,-2147483633,0,0)
+Gui.frmVinylPress.lblSqFt2.BorderStyle(0)
+Gui.frmIssue..Create(BaseForm)
+Gui.frmIssue..Caption("Issue Material")
+Gui.frmIssue..Size(9810,4830)
+Gui.frmIssue..MinX(0)
+Gui.frmIssue..MinY(0)
+Gui.frmIssue..Position(0,0)
+Gui.frmIssue..BackColor(-2147483633)
+Gui.frmIssue..MousePointer(0)
+Gui.frmIssue..Event(UnLoad,frmIssue_Unload)
+Gui.frmIssue..AlwaysOnTop(False)
+Gui.frmIssue..FontName("Tahoma")
+Gui.frmIssue..FontSize(8.25)
+Gui.frmIssue..ControlBox(True)
+Gui.frmIssue..MaxButton(True)
+Gui.frmIssue..MinButton(True)
+Gui.frmIssue..Moveable(True)
+Gui.frmIssue..Sizeable(True)
+Gui.frmIssue..ShowInTaskBar(True)
+Gui.frmIssue..TitleBar(True)
+Gui.frmIssue.cmdIssueVinyl.Create(Button)
+Gui.frmIssue.cmdIssueVinyl.Size(1500,540)
+Gui.frmIssue.cmdIssueVinyl.Position(7950,3435)
+Gui.frmIssue.cmdIssueVinyl.Caption("Issue")
+Gui.frmIssue.cmdIssueVinyl.Event(Click,cmdIssueVinyl_Click)
+Gui.frmIssue.cmdIssueVinyl.FontSize(14)
+Gui.frmIssue.cmdIssueVinyl.FontName("Tahoma")
+Gui.frmIssue.cmdIssueVinyl.Enabled(True)
+Gui.frmIssue.cmdIssueVinyl.Visible(True)
+Gui.frmIssue.cmdIssueVinyl.Zorder(0)
+Gui.frmIssue.GsGcIssue.Create(GsGridControl)
+Gui.frmIssue.GsGcIssue.Size(9360,3285)
+Gui.frmIssue.GsGcIssue.Position(90,90)
+Gui.frmIssue.GsGcIssue.Anchor(1)
+Gui.frmIssue.GsGcIssue.Event(CellValueChanged,GsGcIssue_CellValueChanged)
+Gui.frmIssue.GsGcIssue.Enabled(True)
+Gui.frmIssue.GsGcIssue.Visible(True)
+Gui.frmIssue.GsGcIssue.Zorder(0)
+Gui.frmIssue.cmdCancel.Create(Button)
+Gui.frmIssue.cmdCancel.Size(1695,540)
+Gui.frmIssue.cmdCancel.Position(90,3435)
+Gui.frmIssue.cmdCancel.Caption("Cancel")
+Gui.frmIssue.cmdCancel.FontSize(14)
+Gui.frmIssue.cmdCancel.Event(Click,cmdCancel_Click)
+Gui.frmIssue.cmdCancel.FontName("Tahoma")
+Gui.frmIssue.cmdCancel.Enabled(True)
+Gui.frmIssue.cmdCancel.Visible(True)
+Gui.frmIssue.cmdCancel.Zorder(0)
+Gui.frmQty..Create(BaseForm)
+Gui.frmQty..Caption("")
+Gui.frmQty..Size(2970,3375)
+Gui.frmQty..MinX(0)
+Gui.frmQty..MinY(0)
+Gui.frmQty..Position(0,0)
+Gui.frmQty..MousePointer(0)
+Gui.frmQty..BackColor(-2147483633)
+Gui.frmQty..FontSize(8.25)
+Gui.frmQty..AlwaysOnTop(False)
+Gui.frmQty..FontName("Tahoma")
+Gui.frmQty..ControlBox(True)
+Gui.frmQty..MaxButton(True)
+Gui.frmQty..MinButton(True)
+Gui.frmQty..Moveable(True)
+Gui.frmQty..Sizeable(True)
+Gui.frmQty..ShowInTaskBar(True)
+Gui.frmQty..TitleBar(True)
+Gui.frmQty.cmdSave.Create(Button)
+Gui.frmQty.cmdSave.Size(855,375)
+Gui.frmQty.cmdSave.Position(480,2130)
+Gui.frmQty.cmdSave.Caption("Save")
+Gui.frmQty.cmdSave.Event(Click,cmdSave_Click)
+Gui.frmQty.cmdSave.FontName("Tahoma")
+Gui.frmQty.cmdSave.Enabled(True)
+Gui.frmQty.cmdSave.Visible(True)
+Gui.frmQty.cmdSave.Zorder(0)
+Gui.frmQty.cmdSave.FontSize(8.25)
+Gui.frmQty.lblQty.Create(Label,"Number of Pieces:",True,2160,255,0,165,1515,True,0,"Arial",8,-2147483633,0,0)
+Gui.frmQty.lblQty.BorderStyle(0)
+Gui.frmQty.txtQty.Create(TextBox,"",True,1500,300,0,165,1740,True,0,"Arial",8,-2147483643,1)
+Gui.frmQty.txtQty.NumericOnly(2)
+Gui.frmQty.lblOrdQty.Create(Label,"Runtime Quantity:",True,1605,255,0,165,810,True,0,"Arial",8,-2147483633,0,0)
+Gui.frmQty.lblOrdQty.BorderStyle(0)
+Gui.frmQty.txtRunQty.Create(TextBox,"",True,1500,300,0,165,1050,False,0,"Arial",8,-2147483643,1)
+Gui.frmQty.txtRunQty.Locked(True)
+Gui.frmQty.lblJob.Create(Label,"Job:",True,1515,255,0,165,120,True,0,"Arial",8,-2147483633,0,0)
+Gui.frmQty.lblJob.BorderStyle(0)
+Gui.frmQty.txtJob.Create(TextBox,"",True,1500,300,0,165,360,False,0,"Arial",8,-2147483643,1)
+Gui.frmQty.txtJob.Locked(True)
+Program.Sub.ScreenSU.End
+
+Program.Sub.Preflight.Start
+V.Global.bError.Declare(Boolean)
+V.Global.bUnattended.Declare(Boolean)
+V.Global.bMultQty.Declare(Boolean)
+V.Global.sJob.Declare(String)
+V.Global.sSuffix.Declare(String)
+V.Global.sSeq.Declare(String)
+V.Global.sPart.Declare(String)
+V.Global.sSerial.Declare(String)
+V.Global.sJobSuf.Declare(String)
+V.Global.sFinish.Declare(String)
+V.Global.sUpdateFlag.Declare(String)
+V.Global.sWC.Declare(String)
+V.Global.fGoodPcs.Declare(Float)
+V.Global.fQtyWork.Declare(Float)
+V.Global.fAvailLinearMeters.Declare(Float)
+V.Global.fSqMeters.Declare(Float)
+V.Global.fFull.Declare(Float)
+V.Global.fThrQuarter.Declare(Float)
+V.Global.fHalf.Declare(Float)
+V.Global.fQuarter.Declare(Float)
+V.Global.fVinylWidth.Declare(Float)
+V.Global.fFinishAreaUsed.Declare(Float)
+
+v.Global.fSheet_Full.Declare(Float, 2.8)
+v.Global.fSheet_Half.Declare(Float, 2.1)
+v.Global.fSheet_Quarter.Declare(Float, 1.4)
+v.Global.fSheet_ThreeQuart.Declare(Float, 0.7)
+v.Global.fSqft.Declare(Float, 18)
+v.Global.fSqft_23.Declare(Float, 16)
+v.Global.fSqft_13.Declare(Float, 14)
+
+Program.External.Include.Library("GCG_5364_Quarantine_Serial.lib")
+Program.External.Include.Library("450100.lib")
+Program.Sub.Preflight.End
+
+'Dec 2022
+'MOD for 5364
+'what's new:
+'	- whenever user select a WC, the program will check the ref in the related custom table
+'	for WC specs, then populate and calculate the sheet's area and length,
+'	then store them in global vars and use in later calculations
+
+Program.Sub.Main.Start
+F.Intrinsic.Control.Try
+'declare any variables needed in the main subroutine
+V.Local.fVinylWidth.Declare(Float)
+V.Local.fSqFt.Declare(Float)
+V.Local.sIcon.Declare(String)
+V.Local.sGssLogo.Declare(String)
+
+F.Intrinsic.String.Build("{0}\ART\gss2.ico",V.Caller.GlobalDir,v.Local.sIcon)
+F.Intrinsic.String.Build("{0}\ART\GAB_GSS_Logo_Green_Dash.png",V.Caller.GlobalDir,V.Local.sGssLogo)
+Gui.frmVinylPress..Icon(V.Local.sIcon)
+Gui.frmIssue..Icon(V.Local.sIcon)
+
+'Open Connection to the database
+F.ODBC.Connection!con.OpenConnection(V.Ambient.PDSN,V.Ambient.PUser,V.Ambient.PPass)
+
+'Populate dropdown lists
+F.Intrinsic.Control.CallSub(PopulateDropdowns)
+'Set the context menus
+F.Intrinsic.Control.CallSub(SetContextMenus)
+
+'Disable the buttons until the grid is loaded
+Gui.frmVinylPress.cmdStart.Enabled(False)
+Gui.frmVinylPress.txtPieceSerial.Enabled(False)
+
+V.Local.fSqFt.Set(18.00)
+Gui.frmVinylPress.txtAreaAvail.Text(V.Local.fSqFt)
+Gui.frmVinylPress.txtAreaUsed.Text("0")
+V.Global.fFinishAreaUsed.Set(0)
+
+'convert sq ft to sq meters
+F.Intrinsic.Math.Mult(V.Local.fSqFt, 0.09290304, V.Global.fSqMeters)
+V.Global.fVinylWidth.Set(57.00)
+'convert vinyl width to feet
+F.Intrinsic.Math.Div(V.Global.fVinylWidth,12,V.Global.fVinylWidth)
+'convert feet to meters
+F.Intrinsic.Math.Mult(V.Global.fVinylWidth,0.3048, V.Global.fVinylWidth)
+'divde sq meters by width of vinyl to get the linear meters
+F.Intrinsic.Math.Div(V.Global.fSqMeters,V.Global.fVinylWidth,V.Global.fAvailLinearMeters)
+V.Global.fFull.Set(2.8)
+V.Global.fThrQuarter.Set(2.1)
+V.Global.fHalf.Set(1.4)
+V.Global.fQuarter.Set(.7)
+
+'f.Intrinsic.Control.CallSub(ReSpecsWC)
+
+F.Intrinsic.Control.CallSub(CreateGrid)
+
+Gui.frmVinylPress.lblUtilizationPB.Anchor(15)
+GUi.frmVinylPress.GsGcJobs.Anchor(15)
+
+'Show the form
+Gui.frmVinylPress..Show
+Gui.frmVinylPress..SetFocus
+
+Gui.frmVinylPress.txtPieceSerial.SetFocus
+F.Intrinsic.Control.Catch
+	F.Intrinsic.Control.CallSub(ErrorMessage, "ErrorNumber", V.Ambient.ErrorNumber, "ErrorDescription", V.Ambient.ErrorDescription, "Subroutine", V.Ambient.CurrentSubroutine, "UNATTENDED", V.Global.bUnattended, "Project", "5364", "ProjectTitle", "5364 Vinyl Press", "Callback", "frmVinylPress_UnLoad")
+F.Intrinsic.Control.EndTry
+Program.Sub.Main.End
+
+
+'MOD
+'respec WC 
+Program.Sub.ReSpecsWC.Start
+f.Intrinsic.Control.Try
+	v.Local.sWC.Declare(String)
+	v.Local.sSQL.Declare(String)
+	v.Local.sRet.Declare(String)
+	v.Local.sTemp.Declare(Float)
+	
+	v.Local.sWC.Set(v.Screen.frmVinylPress!ddlWC.Value)
+'	v.Local.sWC.Set("BR01")
+	
+	f.Intrinsic.Control.If(v.Local.sWC.Trim,!=,"")
+		f.Intrinsic.String.Build("Select SQ_FT, SHEET_SIZE_METER from GCG_5364_VINYL_SPECS where RTRIM(WORKCENTER)='{0}'", v.Local.sWC.PSQLFriendly, v.Local.sSQL)
+		f.ODBC.Connection!Conx.OpenCompanyConnection
+			f.ODBC.Connection!Conx.ExecuteAndReturn(v.Local.sSQL, v.Local.sRet)
+		f.ODBC.Connection!Conx.Close
+		
+		f.Intrinsic.Control.If(v.Ambient.ExecuteAndReturnEOF,=,False)
+			f.Intrinsic.String.Split(v.Local.sRet, "*!*", v.Local.sRet)
+			v.Global.fSqft.Set(v.Local.sRet(0))
+			f.Intrinsic.Math.Mult(v.Global.fSqft,0.67, v.Global.fSqft_23)
+			f.Intrinsic.Math.Mult(v.Global.fSqft,0.33, v.Global.fSqft_13)
+			
+			v.Global.fSheet_Full.Set(v.Local.sRet(1))
+			f.Intrinsic.Math.Mult(v.Global.fSheet_Full,0.75,v.Global.fSheet_ThreeQuart)
+			f.Intrinsic.Math.Mult(v.Global.fSheet_Full,0.5,v.Global.fSheet_Half)
+			f.Intrinsic.Math.Mult(v.Global.fSheet_Full,0.25,v.Global.fSheet_Quarter)
+			
+			'available linear
+			.Intrinsic.Math.Mult(v.Global.fSqft, 0.09290304, v.Local.sTemp)
+			F.Intrinsic.Math.Div(v.Local.sTemp,V.Global.fVinylWidth,V.Global.fAvailLinearMeters)
+			
+			'control
+			Gui.frmVinylPress.txtAreaAvail.Text(V.Global.fSqFt)
+		
+		f.Intrinsic.Control.Else
+			f.Intrinsic.UI.Msgbox("This Workcenter is not Setup yet. Using the Default Measurements.", "Settings Not Found")		
+		f.Intrinsic.Control.EndIf
+		
+	f.Intrinsic.Control.EndIf
+	
+F.Intrinsic.Control.Catch
+	F.Intrinsic.Control.CallSub(ErrorMessage, "ErrorNumber", V.Ambient.ErrorNumber, "ErrorDescription", V.Ambient.ErrorDescription, "Subroutine", V.Ambient.CurrentSubroutine, "UNATTENDED", V.Global.bUnattended, "Project", "5364", "ProjectTitle", "5364 Vinyl Press", "Callback", "frmVinylPress_UnLoad")
+F.Intrinsic.Control.EndTry
+Program.Sub.ReSpecsWC.End
+
+Program.Sub.PopulateDropdowns.Start
+F.Intrinsic.Control.Try
+'declare any variables needed in the subroutine
+V.Local.sSQL.Declare(String)
+V.Local.sRet.Declare(String)
+V.Local.iCnt.Declare(Long)
+
+F.Data.DataTable.CreateFromSQL("WC","con","Select WC, rtrim(Wave_File) as Wave_File From GCG_5364_WC_Maint",True)
+
+'build query to pull the vinyl workcenters - will need to get the specific vinyl workcenters
+V.Local.sSQL.Set("SELECT WorkCenter FROM V_WorkGroup_Line WHERE WorkGroup = '*PR0' ")
+'V.Local.sSQL.Set("SELECT DISTINCT(MACHINE) FROM V_WORKCENTERS WHERE MACHINE = 'VNYL'")
+F.ODBC.Connection!con.ExecuteAndReturn(V.Local.sSQL,V.Local.sRet)
+F.Intrinsic.Control.If(V.Local.sRet,=,"")
+	F.Intrinsic.UI.Msgbox("There are no existing vinyl press workcenters. Please set up the workcenters and try again!")
+F.Intrinsic.Control.Else
+	'split the values that are returned
+	F.Intrinsic.String.Split(V.Local.sRet,"#$#", V.Local.sRet)
+
+	'Lopp through all of the workcenters that were returned and add each vinyl workcenter to the dropdown
+	F.Intrinsic.Control.For(V.Local.iCnt,0,V.Local.sRet.UBound,1)
+		Gui.frmVinylPress.ddlWC.AddItem(V.Local.sRet(V.Local.iCnt))
+	F.Intrinsic.Control.Next(V.Local.iCnt)
+F.Intrinsic.Control.EndIf
+
+'build query to pull the active employees - If we need to add a balancing group or dept in a where clause later, we will
+V.Local.sSQL.Set("SELECT DISTINCT NAME FROM V_EMPLOYEE_MSTR Where NAME LIKE 'PRESS%' ORDER BY EMPLOYEE")
+F.ODBC.Connection!con.ExecuteAndReturn(V.Local.sSQL,V.Local.sRet)
+F.Intrinsic.Control.If(V.Local.sRet,=,"")
+	F.Intrinsic.UI.Msgbox("No active employees. Please try again later!")
+	F.Intrinsic.Control.End
+F.Intrinsic.Control.Else
+	F.Intrinsic.String.Split(V.Local.sRet,"#$#", V.Local.sRet)
+	'Lopp through all of the employees that were returned and add each active employee to the dropdown
+	F.Intrinsic.Control.For(V.Local.iCnt,0,V.Local.sRet.UBound,1)
+		Gui.frmVinylPress.ddlActiveEmployee.AddItem(V.Local.sRet(v.Local.iCnt))
+	F.Intrinsic.Control.Next(V.Local.iCnt)
+F.Intrinsic.Control.EndIf
+
+F.Intrinsic.Control.Catch
+	F.Intrinsic.Control.CallSub(ErrorMessage, "ErrorNumber", V.Ambient.ErrorNumber, "ErrorDescription", V.Ambient.ErrorDescription, "Subroutine", V.Ambient.CurrentSubroutine, "UNATTENDED", V.Global.bUnattended, "Project", "5364", "ProjectTitle", "5364 Vinyl Press", "Callback", "frmVinylPress_UnLoad")
+F.Intrinsic.Control.EndTry
+Program.Sub.PopulateDropdowns.End
+
+Program.Sub.SetContextMenus.Start
+F.Intrinsic.Control.Try
+
+'Gui.frmVinylPress..ContextMenuCreate("ctxWC")
+'Gui.frmVinylPress.GsGcJobs.ContextMenuAttach("ctxWC")
+'Gui.frmVinylPress..ContextMenuAddItem("ctxWC","Override", 0 ,"Override Time")
+'Gui.frmVinylPress..ContextMenuSetItemEventHandler("ctxWC","Override","MenuClickOverride")
+
+F.Intrinsic.Control.Catch
+	F.Intrinsic.Control.CallSub(ErrorMessage, "ErrorNumber", V.Ambient.ErrorNumber, "ErrorDescription", V.Ambient.ErrorDescription, "Subroutine", V.Ambient.CurrentSubroutine, "UNATTENDED", V.Global.bUnattended, "Project", "5364", "ProjectTitle", "5364 Vinyl Press", "Callback", "frmVinylPress_UnLoad")
+F.Intrinsic.Control.EndTry
+Program.Sub.SetContextMenus.End
+
+Program.Sub.MenuClickOverride.Start
+F.Intrinsic.Control.Try
+'this subroutine will handle for an employee needing to override their start or stop time becasue they forgot to scan in/scan out
+'declare any variables needed for the subroutine
+
+
+F.Intrinsic.Control.Catch
+	F.Intrinsic.Control.CallSub(ErrorMessage, "ErrorNumber", V.Ambient.ErrorNumber, "ErrorDescription", V.Ambient.ErrorDescription, "Subroutine", V.Ambient.CurrentSubroutine, "UNATTENDED", V.Global.bUnattended, "Project", "5364", "ProjectTitle", "5364 Vinyl Press", "Callback", "frmVinylPress_UnLoad")
+F.Intrinsic.Control.EndTry
+Program.Sub.MenuClickOverride.End
+
+Program.Sub.CreateGrid.Start
+F.Intrinsic.Control.Try
+
+F.Intrinsic.Control.If(V.DataTable.dtJobs.Exists,=,True)
+	F.Data.DataTable.Close("dtJobs")
+F.Intrinsic.Control.EndIf
+F.Data.DataTable.Create("dtJobs",True)
+F.Data.DataTable.AddColumn("dtJobs","SEL","BOOLEAN")
+F.Data.DataTable.AddColumn("dtJobs","JOB","STRING")
+f.Data.DataTable.AddColumn("dtJobs","SUFFIX","STRING")
+F.Data.DataTable.AddColumn("dtJobs","SEQ", "STRING")
+F.Data.DataTable.AddColumn("dtJobs","PART", "STRING")
+F.Data.DataTable.AddColumn("dtJobs", "DESCRIPTION", "STRING")
+F.Data.DataTable.AddColumn("dtJobs","JSSI", "STRING")
+F.Data.DataTable.AddColumn("dtJobs","MATL", "STRING")
+F.Data.DataTable.AddColumn("dtJobs","MATL_DESC","STRING")
+F.Data.DataTable.AddColumn("dtJobs", "FINISH", "STRING")
+F.Data.DataTable.AddColumn("dtJobs","FINISH_DESC","STRING")
+F.Data.DataTable.AddColumn("dtJobs", "QTY", "LONG")
+F.Data.DataTable.AddColumn("dtJobs","TOTALWIDTH","FLOAT")
+F.Data.DataTable.AddColumn("dtJobs","TOTALLENGTH","FLOAT")
+
+'callsub to format the grid
+F.Intrinsic.Control.CallSub(FormatGrid)
+F.Intrinsic.Control.Catch
+	F.Intrinsic.Control.CallSub(ErrorMessage, "ErrorNumber", V.Ambient.ErrorNumber, "ErrorDescription", V.Ambient.ErrorDescription, "Subroutine", V.Ambient.CurrentSubroutine, "UNATTENDED", V.Global.bUnattended, "Project", "5364", "ProjectTitle", "5364 Vinyl Press", "Callback", "frmVinylPress_UnLoad")
+F.Intrinsic.Control.EndTry
+Program.Sub.CreateGrid.End
+
+Program.Sub.FormatGrid.Start
+F.Intrinsic.Control.Try
+'declare any variables needed in the subroutine
+V.Local.iIndex.Declare(long)
+V.Local.sGV.Declare(String)
+V.Local.sProperty.Declare(String)
+V.Local.sDefault.Declare(String)
+
+
+Gui.frmVinylPress.GsGcJobs.SuspendLayout
+
+
+'create a gridview using the dataview above
+Gui.frmVinylPress.GsGcJobs.AddGridviewFromDatatable("gvJobs","dtJobs")
+V.Local.sGV.Set("gvJobs")
+
+'set the properities for the grid (need to determine if all of the columns will be read-only, etc)
+Gui.frmVinylPress.GsGcJobs.SetGridviewProperty(V.Local.sGV,"AllowColumnResizing",True)
+Gui.frmVinylPress.GsGcJobs.SetGridviewProperty(V.Local.sGV,"AllowColumnMoving",True)
+Gui.frmVinylPress.GsGcJobs.SetGridviewProperty(V.Local.sGV,"MultiSelect",False)
+Gui.frmVinylPress.GsGcJobs.SetGridviewProperty(V.Local.sGV,"Showgrouppanel", False)
+Gui.frmVinylPress.GsGcJobs.SetGridviewProperty(V.Local.sGV, "ColumnPanelRowHeight", 35)
+Gui.frmVinylPress.GsGcJobs.SetGridviewProperty(V.Local.sGV,"OptionsViewColumnAutoWidth",True)
+Gui.frmVinylPress.GsGcJobs.SetGridviewProperty(V.Local.sGV,"OptionsViewRowAutoHeight", True)
+Gui.frmVinylPress.GsGcJobs.SetGridviewProperty(V.Local.sGV, "RowHeight", 24)
+
+V.Local.sProperty.Set("Visible")
+V.Local.sDefault.Set("False")
+Gui.frmVinylPress.GsGcJobs.SetColumnProperty(V.Local.sGV,"TOTALWIDTH", V.Local.sProperty, V.Local.sDefault)
+Gui.frmVinylPress.GsGcJobs.SetColumnProperty(V.Local.sGV,"TOTALLENGTH", V.Local.sProperty, V.Local.sDefault)
+Gui.frmVinylPress.GsGcJobs.SetColumnProperty(V.Local.sGV,"MATL",V.Local.sProperty, V.Local.sDefault)
+Gui.frmVinylPress.GsGcJobs.SetColumnProperty(V.Local.sGV,"FINISH",V.Local.sProperty, V.Local.sDefault)
+
+Gui.frmVinylPress.GsGcJobs.SetColumnProperty(V.Local.sGV,"SEL", "CAPTION", " ")
+Gui.frmVinylPress.GsGcJobs.SetColumnProperty(V.Local.sGV,"JOB","CAPTION", "Job")
+Gui.frmVinylPress.GsGcJobs.SetColumnProperty(V.Local.sGV,"SUFFIX","CAPTION", "Suffix")
+Gui.frmVinylPress.GsGcJobs.SetColumnProperty(V.Local.sGV,"SEQ", "CAPTION", "Seq")
+Gui.frmVinylPress.GsGcJobs.SetColumnProperty(V.Local.sGV,"PART", "CAPTION", "Part")
+Gui.frmVinylPress.GsGcJobs.SetColumnProperty(V.Local.sGV,"DESCRIPTION","CAPTION", "Part Description")
+Gui.frmVinylPress.GsGcJobs.SetColumnProperty(V.Local.sGV,"MATL", "CAPTION", "Material")
+Gui.frmVinylPress.GsGcJobs.SetColumnProperty(V.Local.sGV,"MATL_DESC", "CAPTION", "Material Description")
+Gui.frmVinylPress.GsGcJobs.SetColumnProperty(V.Local.sGV,"FINISH","CAPTION","Finish")
+Gui.frmVinylPress.GsGcJobs.SetColumnProperty(V.Local.sGV,"FINISH_DESC","CAPTION","Color")
+Gui.frmVinylPress.GsGcJobs.SetColumnProperty(V.Local.sGV,"JSSI", "CAPTION", "Serial No")
+Gui.frmVinylPress.GsGcJobs.SetColumnProperty(V.Local.sGV,"QTY", "CAPTION", "Qty")
+
+V.Local.sProperty.Set("HeaderFontBold")
+V.Local.sDefault.Set("True")
+Gui.frmVinylPress.GsGcJobs.SetColumnProperty(V.Local.sGV,"JOB",V.Local.sProperty, V.Local.sDefault)
+Gui.frmVinylPress.GsGcJobs.SetColumnProperty(V.Local.sGV,"SUFFIX",V.Local.sProperty,V.Local.sDefault)
+Gui.frmVinylPress.GsGcJobs.SetColumnProperty(V.Local.sGV,"SEQ", V.Local.sProperty, V.Local.sDefault)
+Gui.frmVinylPress.GsGcJobs.SetColumnProperty(V.Local.sGV,"PART", V.Local.sProperty, V.Local.sDefault)
+Gui.frmVinylPress.GsGcJobs.SetColumnProperty(V.Local.sGV,"DESCRIPTION",V.Local.sProperty, V.Local.sDefault)
+Gui.frmVinylPress.GsGcJobs.SetColumnProperty(V.Local.sGV,"MATL",V.Local.sProperty, V.Local.sDefault)
+Gui.frmVinylPress.GsGcJobs.SetColumnProperty(V.Local.sGV,"MATL_DESC",V.Local.sProperty, V.Local.sDefault)
+Gui.frmVinylPress.GsGcJobs.SetColumnProperty(V.Local.sGV,"FINISH",V.Local.sProperty, V.Local.sDefault)
+Gui.frmVinylPress.GsGcJobs.SetColumnProperty(V.Local.sGV,"FINISH_DESC",V.Local.sProperty, V.Local.sDefault)
+Gui.frmVinylPress.GsGcJobs.SetColumnProperty(V.Local.sGV,"JSSI", V.Local.sProperty, V.Local.sDefault)
+Gui.frmVinylPress.GsGcJobs.SetColumnProperty(V.Local.sGV,"QTY", V.Local.sProperty, V.Local.sDefault)
+
+V.Local.sProperty.Set("HeaderBackColor")
+V.Local.sDefault.Set("MediumSeaGreen")
+Gui.frmVinylPress.GsGcJobs.SetColumnProperty(V.Local.sGV,"SEL",V.Local.sProperty, V.Local.sDefault)
+Gui.frmVinylPress.GsGcJobs.SetColumnProperty(V.Local.sGV,"JOB",V.Local.sProperty, V.Local.sDefault)
+Gui.frmVinylPress.GsGcJobs.SetColumnProperty(V.Local.sGV,"SUFFIX",V.Local.sProperty,V.Local.sDefault)
+Gui.frmVinylPress.GsGcJobs.SetColumnProperty(V.Local.sGV,"SEQ", V.Local.sProperty, V.Local.sDefault)
+Gui.frmVinylPress.GsGcJobs.SetColumnProperty(V.Local.sGV,"PART", V.Local.sProperty, V.Local.sDefault)
+Gui.frmVinylPress.GsGcJobs.SetColumnProperty(V.Local.sGV,"DESCRIPTION",V.Local.sProperty, V.Local.sDefault)
+Gui.frmVinylPress.GsGcJobs.SetColumnProperty(V.Local.sGV,"MATL",V.Local.sProperty, V.Local.sDefault)
+Gui.frmVinylPress.GsGcJobs.SetColumnProperty(V.Local.sGV,"MATL_DESC",V.Local.sProperty, V.Local.sDefault)
+Gui.frmVinylPress.GsGcJobs.SetColumnProperty(V.Local.sGV,"FINISH",V.Local.sProperty, V.Local.sDefault)
+Gui.frmVinylPress.GsGcJobs.SetColumnProperty(V.Local.sGV,"FINISH_DESC",V.Local.sProperty, V.Local.sDefault)
+Gui.frmVinylPress.GsGcJobs.SetColumnProperty(V.Local.sGV,"JSSI", V.Local.sProperty, V.Local.sDefault)
+Gui.frmVinylPress.GsGcJobs.SetColumnProperty(V.Local.sGV,"QTY", V.Local.sProperty, V.Local.sDefault)
+
+V.Local.sProperty.Set("HeaderFontSize")
+V.Local.sDefault.Set(16)
+Gui.frmVinylPress.GsGcJobs.SetColumnProperty(V.Local.sGV,"SEL",V.Local.sProperty, V.Local.sDefault)
+Gui.frmVinylPress.GsGcJobs.SetColumnProperty(V.Local.sGV,"JOB",V.Local.sProperty, V.Local.sDefault)
+Gui.frmVinylPress.GsGcJobs.SetColumnProperty(V.Local.sGV,"SUFFIX",V.Local.sProperty,V.Local.sDefault)
+Gui.frmVinylPress.GsGcJobs.SetColumnProperty(V.Local.sGV,"SEQ", V.Local.sProperty, V.Local.sDefault)
+Gui.frmVinylPress.GsGcJobs.SetColumnProperty(V.Local.sGV,"PART", V.Local.sProperty, V.Local.sDefault)
+Gui.frmVinylPress.GsGcJobs.SetColumnProperty(V.Local.sGV,"DESCRIPTION",V.Local.sProperty, V.Local.sDefault)
+Gui.frmVinylPress.GsGcJobs.SetColumnProperty(V.Local.sGV,"MATL",V.Local.sProperty, V.Local.sDefault)
+Gui.frmVinylPress.GsGcJobs.SetColumnProperty(V.Local.sGV,"MATL_DESC",V.Local.sProperty, V.Local.sDefault)
+Gui.frmVinylPress.GsGcJobs.SetColumnProperty(V.Local.sGV,"FINISH",V.Local.sProperty, V.Local.sDefault)
+Gui.frmVinylPress.GsGcJobs.SetColumnProperty(V.Local.sGV,"FINISH_DESC",V.Local.sProperty, V.Local.sDefault)
+Gui.frmVinylPress.GsGcJobs.SetColumnProperty(V.Local.sGV,"JSSI", V.Local.sProperty, V.Local.sDefault)
+Gui.frmVinylPress.GsGcJobs.SetColumnProperty(V.Local.sGV,"QTY", V.Local.sProperty, V.Local.sDefault)
+
+V.Local.sProperty.Set("cellFontSize")
+V.Local.sDefault.Set(14)
+Gui.frmVinylPress.GsGcJobs.SetColumnProperty(V.Local.sGV,"SEL",V.Local.sProperty, V.Local.sDefault)
+Gui.frmVinylPress.GsGcJobs.SetColumnProperty(V.Local.sGV,"JOB",V.Local.sProperty, V.Local.sDefault)
+Gui.frmVinylPress.GsGcJobs.SetColumnProperty(V.Local.sGV,"SUFFIX",V.Local.sProperty,V.Local.sDefault)
+Gui.frmVinylPress.GsGcJobs.SetColumnProperty(V.Local.sGV,"SEQ", V.Local.sProperty, V.Local.sDefault)
+Gui.frmVinylPress.GsGcJobs.SetColumnProperty(V.Local.sGV,"PART", V.Local.sProperty, V.Local.sDefault)
+Gui.frmVinylPress.GsGcJobs.SetColumnProperty(V.Local.sGV,"DESCRIPTION",V.Local.sProperty, V.Local.sDefault)
+Gui.frmVinylPress.GsGcJobs.SetColumnProperty(V.Local.sGV,"MATL",V.Local.sProperty, V.Local.sDefault)
+Gui.frmVinylPress.GsGcJobs.SetColumnProperty(V.Local.sGV,"MATL_DESC",V.Local.sProperty, V.Local.sDefault)
+Gui.frmVinylPress.GsGcJobs.SetColumnProperty(V.Local.sGV,"FINISH",V.Local.sProperty, V.Local.sDefault)
+Gui.frmVinylPress.GsGcJobs.SetColumnProperty(V.Local.sGV,"FINISH_DESC",V.Local.sProperty, V.Local.sDefault)
+Gui.frmVinylPress.GsGcJobs.SetColumnProperty(V.Local.sGV,"JSSI", V.Local.sProperty, V.Local.sDefault)
+Gui.frmVinylPress.GsGcJobs.SetColumnProperty(V.Local.sGV,"QTY", V.Local.sProperty, V.Local.sDefault)
+
+V.Local.sProperty.Set("ReadOnly")
+V.Local.sDefault.Set("True")
+Gui.frmVinylPress.GsGcJobs.SetColumnProperty(V.Local.sGV,"SEL", V.Local.sProperty, False)
+Gui.frmVinylPress.GsGcJobs.SetColumnProperty(V.Local.sGV,"JOB",V.Local.sProperty, V.Local.sDefault)
+Gui.frmVinylPress.GsGcJobs.SetColumnProperty(V.Local.sGV,"SUFFIX",V.Local.sProperty,V.Local.sDefault)
+Gui.frmVinylPress.GsGcJobs.SetColumnProperty(V.Local.sGV,"SEQ", V.Local.sProperty, V.Local.sDefault)
+Gui.frmVinylPress.GsGcJobs.SetColumnProperty(V.Local.sGV,"PART", V.Local.sProperty, V.Local.sDefault)
+Gui.frmVinylPress.GsGcJobs.SetColumnProperty(V.Local.sGV,"DESCRIPTION",V.Local.sProperty, V.Local.sDefault)
+Gui.frmVinylPress.GsGcJobs.SetColumnProperty(V.Local.sGV,"MATL",V.Local.sProperty, V.Local.sDefault)
+Gui.frmVinylPress.GsGcJobs.SetColumnProperty(V.Local.sGV,"MATL_DESC",V.Local.sProperty, V.Local.sDefault)
+Gui.frmVinylPress.GsGcJobs.SetColumnProperty(V.Local.sGV,"FINISH",V.Local.sProperty, V.Local.sDefault)
+Gui.frmVinylPress.GsGcJobs.SetColumnProperty(V.Local.sGV,"FINISH_DESC",V.Local.sProperty, V.Local.sDefault)
+Gui.frmVinylPress.GsGcJobs.SetColumnProperty(V.Local.sGV,"JSSI", V.Local.sProperty, V.Local.sDefault)
+Gui.frmVinylPress.GsGcJobs.SetColumnProperty(V.Local.sGV,"QTY", V.Local.sProperty, V.Local.sDefault)
+
+V.Local.sProperty.Set("AllowEdit")
+V.Local.sDefault.Set("False")
+Gui.frmVinylPress.GsGcJobs.SetColumnProperty(V.Local.sGV,"SEL", V.Local.sProperty, True)
+Gui.frmVinylPress.GsGcJobs.SetColumnProperty(V.Local.sGV,"JOB",V.Local.sProperty, V.Local.sDefault)
+Gui.frmVinylPress.GsGcJobs.SetColumnProperty(V.Local.sGV,"SUFFIX",V.Local.sProperty,V.Local.sDefault)
+Gui.frmVinylPress.GsGcJobs.SetColumnProperty(V.Local.sGV,"SEQ", V.Local.sProperty, V.Local.sDefault)
+Gui.frmVinylPress.GsGcJobs.SetColumnProperty(V.Local.sGV,"PART", V.Local.sProperty, V.Local.sDefault)
+Gui.frmVinylPress.GsGcJobs.SetColumnProperty(V.Local.sGV,"DESCRIPTION",V.Local.sProperty, V.Local.sDefault)
+Gui.frmVinylPress.GsGcJobs.SetColumnProperty(V.Local.sGV,"MATL",V.Local.sProperty, V.Local.sDefault)
+Gui.frmVinylPress.GsGcJobs.SetColumnProperty(V.Local.sGV,"MATL_DESC",V.Local.sProperty, V.Local.sDefault)
+Gui.frmVinylPress.GsGcJobs.SetColumnProperty(V.Local.sGV,"FINISH",V.Local.sProperty, V.Local.sDefault)
+Gui.frmVinylPress.GsGcJobs.SetColumnProperty(V.Local.sGV,"FINISH_DESC",V.Local.sProperty, V.Local.sDefault)
+Gui.frmVinylPress.GsGcJobs.SetColumnProperty(V.Local.sGV,"JSSI", V.Local.sProperty, V.Local.sDefault)
+Gui.frmVinylPress.GsGcJobs.SetColumnProperty(V.Local.sGV,"QTY", V.Local.sProperty, V.Local.sDefault)
+
+V.Local.sProperty.Set("MinWIdth")
+V.Local.sDefault.Set(75)
+Gui.frmVinylPress.GsGcJobs.SetColumnProperty(V.Local.sGV,"SEL", V.Local.sProperty, 20)
+Gui.frmVinylPress.GsGcJobs.SetColumnProperty(V.Local.sGV,"JOB",V.Local.sProperty, 50)
+Gui.frmVinylPress.GsGcJobs.SetColumnProperty(V.Local.sGV,"SUFFIX",V.Local.sProperty,40)
+Gui.frmVinylPress.GsGcJobs.SetColumnProperty(V.Local.sGV,"SEQ", V.Local.sProperty, 55)
+Gui.frmVinylPress.GsGcJobs.SetColumnProperty(V.Local.sGV,"PART", V.Local.sProperty, 150)
+Gui.frmVinylPress.GsGcJobs.SetColumnProperty(V.Local.sGV,"DESCRIPTION",V.Local.sProperty, 200)
+Gui.frmVinylPress.GsGcJobs.SetColumnProperty(V.Local.sGV,"MATL",V.Local.sProperty, 150)
+Gui.frmVinylPress.GsGcJobs.SetColumnProperty(V.Local.sGV,"MATL_DESC",V.Local.sProperty,200)
+Gui.frmVinylPress.GsGcJobs.SetColumnProperty(V.Local.sGV,"FINISH",V.Local.sProperty, 125)
+Gui.frmVinylPress.GsGcJobs.SetColumnProperty(V.Local.sGV,"FINISH_DESC",V.Local.sProperty,200)
+Gui.frmVinylPress.GsGcJobs.SetColumnProperty(V.Local.sGV,"JSSI", V.Local.sProperty, 100)
+Gui.frmVinylPress.GsGcJobs.SetColumnProperty(V.Local.sGV,"QTY", V.Local.sProperty, V.Local.sDefault)
+
+V.Local.sProperty.Set("MaxWidth")
+Gui.frmVinylPress.GsGcJobs.SetColumnProperty(v.Local.sGV,"SEL", V.Local.sProperty, 30)
+
+V.Local.sProperty.Set("CellHAlignment")
+V.Local.sDefault.Set("Center")
+Gui.frmVinylPress.GsGcJobs.SetColumnProperty(V.Local.sGV,"SEL",V.Local.sProperty, V.Local.sDefault)
+
+V.Local.sProperty.Set("VisibleIndex")
+V.Local.iIndex.Set(0)
+Gui.frmVinylPress.GsGcJobs.SetColumnProperty(V.Local.sGV,"SEL",V.Local.sProperty, V.Local.iIndex)
+V.Local.iIndex.Set(V.Local.iIndex.++)
+Gui.frmVinylPress.GsGcJobs.SetColumnProperty(V.Local.sGV,"JOB",V.Local.sProperty, V.Local.iIndex)
+V.Local.iIndex.Set(V.Local.iIndex.++)
+Gui.frmVinylPress.GsGcJobs.SetColumnProperty(V.Local.sGV,"SUFFIX",V.Local.sProperty,V.Local.iIndex)
+V.Local.iIndex.Set(V.Local.iIndex.++)
+Gui.frmVinylPress.GsGcJobs.SetColumnProperty(V.Local.sGV,"SEQ", V.Local.sProperty, V.Local.iIndex)
+V.Local.iIndex.Set(V.Local.iIndex.++)
+Gui.frmVinylPress.GsGcJobs.SetColumnProperty(V.Local.sGV,"JSSI", V.Local.sProperty, V.Local.iIndex)
+V.Local.iIndex.Set(V.Local.iIndex.++)
+Gui.frmVinylPress.GsGcJobs.SetColumnProperty(V.Local.sGV,"PART", V.Local.sProperty, V.Local.iIndex)
+V.Local.iIndex.Set(V.Local.iIndex.++)
+Gui.frmVinylPress.GsGcJobs.SetColumnProperty(V.Local.sGV,"DESCRIPTION",V.Local.sProperty, V.Local.iIndex)
+V.Local.iIndex.Set(V.Local.iIndex.++)
+Gui.frmVinylPress.GsGcJobs.SetColumnProperty(V.Local.sGV,"MATL_DESC",V.Local.sProperty, V.Local.iIndex)
+V.Local.iIndex.Set(V.Local.iIndex.++)
+Gui.frmVinylPress.GsGcJobs.SetColumnProperty(V.Local.sGV,"FINISH_DESC",V.Local.sProperty, V.Local.iIndex)
+V.Local.iIndex.Set(V.Local.iIndex.++)
+Gui.frmVinylPress.GsGcJobs.SetColumnProperty(V.Local.sGV,"QTY",V.Local.sProperty, V.Local.iIndex)
+V.Local.iIndex.Set(V.Local.iIndex.++)
+
+'set the mainview for the grid to the gridview created above
+Gui.frmVinylPress.GsGcJobs.MainView("gvJobs")
+Gui.frmVinylPress.GsGcJobs.ResumeLayout
+
+F.Intrinsic.Control.Catch
+	F.Intrinsic.Control.CallSub(ErrorMessage, "ErrorNumber", V.Ambient.ErrorNumber, "ErrorDescription", V.Ambient.ErrorDescription, "Subroutine", V.Ambient.CurrentSubroutine, "UNATTENDED", V.Global.bUnattended, "Project", "5364", "ProjectTitle", "5364 Vinyl Press", "Callback", "frmVinylPress_UnLoad")
+F.Intrinsic.Control.EndTry
+Program.Sub.FormatGrid.End
+
+Program.Sub.txtPieceSerial_Scan.Start
+F.Intrinsic.Control.Try
+'declare any variables needed in the subroutine
+'This subroutine will handle when a serial number barcode is scanned 
+V.Local.sFilter.Declare
+V.Local.sRet.Declare
+v.Local.sScan.Declare
+V.Local.sSql.Declare
+
+V.Local.sScan.Set(V.Screen.frmVinylPress!txtPieceSerial.Text)
+
+'checking tha current scanned serial is not marked as scrap
+F.Intrinsic.String.Build("Select Top 1 Scrap From GCG_5364_JOB_DTL Where JSSI = '{0}' and Scrap = 'Y' Order By Seq Desc",v.Local.sScan.Trim,V.Local.sSql)
+F.ODBC.Connection!Conx.OpenCompanyConnection
+	F.ODBC.Connection!Conx.ExecuteAndReturn(V.Local.sSql,V.Local.sRet)
+F.ODBC.Connection!conx.Close
+
+F.Intrinsic.Control.If(V.Local.sRet.Trim,<>,"Y")
+
+	F.Intrinsic.String.Build("WC = '{0}'",V.Screen.frmVinylPress!ddlWC.Text,V.Local.sFilter)
+	
+	F.Intrinsic.Control.If(V.DataView.WC!VWc.Exists)
+		F.Data.DataView.Close("WC","VWc")
+	F.Intrinsic.Control.EndIf
+	F.Data.DataView.Create("Wc","VWc",22,V.Local.sFilter,"")
+	
+	'Load the queued data for vinyl press 
+	F.Intrinsic.Control.CallSub(LoadQueuedJobs)
+	
+	F.Intrinsic.Control.If(V.DataView.WC!VWc.Exists)
+		F.Data.DataView.Close("WC","VWc")
+	F.Intrinsic.Control.EndIf
+F.Intrinsic.Control.Else
+	F.Intrinsic.UI.Msgbox("Serial is Marked as Scrap.")
+F.Intrinsic.Control.EndIf
+
+Gui.frmVinylPress.txtPieceSerial.Text("")
+Gui.frmVinylPress.txtPieceSerial.SetFocus
+	
+F.Intrinsic.Control.Catch
+	F.Intrinsic.Control.CallSub(ErrorMessage, "ErrorNumber", V.Ambient.ErrorNumber, "ErrorDescription", V.Ambient.ErrorDescription, "Subroutine", V.Ambient.CurrentSubroutine, "UNATTENDED", V.Global.bUnattended, "Project", "5364", "ProjectTitle", "5364 Vinyl Press", "Callback", "frmVinylPress_UnLoad")
+F.Intrinsic.Control.EndTry
+Program.Sub.txtPieceSerial_Scan.End
+
+Program.Sub.LoadQueuedJobs.Start
+F.Intrinsic.Control.Try
+'declare any variables needed in the subroutine
+V.Local.fArea.Declare(Float)
+V.Local.fAreaUsed.Declare(Float)
+v.Local.fQty.Declare(Float)
+V.Local.fLength.Declare(Float)
+V.Local.fWidth.Declare(Float)
+V.Local.iCnt.Declare(Long)
+V.Local.iRet.Declare(Long)
+V.Local.sSQL.Declare(String)
+V.Local.sRet.Declare(String)
+V.Local.sWC.Declare(String)
+V.Local.sSerial.Declare(String)
+V.Local.sJob.Declare(String)
+V.Local.sSuffix.Declare(String)
+V.Local.sJobSuff.Declare(String)
+V.Local.sSeq.Declare(String)
+V.Local.sPart.Declare(String)
+V.Local.sDescription.Declare(String)
+V.Local.sJSSI.Declare(String)
+V.Local.sMaterial.Declare(String)
+V.Local.sFinish.Declare(String)
+V.Local.sMsgRet.Declare(String)
+V.Local.sSound.Declare(String)
+V.Local.sMessage.Declare(String)
+V.Local.fTotalAreaAvail.Declare(Float)
+V.Local.fUtilization.Declare(Float)
+V.Local.fUtilizationPct.Declare(Float)
+V.Local.sFilter.Declare(String)
+V.Local.sExistingFinish.Declare(String)
+V.Local.iQty.Declare(Long,1)
+V.Local.sMatDesc.Declare(String)
+V.Local.sFinDesc.Declare(String)
+
+V.Local.sSerial.Set(V.Screen.frmVinylPress!txtPieceSerial.Text)
+V.Local.sWC.Set(V.Screen.frmVinylPress!ddlWC.Value)
+V.Local.fTotalAreaAvail.Set(V.Screen.frmVinylPress!txtAreaAvail.Text)
+V.Local.fUtilization.Set("")
+V.Local.fUtilizationPct.Set("")
+V.Local.iCnt.Set("")
+
+F.Intrinsic.Control.If(V.DataView.WC!VWc.Exists)
+	F.Intrinsic.Control.If(V.DataView.WC!VWc.RowCount--,<>,-1)
+		V.Local.sSound.Set(V.DataView.WC!VWc(V.DataView.WC!VWc.RowCount--).Wave_File!FieldValTrim)
+	F.Intrinsic.Control.EndIf
+F.Intrinsic.Control.EndIf
+'F.Intrinsic.String.Build("{0}\GCG_5364_BadScan.wav",V.Caller.GasDir,V.Local.sSound)
+V.Local.fAreaUsed.Set(V.Screen.frmVinylPress!txtAreaUsed.Text)
+
+F.Intrinsic.Control.If(V.DataTable.dtAddJobs.Exists,=,True)
+	F.Data.DataTable.Close("dtAddJobs")
+F.Intrinsic.Control.EndIf
+F.Data.DataTable.Create("dtAddJobs",True)
+F.Data.DataTable.AddColumn("dtAddJobs","SEL","BOOLEAN")
+F.Data.DataTable.AddColumn("dtAddJobs","JOB","STRING")
+f.Data.DataTable.AddColumn("dtAddJobs","SUFFIX","STRING")
+F.Data.DataTable.AddColumn("dtAddJobs","SEQ", "STRING")
+F.Data.DataTable.AddColumn("dtAddJobs","PART", "STRING")
+F.Data.DataTable.AddColumn("dtAddJobs", "DESCRIPTION", "STRING")
+F.Data.DataTable.AddColumn("dtAddJobs","JSSI", "STRING")
+F.Data.DataTable.AddColumn("dtAddJobs","MATL", "STRING")
+F.Data.DataTable.AddColumn("dtAddJobs","MATL_DESC", "STRING")
+F.Data.DataTable.AddColumn("dtAddJobs","FINISH", "STRING")
+F.Data.DataTable.AddColumn("dtAddJobs","FINISH_DESC", "STRING")
+F.Data.DataTable.AddColumn("dtAddJobs","QTY", "LONG")
+F.Data.DataTable.AddColumn("dtAddJobs","TOTALWIDTH","FLOAT")
+F.Data.DataTable.AddColumn("dtAddJobs","TOTALLENGTH","FLOAT")
+
+'Build the query to load the jobs based on the selected workcenter
+F.Intrinsic.String.Build("SELECT DISTINCT CONVERT(0,SQL_BIT) AS SEL, CONVERT(0,SQL_BIT) AS SCRAP, A.JOB, A.SUFFIX, A.SEQ,A.PART, A.DESCRIPTION,A.JSSI,B.MATL,B.FINISH, A.QTY,B.LENGTH,B.WIDTH,A.Mat_Desc,A.Fin_Desc FROM GCG_5364_LABEL_DATA A LEFT JOIN GCG_5364_OE_LINES B ON B.ORDER_NO = A.ORDER_NO AND B.RECORD_NO = A.ORDER_LINE WHERE A.JSSI ='{0}' ",v.Local.sSerial.Trim,V.Local.sSQL)
+'F.Intrinsic.String.Build("SELECT DISTINCT CONVERT(0,SQL_BIT) AS SEL, CONVERT(0,SQL_BIT) AS SCRAP, JOB, SUFFIX, SEQ,PART, DESCRIPTION,JSSI,MATL,FINISH,QTY,TOTALLENGTH,TOTALWIDTH,Mat_Desc,Fin_Desc FROM GCG_5364_LABEL_DATA A WHERE JSSI ='{0}' ",v.Local.sSerial.Trim,V.Local.sSQL)
+F.ODBC.Connection!con.ExecuteAndReturn(V.Local.sSQL,V.Local.sRet)
+F.Intrinsic.Control.If(V.Local.sRet,<>,"")
+	F.Intrinsic.String.Split(V.Local.sRet,"*!*", V.Local.sRet)
+	V.Local.sJob.Set(V.Local.sRet(2))
+	V.Local.sSuffix.Set(V.Local.sRet(3))
+	V.Local.sSeq.Set(V.Local.sRet(4))
+	V.Local.sPart.Set(V.Local.sRet(5))
+	V.Local.sDescription.Set(V.Local.sRet(6))
+	V.Local.sJSSI.Set(V.Local.sRet(7))
+	V.Local.sMaterial.Set(V.Local.sRet(8))
+	V.Local.sFinish.Set(V.Local.sRet(9))
+	V.Local.fQty.Set(V.Local.sRet(10))
+	V.Local.fLength.Set(V.Local.sRet(11))
+	V.Local.fWidth.Set(V.Local.sRet(12))
+	V.Local.sMatDesc.Set(V.Local.sRet(13))
+	V.Local.sFinDesc.Set(V.Local.sRet(14))
+F.Intrinsic.Control.Else
+	F.Intrinsic.UI.Msgbox("There are no existing records for the serial number scanned!", "Warning")
+	F.Intrinsic.Control.ExitSub
+F.Intrinsic.Control.EndIf
+
+F.Intrinsic.String.Build("SELECT SEQ FROM V_JOB_OPERATIONS WHERE JOB = '{0}' AND SUFFIX = '{1}' AND LMO = 'L' AND (PART = '{2}' or Part = (Select WorkGroup From V_Workgroup_Line where WorkCenter = '{2}'))",V.Local.sJob.Trim,V.Local.sSuffix.Trim,V.Local.sWC.Trim,V.Local.sSQL)
+F.ODBC.Connection!con.ExecuteAndReturn(V.Local.sSQL,v.Local.sRet)
+F.Intrinsic.Control.If(V.Local.sRet,=,"")
+	F.Intrinsic.String.Build("{0}-{1} does not contain the {2} labor sequence. You cannot start a job on the Vinyl Press without the Press Labor sequence.",V.Local.sJob.Trim,V.Local.sSuffix.Trim,V.Local.sWC.Trim,V.Local.sMessage)
+	F.Intrinsic.UI.Msgbox(V.Local.sMessage,"ERROR")
+	F.Intrinsic.Control.ExitSub
+F.Intrinsic.Control.Else
+	V.Local.sSeq.Set(V.Local.sRet)
+F.Intrinsic.Control.EndIf
+
+'convert inches to feet
+F.Intrinsic.Math.Div(V.Local.fWidth,12,V.Local.fWidth)
+F.Intrinsic.Math.Div(V.Local.fLength,12,V.Local.fLength)
+
+'check to see if the label has a qty greater than 1. This will inidcate that it's molding
+F.Intrinsic.String.Build("SELECT DISTINCT QTY FROM GCG_5364_LABEL_DATA WHERE JSSI = '{0}'",V.Local.sJSSI.Trim,V.Local.sSQL)
+F.ODBC.Connection!con.ExecuteAndReturn(V.Local.sSQL,V.Local.sRet)
+F.Intrinsic.Control.If(V.Local.sRet,>,"1.00")
+	V.Global.bMultQty.Set(True)
+	F.Intrinsic.Control.If(V.Global.sUpdateFlag,<>,"Y")
+		F.Intrinsic.Control.If(V.Global.fQtyWork,=,V.Local.fQty)
+			Gui.frmQty.txtRunQty.Text(V.Global.fQtyWork)
+		F.Intrinsic.Control.Else
+			Gui.frmQty.txtRunQty.Text(V.Local.fQty)
+		F.Intrinsic.Control.EndIf
+		F.Intrinsic.String.Build("{0}-{1}",V.Local.sJob.Trim,V.Local.sSuffix.Trim,V.Local.sJobSuff)
+		Gui.frmQty.txtJob.Text(V.Local.sJobSuff)
+		Gui.frmQty.txtQty.Text("")
+		Gui.frmQty..Show
+		Gui.frmVinylPress..Enabled(Falsae)
+		Gui.frmQty..WaitForDismiss
+		V.Local.iQty.Set(V.Screen.frmQty!txtQty.Text)
+		Gui.frmQty.txtQty.Text("0")
+		Gui.frmVinylPress..AlwaysOnTop(True)
+		Gui.frmVinylPress..AlwaysOnTop(False)
+	F.Intrinsic.Control.EndIf
+F.Intrinsic.Control.EndIf
+
+F.Intrinsic.Control.If(V.DataView.dtJobs!dvFinish.Exists)
+	F.Data.DataView.Close("dtJobs","dvFinish")
+F.Intrinsic.Control.EndIf
+
+
+F.Intrinsic.String.Build("FINISH = '{0}'",V.Local.sFinish.Trim,V.Local.sFilter)
+F.Data.DataView.Create("dtJobs","dvFinish",22,V.Local.sFilter,"")
+
+F.Intrinsic.Control.If(V.DataView.dtJobs!dvDupJobs.Exists)
+	F.Data.DataView.Close("dtJobs","dvDupJobs")
+F.Intrinsic.Control.EndIf
+
+F.Intrinsic.String.Build("JSSI = '{0}'", v.Local.sSerial.Trim,v.Local.sFilter)
+F.Data.DataView.Create("dtJobs","dvDupJobs",22,V.Local.sFilter,"")
+
+
+F.Intrinsic.Control.If(V.DataView.dtJobs!dvFinish.RowCount--,<=,-1,"AND", V.DataTable.dtJobs.RowCount--,>,-1)
+	Gui.frmVinylPress..Enabled(False)
+	Gui.frmVinylPress.txtPieceSerial.Enabled(False)
+'	F.intrinsic.UI.PlaySound(V.Local.sSound)
+	F.Intrinsic.UI.Msgbox("The serial number scanned has a different finish than those already scanned. Do you wish to continue?","WARNING", 4,V.Local.iRet)
+	F.Intrinsic.Control.If(V.Local.iRet,=,6)
+		F.Intrinsic.Control.If(V.DataView.dtJobs!dvDupJobs.RowCount--,<,0)
+			
+			F.Intrinsic.Math.Mult(V.Local.fWidth,V.Local.fLength,V.Local.fArea)
+			
+			F.Intrinsic.Control.If(V.Global.fFinishAreaUsed,>,0)
+				F.Intrinsic.Math.Add(V.Global.fFinishAreaUsed, V.Local.fArea, V.Global.fFinishAreaUsed)
+				F.Intrinsic.Math.Round(V.Global.fFinishAreaUsed, 2, V.Global.fFinishAreaUsed)
+			F.Intrinsic.Control.Else
+				V.Global.fFinishAreaUsed.Set(V.Local.fArea)
+				F.Intrinsic.Math.Round(V.Global.fFinishAreaUsed, 2, V.Global.fFinishAreaUsed)
+			F.Intrinsic.Control.EndIf
+			
+			F.Intrinsic.Control.If(V.Global.bMultQty,=,True)
+				F.Intrinsic.Math.Mult(V.Local.fArea,V.Global.fQtyWork,V.Local.fArea)
+			F.Intrinsic.Control.EndIf
+			
+			F.Intrinsic.Control.If(V.Local.fAreaUsed,>,0)
+				F.Intrinsic.Math.Add(V.Local.fAreaUsed,V.Local.fArea,V.Local.fAreaUsed)
+				F.Intrinsic.Math.Round(v.Local.fAreaUsed,2,V.Local.fAreaUsed)		
+			F.Intrinsic.Control.Else
+				V.Local.fAreaUsed.Set(V.Local.fArea)
+				F.Intrinsic.Math.Round(v.Local.fAreaUsed,2,V.Local.fAreaUsed)	
+			F.Intrinsic.Control.EndIf
+
+			V.Local.sExistingFinish.Set(V.DataTable.dtJobs(V.DataTable.dtJobs.RowCount--).FINISH!FieldValTrim)
+'			F.Intrinsic.Control.If(V.Local.fAreaUsed,<=,"18","AND",V.Local.fAreaUsed,>,"12")
+'				F.Intrinsic.Control.If(V.Global.fFinishAreaUsed,<=,"6", "AND", V.Global.fFinishAreaUsed,>,"0")
+'					F.Intrinsic.String.Build("The Vinyl Press table has three-fourths of a sheet of {0} finish. You have scanned a fourth of a sheet of {1}, and there is no more capacity on the table.",V.Local.sExistingFinish.Trim,  V.Local.sFinish.Trim, V.Local.sMessage)
+'					F.Intrinsic.UI.Msgbox(V.Local.sMessage, "Vinyl Press Table Full")
+'					Gui.frmVinylPress..Enabled(True)
+'					F.Intrinsic.Control.ExitSub
+'				F.Intrinsic.Control.EndIf
+'			F.Intrinsic.Control.If(V.Local.fAreaUsed,>=,"24")
+'				F.Intrinsic.String.Build("The Vinyl Press table already has a full sheet of {0} finish. No other finishes can be scanned!", V.Local.sExistingFinish, V.Local.sMessage)
+'				F.Intrinsic.UI.Msgbox(V.Local.sMessage, "Vinyl Press Table Full")
+'				Gui.frmVinylPress..Enabled(True)
+'				F.Intrinsic.Control.ExitSub
+'			F.Intrinsic.Control.ElseIf(V.Local.fAreaUsed,<=,"12","AND",V.Local.fAreaUsed,>,"6")
+'				F.Intrinsic.String.Build("The Vinyl Press table has half a sheet of {0} finish. You will only be able to a half sheet of {1} finish.", V.Local.sFinish.Trim, V.Local.sMessage)
+'				F.Intrinsic.UI.Msgbox(V.Local.sMessage, "Warning")
+'				Gui.frmVinylPress..Enabled(True)
+'				F.Intrinsic.Control.ExitSub
+'			F.Intrinsic.Control.ElseIf(V.Local.fAreaUsed,<=,"6","AND", V.Local.fAreaUsed,>,"0")
+'				F.Intrinsic.String.Build("The Vinyl Press table has a quarter of a sheet of {0} finish. You will only be able to a half sheet of {1} finish.", V.Local.sFinish.Trim, V.Local.sMessage)
+'				F.Intrinsic.UI.Msgbox(V.Local.sMessage, "Warning")
+'				Gui.frmVinylPress..Enabled(True)
+'				F.Intrinsic.Control.ExitSub
+'			f.Intrinsic.Control.Else
+			
+
+'			F.Intrinsic.Control.EndIf
+
+			
+			Gui.frmVinylPress.txtAreaUsed.Text(V.Local.fAreaUsed)
+
+			F.Intrinsic.Math.Div(V.Local.fAreaUsed,V.Local.fTotalAreaAvail,V.Local.fUtilization)
+			F.Intrinsic.Math.Mult(V.Local.fUtilization,100,V.Local.fUtilizationPct)
+			F.Intrinsic.Math.Round(V.Local.fUtilizationPct,2,V.Local.fUtilizationPct)
+			
+'			F.Intrinsic.Control.If(V.Local.fUtilizationPct,>,100, "OR", V.Local.fAreaUsed,>,18)
+'				F.Intrinsic.UI.Msgbox("Total Area Used cannot exceed 100%!")
+'				F.Intrinsic.Math.Sub(V.Local.fAreaUsed,V.Local.fArea,V.Local.fAreaUsed)
+'				F.Intrinsic.Math.Round(v.Local.fAreaUsed,2,V.Local.fAreaUsed)
+'				F.Intrinsic.Math.Div(V.Local.fAreaUsed,V.Local.fTotalAreaAvail,V.Local.fUtilization)
+'				F.Intrinsic.Math.Mult(V.Local.fUtilization,100,V.Local.fUtilizationPct)
+'				F.Intrinsic.Math.Round(V.Local.fUtilizationPct,2,V.Local.fUtilizationPct)
+'				Gui.frmVinylPress.txtAreaUsed.Text(V.Local.fAreaUsed)
+'				F.Intrinsic.Control.ExitSub
+'			F.Intrinsic.Control.EndIf
+			
+			f.Data.DataTable.AddRow("dtAddJobs","SEL",False,"JOB",v.Local.sJob.Trim,"SUFFIX",V.Local.sSuffix.Trim, "SEQ", v.Local.sSeq.Trim, "PART", v.Local.sPart.Trim,"DESCRIPTION",V.Local.sDescription.Trim,"JSSI", V.Local.sJSSI.Trim,"MATL", V.Local.sMaterial.Trim, "FINISH", V.Local.sFinish.Trim,"TOTALLENGTH", V.Local.fLength,"TOTALWIDTH",V.Local.fWidth,"QTY",V.Local.iQty,"MATL_DESC",V.Local.sMatDesc.Trim,"FINISH_DESC",V.Local.sFinDesc.Trim)
+			V.Local.iRet.Set("")
+			'check to see if there are any existing records, for the JSSI, in Job Detail
+			F.Intrinsic.Control.CallSub(CheckJobDtl)
+'			F.Intrinsic.Control.CallSub(WriteJobDtl)
+			F.Intrinsic.Control.If(V.Local.sSound.Trim,<>,"")
+				F.intrinsic.UI.PlaySound(V.Local.sSound)
+			F.Intrinsic.Control.EndIf
+		F.Intrinsic.Control.Endif
+		Gui.frmVinylPress.txtPieceSerial.Enabled(True)
+		Gui.frmVinylPress..Enabled(True)
+	F.Intrinsic.Control.Else
+		Gui.frmVinylPress.txtPieceSerial.Enabled(True)
+		Gui.frmVinylPress..Enabled(True)
+	F.Intrinsic.Control.EndIf
+	
+F.Intrinsic.Control.ElseIf(V.DataView.dtJobs!dvFinish.RowCount--,>,-1,"AND", V.DataTable.dtJobs.RowCount--,>,-1)
+	F.Intrinsic.Control.If(V.DataView.dtJobs!dvDupJobs.RowCount--,<,0)
+		
+		F.Intrinsic.Math.Mult(V.Local.fWidth,V.Local.fLength,V.Local.fArea)
+		F.Intrinsic.Control.If(V.Global.bMultQty,=,True)
+			F.Intrinsic.Math.Mult(V.Local.fArea,V.Global.fQtyWork,V.Local.fArea)
+		F.Intrinsic.Control.EndIf
+
+		F.Intrinsic.Control.If(V.Local.fAreaUsed,>,0)
+			F.Intrinsic.Math.Add(V.Local.fAreaUsed,V.Local.fArea,V.Local.fAreaUsed)
+			F.Intrinsic.Math.Round(v.Local.fAreaUsed,2,V.Local.fAreaUsed)
+		F.Intrinsic.Control.Else
+			V.Local.fAreaUsed.Set(V.Local.fArea)
+			F.Intrinsic.Math.Round(v.Local.fAreaUsed,2,V.Local.fAreaUsed)
+		F.Intrinsic.Control.EndIf
+		
+'		V.Local.sExistingFinish.Set(V.DataTable.dtJobs(V.DataTable.dtJobs.RowCount--).FINISH!FieldValTrim)
+'		F.Intrinsic.Control.If(V.Local.fAreaUsed,>=,"24")
+'			F.Intrinsic.String.Build("The Vinyl Press table already has a full sheet of {0} finish. No other finishes can be scanned!", V.Local.sExistingFinish, V.Local.sMessage)
+'			F.Intrinsic.UI.Msgbox(V.Local.sMessage, "Vinyl Press Table Full")
+'			Gui.frmVinylPress..Enabled(True)
+'			F.Intrinsic.Control.ExitSub
+'		F.Intrinsic.Control.EndIf
+		
+		Gui.frmVinylPress.txtAreaUsed.Text(V.Local.fAreaUsed)
+		
+		F.Intrinsic.Math.Div(V.Local.fAreaUsed,V.Local.fTotalAreaAvail,V.Local.fUtilization)
+		F.Intrinsic.Math.Mult(V.Local.fUtilization,100,V.Local.fUtilizationPct)
+		F.Intrinsic.Math.Round(V.Local.fUtilizationPct,2,V.Local.fUtilizationPct)
+		
+'		F.Intrinsic.Control.If(V.Local.fUtilizationPct,>,100, "OR", V.Local.fAreaUsed,>,18)
+'			F.Intrinsic.UI.Msgbox("Total Area Used cannot exceed 100%!")
+'			F.Intrinsic.Math.Sub(V.Local.fAreaUsed,V.Local.fArea,V.Local.fAreaUsed)
+'			F.Intrinsic.Math.Round(v.Local.fAreaUsed,2,V.Local.fAreaUsed)
+'			F.Intrinsic.Math.Div(V.Local.fAreaUsed,V.Local.fTotalAreaAvail,V.Local.fUtilization)
+'			F.Intrinsic.Math.Mult(V.Local.fUtilization,100,V.Local.fUtilizationPct)
+'			F.Intrinsic.Math.Round(V.Local.fUtilizationPct,2,V.Local.fUtilizationPct)
+'			Gui.frmVinylPress.txtAreaUsed.Text(V.Local.fAreaUsed)
+'			F.Intrinsic.Control.ExitSub
+'		F.Intrinsic.Control.EndIf
+		
+		f.Data.DataTable.AddRow("dtAddJobs","SEL",False,"JOB",v.Local.sJob.Trim,"SUFFIX",V.Local.sSuffix.Trim, "SEQ", v.Local.sSeq.Trim, "PART", v.Local.sPart.Trim,"DESCRIPTION",V.Local.sDescription.Trim,"JSSI", V.Local.sJSSI.Trim,"MATL", V.Local.sMaterial.Trim, "FINISH", V.Local.sFinish.Trim,"TOTALLENGTH", V.Local.fLength,"TOTALWIDTH",V.Local.fWidth,"QTY",V.Local.iQty,"MATL_DESC",V.Local.sMatDesc.Trim,"FINISH_DESC",V.Local.sFinDesc.Trim)
+		'check to see if there are any existing records, for the JSSI, in Job Detail
+		F.Intrinsic.Control.CallSub(CheckJobDtl)
+'		F.Intrinsic.Control.CallSub(WriteJobDtl)
+		F.Intrinsic.Control.If(V.Local.sSound.Trim,<>,"")
+			F.intrinsic.UI.PlaySound(V.Local.sSound)
+		F.Intrinsic.Control.EndIf
+	F.Intrinsic.Control.Endif
+	
+F.Intrinsic.Control.Elseif(V.DataTable.dtJobs.RowCount--,<,0)
+	F.Intrinsic.Math.Mult(V.Local.fWidth,V.Local.fLength,V.Local.fArea)
+	F.Intrinsic.Control.If(V.Global.bMultQty,=,True)
+		F.Intrinsic.Math.Mult(V.Local.fArea,V.Global.fQtyWork,V.Local.fArea)
+	F.Intrinsic.Control.EndIf
+
+	F.Intrinsic.Control.If(V.Local.fAreaUsed,>,0)
+		F.Intrinsic.Math.Add(V.Local.fAreaUsed,V.Local.fArea,V.Local.fAreaUsed)
+		F.Intrinsic.Math.Round(v.Local.fAreaUsed,2,V.Local.fAreaUsed)
+		Gui.frmVinylPress.txtAreaUsed.Text(V.Local.fAreaUsed)
+	F.Intrinsic.Control.Else
+		V.Local.fAreaUsed.Set(V.Local.fArea)
+		F.Intrinsic.Math.Round(v.Local.fAreaUsed,2,V.Local.fAreaUsed)
+		Gui.frmVinylPress.txtAreaUsed.Text(V.Local.fAreaUsed)
+	F.Intrinsic.Control.EndIf
+
+	F.Intrinsic.Math.Div(V.Local.fAreaUsed,V.Local.fTotalAreaAvail,V.Local.fUtilization)
+	F.Intrinsic.Math.Mult(V.Local.fUtilization,100,V.Local.fUtilizationPct)
+	F.Intrinsic.Math.Round(V.Local.fUtilizationPct,2,V.Local.fUtilizationPct)
+	
+'	F.Intrinsic.Control.If(V.Local.fUtilizationPct,>,100, "OR", V.Local.fAreaUsed,>,18)
+'		F.Intrinsic.UI.Msgbox("Total Area Used cannot exceed 100%!")
+'		F.Intrinsic.Math.Sub(V.Local.fAreaUsed,V.Local.fArea,V.Local.fAreaUsed)
+'		F.Intrinsic.Math.Round(v.Local.fAreaUsed,2,V.Local.fAreaUsed)
+'		F.Intrinsic.Math.Div(V.Local.fAreaUsed,V.Local.fTotalAreaAvail,V.Local.fUtilization)
+'		F.Intrinsic.Math.Mult(V.Local.fUtilization,100,V.Local.fUtilizationPct)
+'		F.Intrinsic.Math.Round(V.Local.fUtilizationPct,2,V.Local.fUtilizationPct)
+'		Gui.frmVinylPress.txtAreaUsed.Text(V.Local.fAreaUsed)
+'		F.Intrinsic.Control.ExitSub
+'	F.Intrinsic.Control.EndIf
+	
+	f.Data.DataTable.AddRow("dtAddJobs","SEL",False,"JOB",v.Local.sJob.Trim,"SUFFIX",V.Local.sSuffix.Trim, "SEQ", v.Local.sSeq.Trim, "PART", v.Local.sPart.Trim,"DESCRIPTION",V.Local.sDescription.Trim,"JSSI", V.Local.sJSSI.Trim,"MATL", V.Local.sMaterial.Trim, "FINISH", V.Local.sFinish.Trim, "TOTALLENGTH", V.Local.fLength,"TOTALWIDTH",V.Local.fWidth,"QTY",V.Local.iQty,"MATL_DESC",V.Local.sMatDesc.Trim,"FINISH_DESC",V.Local.sFinDesc.Trim)
+	'check to see if there are any existing records, for the JSSI, in Job Detail
+	F.Intrinsic.Control.CallSub(CheckJobDtl)
+'	F.Intrinsic.Control.CallSub(WriteJobDtl)
+	F.Intrinsic.Control.If(V.Local.sSound.Trim,<>,"")
+		F.intrinsic.UI.PlaySound(V.Local.sSound)
+	F.Intrinsic.Control.EndIf
+F.Intrinsic.Control.EndIf
+
+
+F.Data.DataTable.Merge("dtAddJobs","dtJobs",True,2)
+
+F.Intrinsic.Control.If(V.Local.fUtilizationPct,>=,1.00,"AND",V.Local.fUtilizationPct,<=,74.00)
+	gUI.frmVinylPress.lblUtilizationPB.BackColor(V.Color.LtRed)
+F.Intrinsic.Control.ElseIf(V.Local.fUtilizationPct,>,74.00,"AND",V.Local.fUtilizationPct,<=,90.00)
+	gui.frmVinylPress.lblUtilizationPB.BackColor(v.Color.Yellow)
+F.Intrinsic.Control.ElseIf(V.Local.fUtilizationPct,>,90.00)
+	gui.frmVinylPress.lblUtilizationPB.BackColor(v.Color.Green)
+F.Intrinsic.Control.EndIf
+
+Gui.frmVinylPress.txtPieceSerial.Text("")
+Gui.frmVinylPress.cmdReprint.Enabled(True)
+	
+Gui.frmVinylPress.cmdRemove.Enabled(True)
+'the start button will only become enabled after a serial number has been scanned and the dropdown lists are populated. This will ensure an employee and workcenter is tied to the job detail record.
+
+F.Intrinsic.Control.Catch
+	F.Intrinsic.Control.CallSub(ErrorMessage, "ErrorNumber", V.Ambient.ErrorNumber, "ErrorDescription", V.Ambient.ErrorDescription, "Subroutine", V.Ambient.CurrentSubroutine, "UNATTENDED", V.Global.bUnattended, "Project", "5364", "ProjectTitle", "5364 Vinyl Press", "Callback", "frmVinylPress_UnLoad")
+F.Intrinsic.Control.EndTry
+Program.Sub.LoadQueuedJobs.End
+
+Program.Sub.WriteJobDtl.Start
+F.Intrinsic.Control.Try
+V.Local.fQty.Declare(Float)
+V.Local.iCnt.Declare(Long)
+V.Local.iScrapColumnIndex.Declare(Long)
+V.Local.iSelectColumnIndex.Declare(Long)
+v.Local.fGoodPcs.Declare(Float)
+V.Local.sEmployee.Declare(String)
+V.Local.sPart.Declare(String)
+V.Local.sDescription.Declare(String)
+V.Local.sFinish.Declare(String)
+V.Local.sMaterial.Declare(String)
+V.Local.sOrderNo.Declare(String)
+V.Local.sOrderLine.Declare(String)
+V.Local.sSel.Declare(String)
+V.Local.sSeq.Declare(String)
+V.Local.sJob.Declare(String)
+V.Local.sRet.Declare(String)
+V.Local.sSQL.Declare(String)
+V.Local.sSerial.Declare(String)
+V.Local.sScrapFlag.Declare(String)
+V.Local.sScrap.Declare(String)
+V.Local.sSuffix.Declare(String)
+V.Local.sStartTime.Declare(String)
+V.Local.sWC.Declare(String)
+V.Local.sStartDate.Declare(String)
+V.Local.sJobOpRet.Declare(String)
+V.Local.i.Declare(Long)
+
+V.Local.sEmployee.Set(V.Screen.frmVinylPress!ddlActiveEmployee.Value)
+V.Local.sWC.Set(V.Screen.frmVinylPress!ddlwc.Value)
+V.Local.sSerial.Set(V.Screen.frmVinylPress!txtPieceSerial.Text)
+
+'job, suffix, seq, part, description,  jssi, order_no ,order_line, start_date, start_time, end_date, end_time, Employee, workcenter, order_qty, scrap, scrap_qty, override, override_user, good_pieces, scrap_reason
+
+F.Intrinsic.Control.For(V.Local.i,0,V.DataTable.dtJobs.RowCount--,1)
+	V.Local.sSerial.Set(V.DataTable.dtJobs(V.Local.i).JSSI!FieldValTrim)
+	'query the label data table to get the order no and order line
+	F.Intrinsic.String.Build("SELECT DISTINCT JOB, SUFFIX, SEQ, PART, DESCRIPTION, ORDER_NO, ORDER_LINE, QTY FROM GCG_5364_LABEL_DATA WHERE JSSI = '{0}'",V.Local.sSerial.Trim,V.Local.sSQL)
+	F.ODBC.Connection!con.ExecuteAndReturn(V.Local.sSQL,V.Local.sRet)
+	F.Intrinsic.Control.If(V.Local.sRet.Trim,<>,"")
+		F.Intrinsic.String.Split(V.Local.sRet,"*!*",V.Local.sRet)
+		V.Local.sJob.Set(V.Local.sRet(0))
+		V.Local.sSuffix.Set(v.Local.sRet(1))
+		V.Local.sPart.Set(V.Local.sRet(3))
+		V.Local.sDescription.Set(V.Local.sRet(4))
+		V.Local.sOrderNo.Set(V.Local.sRet(5))
+		V.Local.sOrderLine.Set(V.Local.sRet(6))
+'		V.Local.fQty.Set(V.Local.sRet(7))
+		F.Intrinsic.Control.If(V.DataTable.dtJobs.RowCount--,<>,-1)
+			V.Local.fQty.Set(V.DataTable.dtJobs(V.Local.i).QTY!FieldVal)
+		F.Intrinsic.Control.Else
+			V.Local.fQty.Set(V.Local.sRet(7))
+		F.Intrinsic.Control.EndIf
+		V.Local.sScrap.Set("")
+		V.Local.sStartDate.Set(V.Ambient.Date.PSQLFriendly)
+		v.Local.fGoodPcs.Set(0.00)
+		'F.Intrinsic.String.Format(V.Local.sStartDate,"MM/DD/YYYY", V.Local.sStartDate)
+		F.Intrinsic.String.Build("SELECT SEQ  FROM V_JOB_OPERATIONS WHERE JOB = '{0}' AND SUFFIX = '{1}' AND (PART = '{2}' OR Part = (Select WorkGroup From V_WorkGroup_Line Where WorkCenter = '{2}')) AND LMO = 'L' ",v.Local.sJob.Trim,v.Local.sSuffix.Trim,V.Local.sWC,V.Local.sSQL)
+		F.ODBC.Connection!con.ExecuteAndReturn(V.Local.sSQL,V.Local.sSeq)
+	'	F.Intrinsic.Control.If(V.Global.sMiscFlag,=,"Y")
+	'		V.Local.sSeq.Set("996000")
+	'	F.Intrinsic.Control.EndIf
+		
+'		F.Intrinsic.Control.If(V.Global.fQtyWork,>,0.00)
+'			F.Intrinsic.String.Build("INSERT INTO GCG_5364_JOB_DTL (JOB, SUFFIX, SEQ, PART, DESCRIPTION, JSSI, ORDER_NO, ORDER_LINE, START_DATE, START_TIME, EMPLOYEE, WORKCENTER, ORDER_QTY, SCRAP,GOOD_PIECES) VALUES ('{0}', '{1}', '{2}','{3}', '{4}','{5}', '{6}', '{7}', '{8}','{9}', '{10}', '{11}', '{12}', '{13}' , '{14}')",V.Local.sJob.Trim,V.Local.sSuffix.Trim,V.Local.sSeq.Trim,V.Local.sPart.Trim,V.Local.sDescription.Trim, V.Local.sSerial.Trim,V.Local.sOrderNo.Trim, V.Local.sOrderLine.Trim,V.Local.sStartDate.Trim,V.Ambient.Time.PSQLFriendly, V.Local.sEmployee,V.Local.sWC, V.Global.fQtyWork,V.Local.sScrap.Trim,V.Local.fGoodPcs,V.Local.sSQL)
+'		F.Intrinsic.Control.Else
+'			F.Intrinsic.String.Build("INSERT INTO GCG_5364_JOB_DTL (JOB, SUFFIX, SEQ, PART, DESCRIPTION, JSSI, ORDER_NO, ORDER_LINE, START_DATE, START_TIME, EMPLOYEE, WORKCENTER, ORDER_QTY, SCRAP,GOOD_PIECES) VALUES ('{0}', '{1}', '{2}','{3}', '{4}','{5}', '{6}', '{7}', '{8}','{9}', '{10}', '{11}', '{12}', '{13}', '{14}' )",V.Local.sJob.Trim,V.Local.sSuffix.Trim,V.Local.sSeq.Trim,V.Local.sPart.Trim,V.Local.sDescription.Trim, V.Local.sSerial.Trim,V.Local.sOrderNo.Trim, V.Local.sOrderLine.Trim,V.Local.sStartDate.Trim,V.Ambient.Time.PSQLFriendly, V.Local.sEmployee,V.Local.sWC, V.Local.fQty,V.Local.sScrap.Trim,V.Local.fGoodPcs,V.Local.sSQL)
+'		F.Intrinsic.Control.EndIf
+		F.Intrinsic.String.Build("INSERT INTO GCG_5364_JOB_DTL (JOB, SUFFIX, SEQ, PART, DESCRIPTION, JSSI, ORDER_NO, ORDER_LINE, START_DATE, START_TIME, EMPLOYEE, WORKCENTER, ORDER_QTY, SCRAP,GOOD_PIECES) VALUES ('{0}', '{1}', '{2}','{3}', '{4}','{5}', '{6}', '{7}', '{8}','{9}', '{10}', '{11}', '{12}', '{13}', '{14}' )",V.Local.sJob.Trim,V.Local.sSuffix.Trim,V.Local.sSeq.Trim,V.Local.sPart.Trim,V.Local.sDescription.PSQLFriendly, V.Local.sSerial.Trim,V.Local.sOrderNo.Trim, V.Local.sOrderLine.Trim,V.Local.sStartDate.Trim,V.Ambient.Time.PSQLFriendly, V.Local.sEmployee,V.Local.sWC, V.Local.fQty,V.Local.sScrap.Trim,V.Local.fGoodPcs,V.Local.sSQL)
+		
+		F.ODBC.Connection!con.Execute(V.Local.sSQL)
+	F.Intrinsic.Control.Else
+		F.Intrinsic.UI.Msgbox("The record you have selected does not exist in the custom label table!", "Error")
+	F.Intrinsic.Control.EndIf
+F.Intrinsic.Control.Next(V.Local.i)
+
+F.Intrinsic.Control.Catch
+	F.Intrinsic.Control.CallSub(ErrorMessage, "ErrorNumber", V.Ambient.ErrorNumber, "ErrorDescription", V.Ambient.ErrorDescription, "Subroutine", V.Ambient.CurrentSubroutine, "UNATTENDED", V.Global.bUnattended, "Project", "5364", "ProjectTitle", "5364 Vinyl Press", "Callback", "frmVinylPress_UnLoad")
+F.Intrinsic.Control.EndTry
+Program.Sub.WriteJobDtl.End
+
+Program.Sub.CheckJobDtl.Start
+F.Intrinsic.Control.Try
+V.Local.fEstHrs.Declare(Float)
+V.Local.iCnt.Declare(Long)
+V.Local.sDescription.Declare(String)
+V.Local.sEmployee.Declare(String)
+V.Local.sEndDate.Declare(String)
+V.Local.sEndTime.Declare(String)
+V.Local.fGoodPcs.Declare(Float)
+V.Local.sJob.Declare(String)
+V.Local.sJSSI.Declare(String)
+V.Local.sOrderNo.Declare(String)
+V.Local.sOrderLine.Declare(String)
+V.Local.fOrdQty.Declare(Float)
+V.Local.sPart.Declare(String)
+V.Local.sScrap.Declare(String)
+V.Local.sSeq.Declare(String)
+V.Local.sSQL.Declare(String)
+V.Local.sRet.Declare(String)
+V.Local.sStartDate.Declare(String)
+V.Local.sStartTime.Declare(String)
+V.Local.sSuffix.Declare(String)
+V.Local.sScreenWC.Declare(String)
+V.Local.sWC.Declare(String)
+
+V.Local.sJSSI.Set(V.Screen.frmVinylPress!txtPieceSerial.Text)
+V.Local.sScreenWC.Set(V.Screen.frmVinylPress!ddlWC.Value)
+V.Local.sEmployee.Set(V.Screen.frmVinylPress!ddlActiveEmployee.Value)
+V.Local.iCnt.Set("")
+
+F.Intrinsic.String.Build("SELECT JOB, SUFFIX, SEQ, JSSI, WORKCENTER,  START_DATE, START_TIME, END_DATE, END_TIME, GOOD_PIECES, SCRAP FROM GCG_5364_JOB_DTL WHERE JSSI = '{0}' AND END_DATE IS NULL AND END_TIME IS NULL",V.Local.sJSSI.Trim, V.Local.sSQL)
+F.Data.DataTable.CreateFromSQL("dtExistingJobDtl","con",V.Local.sSQL)
+F.Intrinsic.Control.If(V.DataTable.dtExistingJobDtl.RowCount--,>,-1)
+	F.Intrinsic.Control.For(V.Local.iCnt,0,V.DataTable.dtExistingJobDtl.RowCount--,1)
+		V.Local.sJob.Set(V.DataTable.dtExistingJobDtl(V.Local.iCnt).JOB!FieldValTrim)
+		V.Local.sSeq.Set(V.DataTable.dtExistingJobDtl(V.Local.iCnt).SEQ!FieldValTrim)
+		V.Local.sSuffix.Set(V.DataTable.dtExistingJobDtl(V.Local.iCnt).SUFFIX!FieldValTrim)
+		V.Local.sWC.Set(V.DataTable.dtExistingJobDtl(V.Local.iCnt).WORKCENTER!FieldValTrim)
+		V.Local.sStartDate.Set(V.DataTable.dtExistingJobDtl(V.Local.iCnt).START_DATE!FieldValTrim)
+		V.Local.sStartTime.Set(V.DataTable.dtExistingJobDtl(V.Local.iCnt).START_TIME!FieldValTrim)
+		V.Local.sEndDate.Set(V.DataTable.dtExistingJobDtl(V.Local.iCnt).END_DATE!FieldValTrim)
+		V.Local.sEndTime.Set(V.DataTable.dtExistingJobDtl(V.Local.iCnt).END_TIME!FieldValTrim)
+		V.Local.fGoodPcs.Set(V.DataTable.dtExistingJobDtl(V.Local.iCnt).GOOD_PIECES!FieldVal)
+		'Check to make sure there is an end date/end time
+		F.Intrinsic.Control.If(V.Local.sWC,<>,V.Local.sScreenWC)
+			F.Intrinsic.String.Build("SELECT If(Units_Open = 0,Hours_Estimated,Hours_Estimated / Units_Open) as  Hours_Estimated  FROM V_JOB_OPERATIONS WHERE JOB = '{0}' AND SUFFIX = '{1}' AND  LMO = 'L' AND SEQ = '{2}' AND (PART = '{3}' OR Part = (Select WorkGroup From V_WorkGroup_Line Where WorkCenter = '{3}'))",v.Local.sJob.Trim,v.Local.sSuffix.Trim,V.Local.sSeq,V.Local.sWC,V.Local.sSQL)
+			F.ODBC.Connection!con.ExecuteAndReturn(V.Local.sSQL, V.Local.sRet)
+			F.Intrinsic.Control.If(V.Local.sRet,>,"")
+				V.Local.fEstHrs.Set(V.Local.sRet)
+				F.Intrinsic.Math.Mult(V.Local.fEstHrs,60,V.Local.fEstHrs)
+				F.Intrinsic.Date.DateAdd("N", V.Local.fEstHrs,V.Local.sStartTime,V.Local.sEndTime)
+				F.Intrinsic.String.Format(V.Local.sEndTime,"HH:NN:SS AMPM",V.Local.sEndTime)
+			F.Intrinsic.Control.EndIf
+			
+			'update the end time/date and report good pieces
+			V.Local.fGoodPcs.Set(1.00)
+			F.Intrinsic.String.Build("UPDATE GCG_5364_JOB_DTL SET END_DATE = '{0}', END_TIME = '{1}', GOOD_PIECES = '{6}'  WHERE JSSI ='{2}' AND WORKCENTER = '{3}' AND JOB = '{4}' AND SUFFIX ='{5}'",V.Ambient.Date.PSQLFriendly, V.Local.sEndTime,V.Local.sJSSI.Trim, V.Local.sWC.Trim,V.Local.sJob.Trim,V.Local.sSuffix.Trim,V.Local.fGoodPcs, V.Local.sSQL)
+			F.ODBC.Connection!con.Execute(V.Local.sSQL)
+		F.Intrinsic.Control.EndIf
+	F.Intrinsic.Control.Next(V.Local.iCnt)
+F.Intrinsic.Control.EndIf
+
+F.Intrinsic.Control.Catch
+	F.Intrinsic.Control.CallSub(ErrorMessage, "ErrorNumber", V.Ambient.ErrorNumber, "ErrorDescription", V.Ambient.ErrorDescription, "Subroutine", V.Ambient.CurrentSubroutine, "UNATTENDED", V.Global.bUnattended, "Project", "5364", "ProjectTitle", "5364 Vinyl Press", "Callback", "frmVinylPress_UnLoad")
+F.Intrinsic.Control.EndTry
+Program.Sub.CheckJobDtl.End
+
+Program.Sub.ddlWC_Click.Start
+F.Intrinsic.Control.Try
+
+Gui.frmVinylPress.GsGcJobs.Enabled(True)
+
+F.Intrinsic.Control.Catch
+	F.Intrinsic.Control.CallSub(ErrorMessage, "ErrorNumber", V.Ambient.ErrorNumber, "ErrorDescription", V.Ambient.ErrorDescription, "Subroutine", V.Ambient.CurrentSubroutine, "UNATTENDED", V.Global.bUnattended, "Project", "5364", "ProjectTitle", "5364 Vinyl Press", "Callback", "frmVinylPress_UnLoad")
+F.Intrinsic.Control.EndTry
+Program.Sub.ddlWC_Click.End
+
+Program.Sub.ddlActiveEmployee_Click.Start
+F.Intrinsic.Control.Try
+'declare any variables needed in the subroutine
+
+Gui.frmVinylPress.txtPieceSerial.Enabled(True)
+Gui.frmVinylPress.cmdScrap.Enabled(True)
+Gui.frmVinylPress.cmdStart.Enabled(True)
+
+F.Intrinsic.Control.Catch
+	F.Intrinsic.Control.CallSub(ErrorMessage, "ErrorNumber", V.Ambient.ErrorNumber, "ErrorDescription", V.Ambient.ErrorDescription, "Subroutine", V.Ambient.CurrentSubroutine, "UNATTENDED", V.Global.bUnattended, "Project", "5364", "ProjectTitle", "5364 Vinyl Press", "Callback", "frmVinylPress_UnLoad")
+F.Intrinsic.Control.EndTry
+Program.Sub.ddlActiveEmployee_Click.End
+
+Program.Sub.cmdRemove_Click.Start
+F.Intrinsic.Control.Try
+V.Local.fAreaUsed.Declare(Float)
+V.Local.iCnt.Declare(Long)
+V.Local.iRet.Declare(Long)
+V.Local.sEmployee.Declare(String)
+V.Local.sJob.Declare(String)
+V.Local.sSuffix.Declare(String)
+V.Local.sSeq.Declare(String)
+V.Local.sSerial.Declare(String)
+V.Local.sSQL.Declare(String)
+V.Local.sWC.Declare(String)
+V.Local.sRet.Declare(String)
+V.Local.sMessage.Declare(String)
+V.Local.fLength.Declare(Float)
+V.Local.fWidth.Declare(Float)
+V.Local.fSqFtArea.Declare(Float)
+V.Local.fTotalAreaAvail.Declare(Float)
+V.Local.fUtilization.Declare(Float)
+V.Local.fUtilizationPct.Declare(float)
+
+V.Local.sEmployee.Set(V.Screen.frmVinylPress!ddlActiveEmployee.Value)
+V.Local.sWC.Set(v.Screen.frmVinylPress!ddlWC.Value)
+V.Local.fAreaUsed.Set(V.Screen.frmVinylPress!txtAreaUsed.Text)
+V.Local.fTotalAreaAvail.Set(V.Screen.frmVinylPress!txtAreaAvail.text)
+
+F.Intrinsic.Control.For(V.Local.iCnt,V.DataTable.dtJobs.RowCount--,0,-1)
+	F.Intrinsic.Control.If(V.DataTable.dtJobs(V.Local.iCnt).SEL!FieldVal,=,True)
+		V.Local.sJob.Set(V.DataTable.dtJobs(V.Local.iCnt).JOB!FieldValTrim)
+		V.Local.sSuffix.Set(v.DataTable.dtJobs(V.Local.iCnt).SUFFIX!FieldValTrim)
+		V.Local.sSeq.Set(V.DataTable.dtJobs(V.Local.iCnt).SEQ!FieldValTrim)
+		V.Local.sSerial.Set(v.DataTable.dtJobs(v.Local.iCnt).JSSI!FieldValTrim)
+		V.Local.fLength.Set(V.DataTable.dtJobs(V.Local.iCnt).TOTALLENGTH!FieldValTrim)
+		V.Local.fWidth.Set(V.DataTable.dtJobs(V.Local.iCnt).TOTALWIDTH!FieldValTrim)
+		'converts length and width to feet
+
+		F.Intrinsic.Math.Mult(V.Local.fWidth,V.Local.fLength,V.Local.fSqFtArea)
+		F.Intrinsic.String.Build("Are you sure you want to remove the piece tied to serial #{0}?",V.Local.sSerial.Trim,V.Local.sMessage)
+		F.Intrinsic.UI.Msgbox(V.Local.sMessage,"WARNING", 4,V.Local.iRet)
+		F.Intrinsic.Control.If(V.Local.iRet,=,6)
+			F.Intrinsic.String.Build("DELETE FROM GCG_5364_JOB_DTL WHERE JOB = '{0}' AND SUFFIX = '{1}' AND SEQ = '{2}' AND JSSI = '{3}' AND WORKCENTER = '{4}' AND END_DATE IS NULL AND END_TIME IS NULL", V.Local.sJob.Trim,V.Local.sSuffix.Trim,V.Local.sSeq, V.Local.sSerial.Trim,  V.Local.sWC.Trim, V.Local.sSQL)
+			F.ODBC.Connection!con.Execute(V.Local.sSQL)
+			F.Data.DataTable.DeleteRow("dtJobs",V.Local.iCnt)
+	'		F.Data.DataTable.AcceptChanges("dtJobs")
+			F.Intrinsic.Math.Sub(V.Local.fAreaUsed,V.Local.fSqFtArea,V.Local.fAreaUsed)
+			F.Intrinsic.Control.If(V.Local.fAreaUsed,<,0.00)
+				V.Local.fAreaUsed.Set(0.00)
+				Gui.frmVinylPress.txtAreaUsed.Text(V.Local.fAreaUsed)
+			F.Intrinsic.Control.Else
+				F.Intrinsic.Math.Round(V.Local.fAreaUsed,2,V.Local.fAreaUsed)
+				Gui.frmVinylPress.txtAreaUsed.Text(v.Local.fAreaUsed)
+			F.Intrinsic.Control.EndIf
+			
+			F.Intrinsic.Control.If(V.Local.fAreaUsed,>,0)
+				F.Intrinsic.Math.Div(V.Local.fAreaUsed,V.Local.fTotalAreaAvail,V.Local.fUtilization)
+				F.Intrinsic.Math.Mult(V.Local.fUtilization,100,V.Local.fUtilizationPct)
+				F.Intrinsic.Math.Round(V.Local.fUtilizationPct,2,V.Local.fUtilizationPct)
+			F.Intrinsic.Control.Else
+				V.Local.fUtilizationPct.Set(0)
+			F.Intrinsic.Control.EndIf
+		F.Intrinsic.Control.Else
+			F.Intrinsic.Control.ExitSub
+		F.Intrinsic.Control.EndIf
+	F.Intrinsic.Control.EndIf
+F.Intrinsic.Control.Next(V.Local.iCnt)
+
+F.Intrinsic.Control.If(V.Local.fUtilizationPct,>=,1.00,"AND",V.Local.fUtilizationPct,<=,74.00)
+	gUI.frmVinylPress.lblUtilizationPB.BackColor(V.Color.LtRed)
+F.Intrinsic.Control.ElseIf(V.Local.fUtilizationPct,>,74.00,"AND",V.Local.fUtilizationPct,<=,90.00)
+	gui.frmVinylPress.lblUtilizationPB.BackColor(v.Color.Yellow)
+F.Intrinsic.Control.ElseIf(V.Local.fUtilizationPct,>,90.00)
+	gui.frmVinylPress.lblUtilizationPB.BackColor(v.Color.Green)
+F.Intrinsic.Control.Else
+	Gui.frmVinylPress.lblUtilizationPB.BackColor(V.Enum.ThemeColors!ControlBackground)
+F.Intrinsic.Control.EndIf
+F.Intrinsic.Control.Catch
+	F.Intrinsic.Control.CallSub(ErrorMessage, "ErrorNumber", V.Ambient.ErrorNumber, "ErrorDescription", V.Ambient.ErrorDescription, "Subroutine", V.Ambient.CurrentSubroutine, "UNATTENDED", V.Global.bUnattended, "Project", "5364", "ProjectTitle", "5364 Vinyl Press", "Callback", "frmVinylPress_UnLoad")
+F.Intrinsic.Control.EndTry
+Program.Sub.cmdRemove_Click.End
+
+Program.Sub.cmdScrap_Click.Start
+F.Intrinsic.Control.Try
+V.Local.iCnt.Declare(Long)
+V.Local.iExistCnt.Declare(Long)
+V.Local.sEmployee.Declare(String)
+V.Local.sJob.Declare(String)
+V.Local.sSuffix.Declare(String)
+V.Local.sSeq.Declare(String)
+V.Local.sPart.Declare(String)
+V.Local.sDescription.Declare(String)
+V.Local.sSerial.Declare(String)
+V.Local.sOrderNo.Declare(String)
+V.Local.sOrderLine.Declare(String)
+V.Local.sStartDate.Declare(String)
+V.Local.sEndDate.Declare(String)
+V.Local.sStartTime.Declare(String)
+V.Local.sEndTime.Declare(String)
+V.Local.fOrdQty.Declare(Float)
+v.Local.fQty.Declare(Float)
+V.Local.fGoodPcs.Declare(Float)
+V.Local.sSQL.Declare(String)
+V.Local.sWC.Declare(String)
+v.Local.sScreenWC.Declare(String)
+v.Local.sScrapFlag.Declare(String)
+V.Local.sUpdateSQL.Declare(String)
+V.Local.sTemp.Declare(String)
+V.Local.sRet.Declare(String)
+V.Local.sJobSuff.Declare(String)
+
+V.Local.sEmployee.Set(V.Screen.frmVinylPress!ddlActiveEmployee.Value)
+V.Local.sScreenWC.Set(V.Screen.frmVinylPress!ddlwc.Value)
+
+F.Intrinsic.Control.CallSub(Show_Quarantine_Form)
+Gui.FormQuarantine..WaitForDismiss
+Gui.frmVinylPress..AlwaysOnTop(True)
+Gui.frmVinylPress..AlwaysOnTop(False)
+
+F.Intrinsic.Control.If(V.Global.sLibResponse,=,"Y")
+	F.Intrinsic.String.Build("SELECT Top 1 SCRAP FROM GCG_5364_JOB_DTL  WHERE  JSSI = '{0}' Order by Scrap Desc", V.Global.slibSerial.Trim,V.Local.sSQL)
+	F.ODBC.Connection!con.ExecuteAndReturn(V.Local.sSQL,V.Local.sTemp)
+	F.Intrinsic.Control.If(V.Local.sTemp.Trim,=,"Y")
+		F.Intrinsic.UI.Msgbox("Serial has already been Quarantined","Attention")
+		Gui.FormQuarantine.txtSerial.Text("")
+		F.Intrinsic.Control.ExitSub
+	F.Intrinsic.Control.EndIf
+	F.Intrinsic.String.Build("Select Bin From V_Item_Master Where Serial_Number = '{0}' and Quantity > 0",V.Global.slibSerial.Trim,V.Local.sSql)
+	F.ODBC.Connection!Con.ExecuteAndReturn(V.Local.sSql,V.Local.sRet)
+	F.Intrinsic.Control.If(V.Local.sRet.Trim,<>,"")
+		F.Intrinsic.String.Build("Current Serial: {0} already exists in Inventory and cannot be quarantined.  Get with the Shop Floor Superviser.",V.Global.slibSerial.Trim,V.Local.sSql)
+		F.Intrinsic.UI.Msgbox(V.Local.sSql,"Attention")
+		F.Intrinsic.Control.ExitSub
+	F.Intrinsic.Control.EndIf
+	F.Intrinsic.String.Build("SELECT JOB, SUFFIX, JSSI, WORKCENTER, SCRAP FROM GCG_5364_JOB_DTL  WHERE  JSSI = '{0}' AND WORKCENTER = '{1}' AND END_DATE IS NULL  AND END_TIME IS NULL ", V.Global.slibSerial.Trim,V.Local.sScreenWC.Trim,V.Local.sSQL )
+	 F.Data.DataTable.CreateFromSQL("dtScrapDtl","con",V.Local.sSQL)
+	 'if a record is found for the serial number, set the scrap flag to true
+	 F.Intrinsic.Control.If(V.DataTable.dtScrapDtl.RowCount--,>,-1)
+	 	F.Intrinsic.Control.For(V.Local.iCnt,0,V.DataTable.dtScrapDtl.RowCount--,1)
+	 		V.Local.sJob.Set(V.DataTable.dtScrapDtl(V.Local.iCnt).JOB!FieldValTrim)
+	 		V.Local.sSuffix.Set(V.DataTable.dtScrapDtl(V.Local.iCnt).SUFFIX!FieldValTrim)
+	 		V.Local.sSerial.Set(V.DataTable.dtScrapDtl(V.Local.iCnt).JSSI!FieldValTrim)
+	 		V.Local.sWC.Set(V.DataTable.dtScrapDtl(V.Local.iCnt).WORKCENTER!FieldValTrim)
+	 		V.Local.sScrapFlag.Set(V.DataTable.dtScrapDtl(V.Local.iCnt).SCRAP!FieldValTrim)
+	 		'check to see if the part has already been scrapped. If not, update the record.
+	 		F.Intrinsic.Control.If(V.Local.sScrapFlag,<>,"Y")
+	 			F.Intrinsic.String.Build("UPDATE GCG_5364_JOB_DTL SET SCRAP = 'Y' , END_DATE = '{4}' , END_TIME = '{4}', EMPLOYEE = '{5}'  WHERE JSSI = '{0}' AND JOB = '{1}' AND SUFFIX = '{2}' AND WORKCENTER = '{3}' ", V.Global.slibSerial.Trim, V.Local.sJob.Trim,V.Local.sSuffix.Trim, V.Local.sWC.Trim, V.Ambient.Date.PSQLFriendly, V.Ambient.Time.PSQLFriendly,V.Local.sEmployee,V.Local.sUpdateSQL)
+	 			F.ODBC.Connection!con.Execute(V.Local.sUpdateSQL)
+	 		F.Intrinsic.Control.EndIf
+	 		F.Intrinsic.Control.For(V.Local.iExistCnt,V.DataTable.dtJobs.RowCount--,0,-1)
+	 			F.Intrinsic.Control.If(V.DataTable.dtJobs(V.Local.iExistCnt).JSSI!FieldValTrim,=,V.Global.slibSerial.Trim)
+	 				F.Data.DataTable.DeleteRow("dtJobs",V.Local.iExistCnt)
+	 			F.Intrinsic.Control.EndIf
+	 		F.Intrinsic.Control.Next(V.Local.iExistCnt)
+	 	F.Intrinsic.Control.Next(V.Local.iCnt)
+	 F.Intrinsic.Control.Else
+	 'if a record is not found, we are going to add one to the job detail table
+	 	F.Intrinsic.String.Build("SELECT JOB, SUFFIX, PART, DESCRIPTION, ORDER_NO, ORDER_LINE,  QTY, SEQ FROM GCG_5364_LABEL_DATA WHERE JSSI = '{0}'",V.Global.slibSerial.Trim,V.Local.sSQL)
+	 	F.ODBC.Connection!con.ExecuteAndReturn(V.Local.sSQL,V.Local.sRet)
+	 	F.Intrinsic.Control.If(V.Local.sRet,>,"")
+	 		F.Intrinsic.String.Split(V.Local.sRet,"*!*",V.Local.sRet)
+	 		V.Local.sJob.Set(V.Local.sRet(0))
+	 		V.Local.sSuffix.Set(v.Local.sRet(1))
+	 		V.Local.sPart.Set(V.Local.sRet(2))
+	 		V.Local.sDescription.Set(V.Local.sRet(3))
+	 		V.Local.sOrderNo.Set(V.Local.sRet(4))
+	 		V.Local.sOrderLine.Set(V.Local.sRet(5))
+	 		V.Local.fQty.Set(V.Local.sRet(6))
+	 		v.Local.sScrapFlag.Set("Y")
+	 		'check to make sure the workcenter they are clocked into is in job operations for the serial number
+	 		F.Intrinsic.String.Build("SELECT SEQ FROM V_JOB_OPERATIONS WHERE JOB = '{0}' AND SUFFIX = '{1}' AND LMO = 'L' AND (PART = '{2}' OR Part = (Select WorkGroup From V_WorkGroup_Line Where WorkCenter = '{2}'))",V.Local.sJob.Trim, V.Local.sSuffix.Trim,V.Local.sScreenWC.Trim,V.Local.sSQL)
+	 		F.ODBC.Connection!con.ExecuteAndReturn(V.Local.sSQL,V.Local.sSeq)
+	 		F.Intrinsic.Control.If(V.Local.sSeq,=,"")
+	 			V.Local.sSeq.Set(V.Local.sRet(7))
+	 		F.Intrinsic.Control.EndIf
+	 		
+	 		
+	 		F.Intrinsic.Control.If(v.Local.fQty,>,"1.00")
+				V.Global.bMultQty.Set(True)
+				F.Intrinsic.Control.If(V.Global.fQtyWork,=,V.Local.fQty)
+					Gui.frmQty.txtRunQty.Text(V.Global.fQtyWork)
+				F.Intrinsic.Control.Else
+					Gui.frmQty.txtRunQty.Text(V.Local.fQty)
+				F.Intrinsic.Control.EndIf
+				F.Intrinsic.String.Build("{0}-{1}", V.Local.sJob.Trim,V.Local.sSuffix.Trim, V.Local.sJobSuff)
+				Gui.frmQty.txtJob.Text(V.Local.sJobSuff)
+				Gui.frmQty.txtQty.Text("")
+				Gui.frmQty..Show
+				Gui.frmWCDataCollection..Enabled(False)
+				Gui.frmQty..WaitForDismiss
+				Gui.frmVinylPress..AlwaysOnTop(True)
+				Gui.frmVinylPress..AlwaysOnTop(False)
+			F.Intrinsic.Control.EndIf
+			V.Local.fGoodPcs.Set(0.00)
+
+	 		F.Intrinsic.Control.If(V.Global.fQtyWork,>,0.00)
+				F.Intrinsic.String.Build("INSERT INTO GCG_5364_JOB_DTL (JOB, SUFFIX, SEQ, PART, DESCRIPTION, JSSI, ORDER_NO, ORDER_LINE, START_DATE, START_TIME, EMPLOYEE, WORKCENTER, ORDER_QTY, SCRAP, END_DATE, END_TIME, GOOD_PIECES) VALUES ('{0}', '{1}', '{2}','{3}', '{4}','{5}', '{6}', '{7}', '{8}','{9}', '{10}', '{11}', '{12}', '{13}','{14}','{15}', '{16}' )",V.Local.sJob.Trim,V.Local.sSuffix.Trim,V.Local.sSeq.Trim,V.Local.sPart.Trim,V.Local.sDescription.Trim, V.Global.slibSerial.Trim,V.Local.sOrderNo.Trim, V.Local.sOrderLine.Trim,V.Ambient.Date.PSQLFriendly,V.Ambient.Time.PSQLFriendly, V.Local.sEmployee.Trim,V.Local.sScreenWC.Trim, V.Global.fQtyWork,V.Local.sScrapFlag.Trim, V.Ambient.Date.PSQLFriendly,V.Ambient.Time.PSQLFriendly,V.Local.fGoodPcs,V.Local.sSQL)
+			F.Intrinsic.Control.Else
+				F.Intrinsic.String.Build("INSERT INTO GCG_5364_JOB_DTL (JOB, SUFFIX, SEQ, PART, DESCRIPTION, JSSI, ORDER_NO, ORDER_LINE, START_DATE, START_TIME, EMPLOYEE, WORKCENTER, ORDER_QTY, SCRAP,END_DATE, END_TIME,GOOD_PIECES) VALUES ('{0}', '{1}', '{2}','{3}', '{4}','{5}', '{6}', '{7}', '{8}','{9}', '{10}', '{11}', '{12}', '{13}','{14}','{15}', '{16}')",V.Local.sJob.Trim,V.Local.sSuffix.Trim,V.Local.sSeq.Trim,V.Local.sPart.Trim,V.Local.sDescription.Trim, V.Global.slibSerial.Trim,V.Local.sOrderNo.Trim, V.Local.sOrderLine.Trim,V.Ambient.Date.PSQLFriendly,V.Ambient.Time.PSQLFriendly, V.Local.sEmployee.Trim,V.Local.sScreenWC.Trim, V.Local.fQty,V.Local.sScrapFlag.Trim,V.Ambient.Date.PSQLFriendly,V.Ambient.Time.PSQLFriendly,v.Local.fGoodPcs,V.Local.sSQL)
+			F.Intrinsic.Control.EndIf
+			F.ODBC.Connection!con.execute(V.Local.sSQL)
+		F.Intrinsic.Control.EndIf
+	 F.Intrinsic.Control.EndIf
+	 F.Data.DataTable.Close("dtScrapDtl")
+'F.Intrinsic.Control.Else
+'	F.Intrinsic.Control.ExitSub
+F.Intrinsic.Control.EndIf
+	
+V.Global.sLibResponse.Set("N")
+V.Global.slibSerial.Set("")
+Gui.FormQuarantine.txtSerial.Text("")
+
+Gui.frmVinylPress.txtPieceSerial.SetFocus
+Gui.frmVinylPress..AlwaysOnTop(True)
+Gui.frmVinylPress..AlwaysOnTop(False)
+
+F.Intrinsic.Control.Catch
+	F.Intrinsic.Control.CallSub(ErrorMessage, "ErrorNumber", V.Ambient.ErrorNumber, "ErrorDescription", V.Ambient.ErrorDescription, "Subroutine", V.Ambient.CurrentSubroutine, "UNATTENDED", V.Global.bUnattended, "Project", "5364", "ProjectTitle", "5364 Vinyl Press", "Callback", "frmVinylPress_UnLoad")
+F.Intrinsic.Control.EndTry
+Program.Sub.cmdScrap_Click.End
+
+
+
+'MOD 2022
+Program.Sub.cmdStart_Click.Start
+F.Intrinsic.Control.Try
+'declare any variables needed for the subroutine
+V.Local.fWidth.Declare(Float)
+V.Local.fLength.Declare(Float)
+V.Local.fArea.Declare(Float)
+v.Local.fTotJobArea.Declare(Float)
+V.Local.iJobCnt.Declare(Long)
+V.Local.iColumnIndex.Declare(Long)
+V.Local.sSQL.Declare(String)
+V.Local.sJob.Declare(String)
+V.Local.sSuffix.Declare(String)
+V.Local.sJobSuf.Declare(String)
+V.Local.sSeq.Declare(String)
+V.Local.sPart.Declare(String)
+V.Local.sSerial.Declare(String)
+V.Local.iCnt.Declare(long)
+v.Local.iColorCnt.Declare(Long)
+V.Local.sSelected.Declare(String)
+V.Local.sAreaAvail.Declare(String)
+V.Local.sAreaUsed.Declare(String)
+V.Local.sSheetSize.Declare(String)
+V.Local.sSheetSizeCols.Declare(String)
+V.Local.sFilter.Declare(String)
+V.Local.fConversionRate.Declare(Float)
+
+
+F.Intrinsic.Control.If(V.DataTable.dtJobs.RowCount--,=,-1)
+	F.Intrinsic.UI.Msgbox("You cannot start the job until you have scanned serial numbers into the PRES workcenter.","Error")
+	F.Intrinsic.Control.ExitSub
+F.Intrinsic.Control.Else
+	Gui.frmVinylPress..Enabled(False)
+	
+	F.Intrinsic.Control.CallSub(WriteJobDtl)
+	F.Intrinsic.Control.CallSub(LoadIssueGrid)
+
+	F.Intrinsic.Control.CallSub(FormatIssueGrid)
+	
+	F.Intrinsic.Control.For(V.Local.iCnt,0,V.DataTable.dtJobs.RowCount--,1)
+		Gui.frmVinylPress.GsGcJobs.GetColumnIndexByName("gvJobs","SEL",V.Local.iColumnIndex)
+		Gui.frmVinylPress.GsGcJobs.GetCellValue("gvJobs",v.Local.iColumnIndex,V.Local.iCnt,V.Local.sSelected)
+		F.Intrinsic.Control.If(V.Local.sSelected,=,"False")
+			V.Local.sSelected.Set("True")
+			Gui.frmVinylPress.GsGcJobs.SetCellValue("gvJobs",V.Local.iColumnIndex,V.Local.iCnt,V.Local.sSelected)
+		F.Intrinsic.Control.EndIf
+		V.Global.sJob.Set(V.DataTable.dtJobs(V.Local.iCnt).JOB!FieldValTrim)
+		V.Global.sSuffix.Set(V.DataTable.dtJobs(V.Local.iCnt).SUFFIX!FieldValTrim)
+		F.Intrinsic.String.Build("{0}-{1}", V.Global.sJob,V.Global.sSuffix,V.Global.sJobSuf)
+		V.Global.sPart.Set(V.DataTable.dtJobs(V.Local.iCnt).PART!FieldValTrim)
+		V.Global.sFinish.Set(V.DataTable.dtJobs(V.Local.iCnt).FINISH!FieldValTrim)
+
+	
+		F.Intrinsic.String.Build("FINISH = '{0}'",V.Global.sFinish.Trim,V.Local.sFilter)
+		F.Intrinsic.Control.If(V.DataView.dtIssueMat!dvColor.Exists)
+			F.Data.DataView.Close("dtIssueMat","dvColor")
+		F.Intrinsic.Control.EndIf
+	
+		F.Data.DataView.Create("dtIssueMat","dvColor",22,V.Local.sFilter,"")
+		F.Intrinsic.Control.If(V.DataView.dtIssueMat!dvColor.RowCount--,<=,-1)
+			F.Data.DataTable.AddRow("dtIssueMat","FINISH", V.Global.sFinish.Trim)
+		F.Intrinsic.Control.EndIf
+	F.Intrinsic.Control.Next(V.Local.iCnt)
+	
+	'check to see if there is more than one color
+	F.Intrinsic.Control.If(V.DataView.dtIssueMat!dvIssueMat.RowCount--,>,-1)
+		'if there is more than one color, we will need to subtract the total area, for each color, from the total area used. This will be used to determine the sheet size for each color.
+		F.Intrinsic.Control.For(V.Local.iCnt,0, V.DataView.dtIssueMat!dvIssueMat.RowCount--,1)
+			F.Intrinsic.String.Build("FINISH = '{0}' ", V.DataView.dtIssueMat!dvIssueMat(V.Local.iCnt).FINISH!FieldValTrim, V.Local.sFilter)
+			
+			F.Intrinsic.Control.If(V.DataView.dtJobs!dvFinishIssue.Exists)
+				F.Data.DataView.Close("dtJobs","dvFinishIssue")
+			F.Intrinsic.Control.EndIf
+			
+			F.Data.DataView.Create("dtJobs","dvFinishIssue",22,V.Local.sFilter,"")
+			
+			F.Intrinsic.Control.If(V.DataView.dtJobs!dvFinishIssue.RowCount--,>,-1)
+				F.Intrinsic.Control.For(V.Local.iJobCnt,0, V.DataView.dtJobs!dvFinishIssue.RowCount--,1)
+					V.Local.fWidth.Set(V.DataView.dtJobs!dvFinishIssue(V.Local.iJobCnt).TOTALWIDTH!FieldVal)
+					V.Local.fLength.Set(V.DataView.dtJobs!dvFinishIssue(V.Local.iJobCnt).TOTALLENGTH!FieldVal)
+					F.Intrinsic.Math.Mult(V.Local.fWidth,V.Local.fLength,V.Local.fArea)
+					F.Intrinsic.Math.Add(V.Local.fArea, V.Local.fTotJobArea,V.Local.fTotJobArea)
+				F.Intrinsic.Control.Next(V.Local.iJobCnt)
+			F.Intrinsic.Control.EndIf
+			
+			
+		'MOD rewrite using global var
+		'-----------------------------------------
+'			F.Intrinsic.Control.if(V.Local.fTotJobArea,>,"18")
+'				v.Local.sSheetSize.Set("FULL SHEET")
+'				V.Local.fConversionRate.Set(2.8)
+'			F.Intrinsic.Control.ElseIf(V.Local.fTotJobArea,<=,"18","AND",V.Local.fTotJobArea,>,"12")
+'				V.Local.sSheetSize.Set("THREE-FOURTHS SHEET")
+'				V.Local.fConversionRate.Set(2.1)
+'			F.Intrinsic.Control.ElseIf(V.Local.fTotJobArea,<=,"12","AND",V.Local.fTotJobArea,>,"6")
+'				v.Local.sSheetSize.Set("HALF SHEET")
+'				V.Local.fConversionRate.Set(1.4)
+'			F.Intrinsic.Control.ElseIf(V.Local.fTotJobArea,<=,"6","AND", V.Local.fTotJobArea,>,"0")
+'				v.Local.sSheetSize.Set("QUARTER SHEET")
+'				V.Local.fConversionRate.Set(0.7)
+'			f.Intrinsic.Control.Else
+'				V.Local.sSheetSize.Set("")
+'			F.Intrinsic.Control.EndIf
+			
+			F.Intrinsic.Control.if(V.Local.fTotJobArea,>,v.Global.fSqft)
+				v.Local.sSheetSize.Set("FULL SHEET")
+				V.Local.fConversionRate.Set(v.Global.fSheet_Full)
+			F.Intrinsic.Control.ElseIf(V.Local.fTotJobArea,<=,v.Global.fSqft,"AND",V.Local.fTotJobArea,>,v.Global.fSqft_23)
+				V.Local.sSheetSize.Set("THREE-FOURTHS SHEET")
+				V.Local.fConversionRate.Set(v.Global.fSheet_ThreeQuart)
+			F.Intrinsic.Control.ElseIf(V.Local.fTotJobArea,<=,v.Global.fSqft_23,"AND",V.Local.fTotJobArea,>,v.Global.fSqft_13)
+				v.Local.sSheetSize.Set("HALF SHEET")
+				V.Local.fConversionRate.Set(v.Global.fHalf)
+			F.Intrinsic.Control.ElseIf(V.Local.fTotJobArea,<=,v.Global.fSqft_13,"AND", V.Local.fTotJobArea,>,"0")
+				v.Local.sSheetSize.Set("QUARTER SHEET")
+				V.Local.fConversionRate.Set(v.Global.fQuarter)
+			f.Intrinsic.Control.Else
+				V.Local.sSheetSize.Set("")
+			F.Intrinsic.Control.EndIf
+		'-----------------------------------------
+			
+			
+			
+			V.Local.sSheetSizeCols.Set("FULL SHEET*!*THREE-FOURTHS SHEET*!*HALF SHEET*!*QUARTER SHEET")
+			Gui.frmIssue.GsGcIssue.ColumnEdit("gvIssueMat","SHEET_SIZE","DropDownList",V.Local.sSheetSizeCols)
+			F.Data.DataView.SetValue("dtIssueMat","dvIssueMat",V.Local.iCnt,"SHEET_SIZE", v.Local.sSheetSize,"CONVERSION",V.Local.fConversionRate.String)
+			
+			V.Local.fTotJobArea.Set("")
+			V.Local.fArea.Set("")
+		F.Intrinsic.Control.Next(V.Local.iCnt)
+	F.Intrinsic.Control.EndIf
+
+
+
+	F.Intrinsic.Control.If(V.DataView.dtIssueMat!dvIssueMat.RowCount--,=,0)
+		v.Local.sSheetSize.Set("FULL SHEET")
+		V.Local.fConversionRate.Set(v.Global.fSheet_Full)
+		V.Local.sSheetSizeCols.Set("FULL SHEET*!*THREE-FOURTHS SHEET*!*HALF SHEET*!*QUARTER SHEET")
+		Gui.frmIssue.GsGcIssue.ColumnEdit("gvIssueMat","SHEET_SIZE","DropDownList",V.Local.sSheetSizeCols)
+		F.Data.DataView.SetValue("dtIssueMat","dvIssueMat",-1,"SHEET_SIZE", v.Local.sSheetSize,"CONVERSION",V.Local.fConversionRate.String)
+			
+		V.Local.fTotJobArea.Set("")
+		V.Local.fArea.Set("")
+	F.Intrinsic.Control.ElseIF(V.DataView.dtIssueMat!dvIssueMat.RowCount--,>,0)
+		V.Local.fConversionRate.Set(0)
+
+
+		F.Data.DataView.Create("dtIssueMat","TempIss",22,"","CONVERSION")
+		F.Intrinsic.Control.For(V.Local.iCnt,0,V.DataView.dtIssueMat!TempIss.RowCount--,1)
+			
+			'MOD
+			'rewrite using global var
+			'-----------------------------------------------
+'			F.Intrinsic.Control.If(v.Local.iCnt,=,V.DataView.dtIssueMat!TempIss.RowCount--)
+'				F.Intrinsic.Math.Sub(2.8,V.Local.fConversionRate,V.Local.fConversionRate)
+'				F.Intrinsic.Control.If(V.Local.fConversionRate.String,=,"0.7")
+'					F.Data.DataView.SetValue("dtIssueMat","TempIss",V.DataView.dtIssueMat!TempIss.RowCount--,"CONVERSION","0.7","SHEET_SIZE","QUARTER SHEET")
+'				F.Intrinsic.Control.EndIf
+'				F.Intrinsic.Control.If(V.Local.fConversionRate.String,=,"1.4")
+'					F.Data.DataView.SetValue("dtIssueMat","TempIss",V.DataView.dtIssueMat!TempIss.RowCount--,"CONVERSION","1.4","SHEET_SIZE","HALF SHEET")
+'				F.Intrinsic.Control.EndIf
+'				F.Intrinsic.Control.If(V.Local.fConversionRate.String,=,"2.1")
+'					F.Data.DataView.SetValue("dtIssueMat","TempIss",V.DataView.dtIssueMat!TempIss.RowCount--,"CONVERSION","2.1","SHEET_SIZE","THREE-FOURTHS SHEET")
+'				F.Intrinsic.Control.Else
+'					F.Data.DataView.SetValue("dtIssueMat","TempIss",V.DataView.dtIssueMat!TempIss.RowCount--,"CONVERSION","2.8","SHEET_SIZE","FULL SHEET")
+'				F.Intrinsic.Control.EndIf
+'			F.Intrinsic.Control.Else
+'				F.Intrinsic.Math.Add(V.Local.fConversionRate,V.DataView.dtIssueMat!TempIss(V.Local.iCnt).Conversion!FieldVal,V.Local.fConversionRate)
+'			F.Intrinsic.Control.EndIf
+			
+			
+			F.Intrinsic.Control.If(v.Local.iCnt,=,V.DataView.dtIssueMat!TempIss.RowCount--)
+				F.Intrinsic.Math.Sub(v.Global.fSheet_Full,V.Local.fConversionRate,V.Local.fConversionRate)
+				F.Intrinsic.Control.If(V.Local.fConversionRate.String,<=,v.Global.fQuarter)
+					F.Data.DataView.SetValue("dtIssueMat","TempIss",V.DataView.dtIssueMat!TempIss.RowCount--,"CONVERSION",v.Global.fQuarter,"SHEET_SIZE","QUARTER SHEET")
+				F.Intrinsic.Control.EndIf
+				F.Intrinsic.Control.If(V.Local.fConversionRate.String,<=,v.Global.fSheet_Half)
+					F.Data.DataView.SetValue("dtIssueMat","TempIss",V.DataView.dtIssueMat!TempIss.RowCount--,"CONVERSION",v.Global.fSheet_Half,"SHEET_SIZE","HALF SHEET")
+				F.Intrinsic.Control.EndIf
+				F.Intrinsic.Control.If(V.Local.fConversionRate.String,<=,v.Global.fSheet_ThreeQuart)
+					F.Data.DataView.SetValue("dtIssueMat","TempIss",V.DataView.dtIssueMat!TempIss.RowCount--,"CONVERSION",v.Global.fSheet_ThreeQuart,"SHEET_SIZE","THREE-FOURTHS SHEET")
+				F.Intrinsic.Control.Else
+					F.Data.DataView.SetValue("dtIssueMat","TempIss",V.DataView.dtIssueMat!TempIss.RowCount--,"CONVERSION",v.Global.fSheet_Full,"SHEET_SIZE","FULL SHEET")
+				F.Intrinsic.Control.EndIf
+			F.Intrinsic.Control.Else
+				F.Intrinsic.Math.Add(V.Local.fConversionRate,V.DataView.dtIssueMat!TempIss(V.Local.iCnt).Conversion!FieldVal,V.Local.fConversionRate)
+			F.Intrinsic.Control.EndIf
+			'-----------------------------------------------
+			
+		F.Intrinsic.Control.Next(V.Local.iCnt)
+		F.Data.DataView.Close("dtIssueMat","TempIss")
+	F.Intrinsic.Control.EndIf
+	
+	Gui.frmIssue.cmdIssueVinyl.Enabled(True)
+	
+	Gui.frmIssue..Show
+	
+F.Intrinsic.Control.EndIf
+F.Intrinsic.Control.Catch
+	F.Intrinsic.Control.CallSub(ErrorMessage, "ErrorNumber", V.Ambient.ErrorNumber, "ErrorDescription", V.Ambient.ErrorDescription, "Subroutine", V.Ambient.CurrentSubroutine, "UNATTENDED", V.Global.bUnattended, "Project", "5364", "ProjectTitle", "5364 Vinyl Press", "Callback", "frmVinylPress_UnLoad")
+F.Intrinsic.Control.EndTry
+Program.Sub.cmdStart_Click.End
+
+Program.Sub.CustomJobDetail.Start
+F.Intrinsic.Control.Try
+V.Local.sSQL.Declare(String)
+V.Local.sJob.Declare(String)
+V.Local.sSuffix.Declare(String)
+V.Local.sJobSuf.Declare(String)
+V.Local.sSeq.Declare(String)
+V.Local.sPart.Declare(String)
+V.Local.sOrderNo.Declare(String)
+V.Local.sOrderLine.Declare(String)
+V.Local.dStartDate.Declare(Date)
+V.Local.sStartDate.Declare(String)
+V.Local.sStartTime.Declare(String)
+V.Local.dEndDate.Declare(Date)
+V.Local.sEndDate.Declare(String)
+V.Local.sEndTime.Declare(String)
+V.Local.sScrapFlag.Declare(String)
+V.Local.sOverride.Declare(String)
+V.Local.sEmployee.Declare(String)
+V.Local.sSerial.Declare(String)
+V.Local.sWC.Declare(String)
+V.Local.sSelected.Declare(String)
+V.Local.iCnt.Declare(Long)
+
+'set the defualt values for scrap, override and selected flags
+V.Local.sScrapFlag.Set("N")
+V.Local.sOverride.Set("N")
+V.Local.sSelected.Set("")
+
+'setting the employee variable to what was selected in the drop down list
+V.Local.sEmployee.Set(V.Screen.frmVinylPress!ddlActiveEmployee.Value)
+'setting the start and end date to be today's date
+V.Local.dStartDate.Set(V.Ambient.Date)
+F.Intrinsic.String.Format(V.Local.dStartDate,"YYYYMMDD", V.Local.sStartDate)
+V.Local.dEndDate.Set(V.Ambient.Date)
+F.Intrinsic.String.Format(V.Local.dEndDate,"YYYYMMDD",V.Local.sEndDate)
+'setting the workcenter to be what was selected in the drop down
+V.Local.sWC.Set(V.Screen.frmVinylPress!ddlWC.Value)
+'setting the JSSi to the serial that was scanned
+V.Global.sSerial.Set(V.Screen.frmVinylPress!txtPieceSerial.Text)
+
+
+F.Intrinsic.Control.Catch
+	F.Intrinsic.Control.CallSub(ErrorMessage, "ErrorNumber", V.Ambient.ErrorNumber, "ErrorDescription", V.Ambient.ErrorDescription, "Subroutine", V.Ambient.CurrentSubroutine, "UNATTENDED", V.Global.bUnattended, "Project", "5364", "ProjectTitle", "5364 Vinyl Press", "Callback", "frmVinylPress_UnLoad")
+F.Intrinsic.Control.EndTry
+Program.Sub.CustomJobDetail.End
+
+Program.Sub.LoadIssueGrid.Start
+F.Intrinsic.Control.Try
+V.Local.sSQL.Declare(String)
+V.Local.sRet.Declare(String)
+V.Local.iCnt.Declare(Long)
+
+F.Intrinsic.Control.If(V.DataTable.dtIssueMat.Exists)
+	F.Data.DataTable.Close("dtIssueMat")
+F.Intrinsic.Control.EndIf
+
+F.Data.DataTable.Create("dtIssueMat", True)
+F.Data.DataTable.AddColumn("dtIssueMat","FINISH","String")
+F.Data.DataTable.AddColumn("dtIssueMat","SHEET_SIZE", "String")
+F.Data.DataTable.AddColumn("dtIssueMat", "CONVERSION", "Float")
+
+F.Intrinsic.Control.Catch
+	F.Intrinsic.Control.CallSub(ErrorMessage, "ErrorNumber", V.Ambient.ErrorNumber, "ErrorDescription", V.Ambient.ErrorDescription, "Subroutine", V.Ambient.CurrentSubroutine, "UNATTENDED", V.Global.bUnattended, "Project", "5364", "ProjectTitle", "5364 Vinyl Press", "Callback", "frmVinylPress_UnLoad")
+F.Intrinsic.Control.EndTry
+Program.Sub.LoadIssueGrid.End
+
+Program.Sub.FormatIssueGrid.Start
+F.Intrinsic.Control.Try
+V.Local.sGV.Declare(String)
+V.Local.sProperty.Declare(String)
+V.Local.sDefault.Declare(String)
+V.Local.sSQL.Declare(String)
+V.Local.sRet.Declare(String)
+V.Local.sSheetSize.Declare(String)
+
+
+V.Local.sGV.Set("gvIssueMat")
+
+F.Data.DataView.Create("dtIssueMat","dvIssueMat")
+
+Gui.frmIssue.GsGcIssue.AddGridviewFromDataView(V.Local.sGV,"dtIssueMat", "dvIssueMat")
+Gui.frmIssue.GsGcIssue.SetGridviewProperty(V.Local.sGV,"AllowAddRows", False)
+Gui.frmIssue.GsGcIssue.SetGridviewProperty(V.Local.sGV,"AllowDeleteRows", False)
+Gui.frmIssue.GsGcIssue.SetGridviewProperty(V.Local.sGV,"AllowColumnMoving",False)
+Gui.frmIssue.GsGcIssue.SetGridviewProperty(V.Local.sGV,"Showgrouppanel",False)
+
+Gui.frmIssue.GsGcIssue.SetGridviewProperty(V.Local.sGV, "ColumnPanelRowHeight", 35)
+Gui.frmIssue.GsGcIssue.SetGridviewProperty(V.Local.sGV,"OptionsViewColumnAutoWidth",True)
+Gui.frmIssue.GsGcIssue.SetGridviewProperty(V.Local.sGV,"OptionsViewRowAutoHeight", True)
+Gui.frmIssue.GsGcIssue.SetGridviewProperty(V.Local.sGV, "RowHeight", 20)
+
+V.Local.sProperty.Set("AllowEdit")
+V.Local.sDefault.Set("False")
+Gui.frmIssue.GsGcIssue.SetColumnProperty(V.Local.sGV, "FINISH", V.Local.sProperty, V.Local.sDefault)
+Gui.frmIssue.GsGcIssue.SetColumnProperty(V.Local.sGV, "SHEET_SIZE", V.Local.sProperty, True)
+Gui.frmIssue.GsGcIssue.SetColumnProperty(V.Local.sGV, "CONVERSION", V.Local.sProperty, V.Local.sDefault)
+
+V.Local.sProperty.Set("ReadOnly")
+V.Local.sDefault.Set("True")
+Gui.frmIssue.GsGcIssue.SetColumnProperty(V.Local.sGV, "FINISH", V.Local.sProperty, V.Local.sDefault)
+Gui.frmIssue.GsGcIssue.SetColumnProperty(V.Local.sGV, "SHEET_SIZE", V.Local.sProperty, False)
+Gui.frmIssue.GsGcIssue.SetColumnProperty(V.Local.sGV, "CONVERSION", V.Local.sProperty, V.Local.sDefault)
+
+V.Local.sProperty.Set("HeaderFontBold")
+V.Local.sDefault.Set("True")
+Gui.frmIssue.GsGcIssue.SetColumnProperty(V.Local.sGV, "FINISH", V.Local.sProperty, V.Local.sDefault)
+Gui.frmIssue.GsGcIssue.SetColumnProperty(V.Local.sGV, "SHEET_SIZE", V.Local.sProperty, True)
+Gui.frmIssue.GsGcIssue.SetColumnProperty(V.Local.sGV, "CONVERSION", V.Local.sProperty, V.Local.sDefault)
+
+V.Local.sProperty.Set("HeaderBackColor")
+V.Local.sDefault.Set("MediumSeaGreen")
+Gui.frmIssue.GsGcIssue.SetColumnProperty(V.Local.sGV, "FINISH", V.Local.sProperty, V.Local.sDefault)
+Gui.frmIssue.GsGcIssue.SetColumnProperty(V.Local.sGV, "SHEET_SIZE", V.Local.sProperty,  V.Local.sDefault)
+Gui.frmIssue.GsGcIssue.SetColumnProperty(V.Local.sGV, "CONVERSION", V.Local.sProperty, V.Local.sDefault)
+
+V.Local.sProperty.Set("HeaderFontSize")
+V.Local.sDefault.Set(16)
+Gui.frmIssue.GsGcIssue.SetColumnProperty(V.Local.sGV, "FINISH", V.Local.sProperty, V.Local.sDefault)
+Gui.frmIssue.GsGcIssue.SetColumnProperty(V.Local.sGV, "SHEET_SIZE", V.Local.sProperty,  V.Local.sDefault)
+Gui.frmIssue.GsGcIssue.SetColumnProperty(V.Local.sGV, "CONVERSION", V.Local.sProperty, V.Local.sDefault)
+
+V.Local.sProperty.Set("cellFontSize")
+V.Local.sDefault.Set(12)
+Gui.frmIssue.GsGcIssue.SetColumnProperty(V.Local.sGV, "FINISH", V.Local.sProperty, V.Local.sDefault)
+Gui.frmIssue.GsGcIssue.SetColumnProperty(V.Local.sGV, "SHEET_SIZE", V.Local.sProperty,  V.Local.sDefault)
+Gui.frmIssue.GsGcIssue.SetColumnProperty(V.Local.sGV, "CONVERSION", V.Local.sProperty, V.Local.sDefault)
+
+V.Local.sProperty.Set("CAPTION")
+V.Local.sDefault.Set(" ")
+Gui.frmIssue.GsGcIssue.SetColumnProperty(V.Local.sGV, "FINISH", V.Local.sProperty, "Color/Finish")
+Gui.frmIssue.GsGcIssue.SetColumnProperty(V.Local.sGV, "SHEET_SIZE", V.Local.sProperty, "Sheet Size")
+Gui.frmIssue.GsGcIssue.SetColumnProperty(V.Local.sGV, "CONVERSION", V.Local.sProperty, "LM Conversion")
+
+V.Local.sProperty.Set("MinWidth")
+V.Local.sDefault.Set("150")
+Gui.frmIssue.GsGcIssue.SetColumnProperty(V.Local.sGV, "FINISH", V.Local.sProperty, V.Local.sDefault)
+Gui.frmIssue.GsGcIssue.SetColumnProperty(V.Local.sGV, "SHEET_SIZE", V.Local.sProperty, 200)
+Gui.frmIssue.GsGcIssue.SetColumnProperty(V.Local.sGV, "CONVERSION", V.Local.sProperty, V.Local.sDefault)
+
+Gui.frmIssue.GsGcIssue.MainView(V.Local.sGV)
+
+F.Intrinsic.Control.Catch
+	F.Intrinsic.Control.CallSub(ErrorMessage, "ErrorNumber", V.Ambient.ErrorNumber, "ErrorDescription", V.Ambient.ErrorDescription, "Subroutine", V.Ambient.CurrentSubroutine, "UNATTENDED", V.Global.bUnattended, "Project", "5364", "ProjectTitle", "5364 Vinyl Press", "Callback", "frmVinylPress_UnLoad")
+F.Intrinsic.Control.EndTry
+Program.Sub.FormatIssueGrid.End
+
+Program.Sub.GsGcIssue_CellValueChanged.Start
+F.Intrinsic.Control.Try
+V.Local.fConversionRate.Declare(Float)
+
+
+F.Intrinsic.Control.SelectCase(V.Args.Column)
+	F.Intrinsic.Control.Case("SHEET_SIZE")
+	F.Intrinsic.Control.If(V.DataTable.dtIssueMat(V.Args.RowIndex).SHEET_SIZE!FieldValTrim,=,"FULL SHEET")
+'		V.Local.fConversionRate.Set(2.8)
+		V.Local.fConversionRate.Set(v.Global.fSheet_Full)
+		F.Data.DataTable.SetValue("dtIssueMat",V.Args.RowIndex, "CONVERSION", V.Local.fConversionRate.String)
+	F.Intrinsic.Control.ElseIf(V.DataTable.dtIssueMat(V.Args.RowIndex).SHEET_SIZE!FieldValTrim,=,"THREE-FOURTHS SHEET")
+'		V.Local.fConversionRate.Set(2.1)
+		V.Local.fConversionRate.Set(v.Global.fSheet_ThreeQuart)
+		F.Data.DataTable.SetValue("dtIssueMat",V.Args.RowIndex, "CONVERSION", V.Local.fConversionRate.String)
+	F.Intrinsic.Control.ElseIf(V.DataTable.dtIssueMat(V.Args.RowIndex).SHEET_SIZE!FieldValTrim,=,"HALF SHEET")
+'		V.Local.fConversionRate.Set(1.4)
+		V.Local.fConversionRate.Set(v.Global.fSheet_Half)
+		F.Data.DataTable.SetValue("dtIssueMat",V.Args.RowIndex, "CONVERSION", V.Local.fConversionRate.String)
+	F.Intrinsic.Control.Else
+'		V.Local.fConversionRate.Set(0.7)
+		V.Local.fConversionRate.Set(v.Global.fSheet_Quarter)
+		F.Data.DataTable.SetValue("dtIssueMat",V.Args.RowIndex, "CONVERSION", V.Local.fConversionRate.String)
+	F.Intrinsic.Control.EndIf
+F.Intrinsic.Control.EndSelect
+
+F.Intrinsic.Control.Catch
+	F.Intrinsic.Control.CallSub(ErrorMessage, "ErrorNumber", V.Ambient.ErrorNumber, "ErrorDescription", V.Ambient.ErrorDescription, "Subroutine", V.Ambient.CurrentSubroutine, "UNATTENDED", V.Global.bUnattended, "Project", "5364", "ProjectTitle", "5364 Vinyl Press", "Callback", "frmVinylPress_UnLoad")
+F.Intrinsic.Control.EndTry
+Program.Sub.GsGcIssue_CellValueChanged.End
+
+Program.Sub.cmdIssueVinyl_Click.Start
+F.Intrinsic.Control.Try
+''declare any variables needed for the subroutine
+V.Local.fQty.Declare(Float)
+V.Local.fMatEstimated.Declare(Float)
+V.Local.fTotalMat.Declare(Float)
+V.Local.fTotLengh.Declare(Float)
+V.Local.fTotWidth.Declare(Float)
+V.Local.fTotArea.Declare(Float)
+V.Local.fAreaUsed.Declare(Float)
+V.Local.fAreaAvail.Declare(Float)
+V.Local.fOptPct.Declare(Float)
+V.Local.fConvFactor.Declare(Float)
+V.Local.fPctMat.Declare(Float)
+V.Local.fQtyIssue.Declare(Float)
+V.Local.fVinylWidth.Declare(Float)
+V.Local.iConvCnt.Declare(Long)
+V.Local.iMatCnt.Declare(Long)
+v.Local.iCnt.Declare(Long)
+V.Local.sFile.Declare(String)
+v.Local.sMOPEN.Declare(String)
+V.Local.sRet.Declare(String)
+v.Local.sBackupMOPEN.Declare(String)
+V.Local.sPart.Declare(String)
+V.Local.sJob.Declare(String)
+V.Local.sSheetSize.Declare(String)
+V.Local.sSuffix.Declare(String)
+V.Local.sSeq.Declare(String)
+V.Local.sGoodPcs.Declare(String)
+V.Local.sSQL.Declare(String)
+V.Local.sSerial.Declare(String)
+V.Local.sMatSeq.Declare(String)
+V.Local.sFinish.Declare(String)
+V.Local.sFilter.Declare(String)
+V.Local.i.Declare(Long,0)
+V.Local.sWC.Declare(String,"")
+
+V.Local.sWC.Set(V.Screen.frmVinylPress!ddlWC.Value)
+V.Local.sWC.Set(V.Local.sWC.Trim)
+
+''450100 - Issue Material to Job From File
+''Column		=	Parameter			=	Possible Values
+''==========================================================
+''Part		=	Part					=	17-20 characters
+''Rev			=	Rev					=	0-3 characters
+''Location	=	Location				=	
+''Quantity	=	Quantity			=	
+''Lot			=	Lot					=	
+''Bin			=	Bin					=	
+''Heat		=	Heat				=	
+''Serial		=	Serial				=	
+''WONumber	=	Work Order Number	=	######
+''WOSuffix	=	Work Order Suffix	=	###
+''WOSeq		=	Work Order Sequence	=	######
+''==========================================================
+
+
+'toal width of vinyl, in inches
+'V.Local.fVinylWidth.Set(57.00)
+'convert to feet
+'F.Intrinsic.Math.Div(V.Local.fVinylWidth,12,V.Local.fVinylWidth)
+'convert to meters for conversion to LM
+'F.Intrinsic.Math.Div(V.Local.fVinylWidth,3.281,V.Local.fVinylWidth)
+
+Gui.frmIssue.cmdIssueVinyl.Enabled(False)
+
+V.Local.fAreaAvail.Set(V.Screen.frmVinylPress!txtAreaAvail.Text)
+
+F.Intrinsic.Control.If(V.DataTable.dtOptimization.Exists)
+	F.Data.DataTable.Close("dtOptimization")
+F.Intrinsic.Control.EndIf
+
+F.Data.DataTable.Create("dtOptimization",True)
+F.Data.DataTable.AddColumn("dtOptimization","USER", "STRING")
+F.Data.DataTable.AddColumn("dtOptimization","DATE_BATCHED", "DATE")
+F.Data.DataTable.AddColumn("dtOptimization","FINISH","STRING")
+F.Data.DataTable.AddColumn("dtOptimization","OPT_PERCENT","FLOAT")
+F.Data.DataTable.AddColumn("dtOptimization","AREA_USED","FLOAT")
+F.Data.DataTable.AddColumn("dtOptimization","AREA_AVAILABLE","FLOAT")
+F.Data.DataTable.AddColumn("dtOptimization","SHEET_SIZE","STRING")
+F.Data.DataTable.AddColumn("dtOptimization","WORKCENTER","STRING")
+
+F.Data.DataTable.AddColumn("450100","JSSI", "STRING")
+F.Data.DataTable.AddColumn("450100","FINISH", "STRING")
+F.Data.DataTable.AddColumn("450100","SHEET_SIZE","STRING")
+F.Data.DataTable.AddColumn("450100","CONV_FACTOR","FLOAT" )
+F.Data.DataTable.AddColumn("450100","EST_MAT", "FLOAT")
+F.Data.DataTable.AddColumn("450100","PCT_MAT","FLOAT")
+
+V.Local.fTotalMat.Set(0.00)
+
+F.Intrinsic.Control.For(V.Local.iMatCnt,0,V.DataTable.dtIssueMat.RowCount--,1)
+	V.Local.sSheetSize.Set(V.DataTable.dtIssueMat(V.Local.iMatCnt).SHEET_SIZE!FieldValTrim)
+	V.Local.fConvFactor.Set(V.DataTable.dtIssueMat(V.Local.iMatCnt).CONVERSION!FieldValTrim)
+	V.Local.sFinish.Set(V.DataTable.dtIssueMat(V.Local.iMatCnt).FINISH!FieldValTrim)
+	V.Local.fTotWidth.Set("")
+	V.Local.fTotLengh.Set("")
+	V.Local.fTotArea.Set("")
+	V.Local.fAreaUsed.Set("")
+	F.Intrinsic.Control.For(V.Local.iCnt,0,V.DataTable.dtJobs.RowCount--,1)
+		F.Intrinsic.Control.If(V.DataTable.dtIssueMat(V.Local.iMatCnt).FINISH!FieldValTrim,=,V.DataTable.dtJobs(V.Local.iCnt).FINISH!FieldValTrim)
+			V.Local.sPart.Set(V.DataTable.dtJobs(V.Local.iCnt).FINISH!FieldValTrim)
+	'		'will need to do conversions to get the fqty and then set goodpcs
+			V.Local.sSerial.Set(V.DataTable.dtJobs(V.Local.iCnt).JSSI!FieldValTrim)
+			V.Local.sJob.Set(V.DataTable.dtJobs(V.Local.iCnt).JOB!FieldValTrim)
+			V.Local.sSuffix.Set(V.DataTable.dtJobs(V.Local.iCnt).SUFFIX!FieldValTrim)
+			V.Local.sSeq.Set(V.DataTable.dtJobs(V.Local.iCnt).SEQ!FieldValTrim)
+			
+			V.Local.fTotLengh.Set(V.DataTable.dtJobs(v.Local.iCnt).TOTALLENGTH!FieldValTrim)
+			V.Local.fTotWidth.Set(V.DataTable.dtJobs(V.Local.iCnt).TOTALWIDTH!FieldValTrim)
+			f.Intrinsic.Math.Mult(V.Local.fTotLengh,V.Local.fTotWidth,V.Local.fTotArea)
+			F.Intrinsic.Math.Add(V.Local.fTotArea,V.Local.fAreaUsed,V.Local.fAreaUsed)
+			
+			F.Intrinsic.String.Build("SELECT SEQ, HOURS_ESTIMATED FROM V_JOB_OPERATIONS WHERE LMO = 'M' AND JOB = '{0}' AND SUFFIX = '{1}' AND SEQ < '{2}' AND PART = '{3}' ORDER BY SEQ DESC", V.Local.sJob.Trim, V.Local.sSuffix.Trim, V.Local.sSeq.Trim,V.Local.sPart.Trim,V.Local.sSQL)
+			F.ODBC.Connection!con.ExecuteAndReturn(V.Local.sSQL,V.Local.sRet)
+			F.Intrinsic.Control.If(V.Local.sRet,>,"")
+				F.Intrinsic.String.Split(V.Local.sRet,"*!*",v.Local.sRet)
+				v.Local.sMatSeq.Set(V.Local.sRet(0))
+				V.Local.fMatEstimated.Set(V.Local.sRet(1))	
+			F.Intrinsic.Control.EndIf
+			
+			F.Data.DataTable.AddRow("450100","PART", V.Local.sPart.Trim,"WONumber",V.Local.sJob.Trim,"WOSuffix", V.Local.sSuffix.Trim,"WOSeq",V.Local.sMatSeq.Trim,"JSSI", v.Local.sSerial.Trim, "FINISH", v.Local.sPart.Trim,"SHEET_SIZE",V.Local.sSheetSize,"CONV_FACTOR", V.Local.fConvFactor,"EST_MAT", V.Local.fMatEstimated)
+			
+		F.Intrinsic.Control.EndIf
+	F.Intrinsic.Control.Next(V.Local.iCnt)
+	
+	F.Intrinsic.Control.For(V.Local.iConvCnt,0,V.DataTable.450100.RowCount--,1)
+		V.Local.fMatEstimated.Set(V.DataTable.450100(V.Local.iConvCnt).EST_MAT!FieldValTrim)
+		F.Intrinsic.Math.Add(V.Local.fTotalMat,V.Local.fMatEstimated,v.Local.fTotalMat)
+	F.Intrinsic.Control.Next(V.Local.iConvCnt)
+
+	F.Intrinsic.Control.For(V.Local.iConvCnt,0,V.DataTable.450100.RowCount--,1)
+		V.Local.fMatEstimated.Set(V.DataTable.450100(V.Local.iConvCnt).EST_MAT!FieldVal)
+		V.Local.fConvFactor.Set(V.DataTable.450100(V.Local.iConvCnt).CONV_FACTOR!FieldVal)
+		F.Intrinsic.Control.If(V.Local.fTotalMat,>,0)
+			F.Intrinsic.Math.Div(V.Local.fMatEstimated,V.Local.fTotalMat,V.Local.fPctMat)
+		F.Intrinsic.Control.Else
+			V.Local.fPctMat.Set(0.00)
+		F.Intrinsic.Control.EndIf
+		
+		F.Intrinsic.Math.Mult(V.Local.fPctMat,V.Local.fConvFactor,V.Local.fQtyIssue)
+		F.Data.DataTable.SetValue("450100",V.Local.iConvCnt,"PCT_MAT", V.Local.fPctMat,"QUANTITY",V.Local.fQtyIssue)
+		
+	F.Intrinsic.Control.Next(V.Local.iConvCnt)
+	
+	F.Intrinsic.Math.Div(V.Local.fAreaUsed,V.Local.fAreaAvail,V.Local.fOptPct)
+	F.Intrinsic.Math.Mult(V.Local.fOptPct,100,V.Local.fOptPct)
+	F.Data.DataTable.AddRow("dtOptimization","USER", V.Caller.User,"DATE_BATCHED",V.Ambient.Date.PSQLFriendly, "FINISH", V.Local.sFinish,"OPT_PERCENT",V.Local.fOptPct, "AREA_USED", v.Local.fAreaUsed, "AREA_AVAILABLE", v.Local.fAreaAvail, "SHEET_SIZE", V.Local.sSheetSize,"WorkCenter",V.Local.sWC)
+F.Intrinsic.Control.Next(V.Local.iMatCnt)
+
+F.Data.DataTable.SaveToDB("dtOptimization","con", "GCG_5364_PRESS_OPT","USER", 1)
+
+F.Data.DataTable.RemoveColumn("450100","JSSI")
+F.Data.DataTable.RemoveColumn("450100","FINISH")
+F.Data.DataTable.RemoveColumn("450100","SHEET_SIZE")
+F.Data.DataTable.RemoveColumn("450100","CONV_FACTOR")
+F.Data.DataTable.RemoveColumn("450100","EST_MAT")
+F.Data.DataTable.RemoveColumn("450100","PCT_MAT")
+
+F.Data.DataTable.AcceptChanges("450100")
+
+'consolidating like records to reduce job detail records
+'7/14/2020 RLK
+F.Intrinsic.Control.If(V.DataTable.Temp.Exists)
+	F.Data.DataTable.Close("Temp")
+F.Intrinsic.Control.EndIf
+
+F.Data.DataTable.Create("Temp",True)
+F.Data.DataTable.AddColumn("Temp","Part","String")
+F.Data.DataTable.AddColumn("Temp","Rev","String")
+F.Data.DataTable.AddColumn("Temp","Location","String")
+F.Data.DataTable.AddColumn("Temp","Quantity","String")
+F.Data.DataTable.AddColumn("Temp","Lot","String")
+F.Data.DataTable.AddColumn("Temp","Bin","String")
+F.Data.DataTable.AddColumn("Temp","Heat","String")
+F.Data.DataTable.AddColumn("Temp","Serial","String")
+F.Data.DataTable.AddColumn("Temp","WONumber","String")
+F.Data.DataTable.AddColumn("Temp","WOSuffix","String")
+F.Data.DataTable.AddColumn("Temp","WOSeq","String")
+
+F.Data.DataTable.DeleteRow("Temp")
+F.Data.DataTable.AcceptChanges("Temp")
+
+F.Data.DataView.Create("450100","V450100")
+
+F.Intrinsic.Control.If(V.DataTable.JOBSUFFIXSEQ.Exists)
+	F.Data.DataTable.Close("JOBSUFFIXSEQ")
+F.Intrinsic.Control.EndIf
+
+F.Data.DataView.ToDataTableDistinct("450100","V450100","JOBSUFFIXSEQ","WONumber*!*WOSuffix*!*WOSeq*!*Part",True)
+F.Data.DataView.Close("450100","V450100")
+F.Intrinsic.Control.For(V.Local.iCnt,0,V.DataTable.JobSuffixSeq.RowCount--,1)
+	F.Intrinsic.String.Build("WONumber = '{0}' and WOSuffix = '{1}' and WOSeq = '{2}' and Part = '{3}'",V.DataTable.JobSuffixSeq(V.Local.iCnt).WONumber!FieldValTrim,V.DataTable.JobSuffixSeq(V.Local.iCnt).WOSuffix!FieldValTrim,V.DataTable.JobSuffixSeq(V.Local.iCnt).WOSeq!FieldValTrim,V.DataTable.JobSuffixSeq(V.Local.iCnt).Part!FieldValTrim,V.Local.sFilter)
+	F.Data.DataView.Create("450100","V450100",22,V.Local.sFilter,"")
+	V.Local.fQtyIssue.Set(0)
+	F.Intrinsic.Control.For(V.Local.i,0,V.DataView.450100!V450100.RowCount--,1)
+		F.Intrinsic.Math.Add(V.Local.fQtyIssue,V.DataView.450100!V450100(V.Local.i).Quantity!FieldVal,V.Local.fQtyIssue)
+	F.Intrinsic.Control.Next(V.Local.i)
+	F.Data.DataTable.AddRow("Temp","Part",V.DataView.450100!V450100(V.DataView.450100!V450100).Part!FieldValTrim,"Rev",V.DataView.450100!V450100(V.DataView.450100!V450100).Rev!FieldValTrim,"Location",V.DataView.450100!V450100(V.DataView.450100!V450100).Location!FieldValTrim,"Quantity",V.Local.fQtyIssue,"Lot",V.DataView.450100!V450100(V.DataView.450100!V450100).Lot!FieldValTrim,"Bin",V.DataView.450100!V450100(V.DataView.450100!V450100).Bin!FieldValTrim,"Heat",V.DataView.450100!V450100(V.DataView.450100!V450100).Heat!FieldValTrim,"Serial",V.DataView.450100!V450100(V.DataView.450100!V450100).Serial!FieldValTrim,"WONumber",V.DataView.450100!V450100(V.DataView.450100!V450100).WONumber!FieldValTrim,"WOSuffix",V.DataView.450100!V450100(V.DataView.450100!V450100).WOSuffix!FieldValTrim,"WOSeq",V.DataView.450100!V450100(V.DataView.450100!V450100).WOSeq!FieldValTrim)
+	F.Data.DataView.Close("450100","V450100")
+F.Intrinsic.Control.Next(V.Local.iCnt)
+
+F.Data.DataTable.DeleteRow("450100")
+F.Data.DataTable.AcceptChanges("450100")
+F.Data.DataTable.Merge("Temp","450100",False,2)
+F.Data.DataTable.Close("Temp")
+
+F.Intrinsic.Control.If(V.DataTable.450100.RowCount--,<>,-1)
+	F.Intrinsic.Control.CallSub(450100Sync)
+F.Intrinsic.Control.EndIf
+
+F.Data.DataTable.DeleteRow("dtJobs")
+
+Gui.frmIssue.cmdIssueVinyl.Enabled(True)
+
+F.Intrinsic.Control.CallSub(frmIssue_Unload)
+
+Gui.frmVinylPress.txtAreaUsed.Text("0.00")
+V.Global.fFinishAreaUsed.Set(0)
+V.Global.fQtyWork.Set(1)
+
+Gui.frmVinylPress.lblUtilizationPB.BackColor(V.Color.White)
+
+F.Intrinsic.Control.Catch
+	F.Intrinsic.Control.CallSub(ErrorMessage, "ErrorNumber", V.Ambient.ErrorNumber, "ErrorDescription", V.Ambient.ErrorDescription, "Subroutine", V.Ambient.CurrentSubroutine, "UNATTENDED", V.Global.bUnattended, "Project", "5364", "ProjectTitle", "5364 Vinyl Press", "Callback", "frmVinylPress_UnLoad")
+F.Intrinsic.Control.EndTry
+Program.Sub.cmdIssueVinyl_Click.End
+
+Program.Sub.cmdCancel_Click.Start
+F.Intrinsic.Control.Try
+V.Local.fAreaAvail.Declare(Float)
+V.Local.fAreaUsed.Declare(Float)
+V.Local.icnt.Declare(Long)
+V.Local.iColumnIndex.Declare(Long)
+V.Local.sSelected.Declare(String)
+
+F.Data.DataTable.DeleteRow("dtIssueMat")
+F.Intrinsic.Control.For(V.Local.iCnt,0,V.DataTable.dtJobs.RowCount--,1)
+	Gui.frmVinylPress.GsGcJobs.GetColumnIndexByName("gvJobs","SEL",V.Local.iColumnIndex)
+	Gui.frmVinylPress.GsGcJobs.GetCellValue("gvJobs",v.Local.iColumnIndex,V.Local.iCnt,V.Local.sSelected)
+	F.Intrinsic.Control.If(V.Local.sSelected,=,"True")
+		V.Local.sSelected.Set("False")
+		Gui.frmVinylPress.GsGcJobs.SetCellValue("gvJobs",V.Local.iColumnIndex,V.Local.iCnt,V.Local.sSelected)
+	F.Intrinsic.Control.EndIf
+F.Intrinsic.Control.Next(V.Local.icnt)
+Gui.frmIssue..Visible(false)
+Gui.frmVinylPress..Enabled(True)
+F.Intrinsic.Control.Catch
+	F.Intrinsic.Control.CallSub(ErrorMessage, "ErrorNumber", V.Ambient.ErrorNumber, "ErrorDescription", V.Ambient.ErrorDescription, "Subroutine", V.Ambient.CurrentSubroutine, "UNATTENDED", V.Global.bUnattended, "Project", "5364", "ProjectTitle", "5364 Vinyl Press", "Callback", "frmVinylPress_UnLoad")
+F.Intrinsic.Control.EndTry
+Program.Sub.cmdCancel_Click.End
+
+Program.Sub.cmdReprint_Click.Start
+F.Intrinsic.Control.Try
+'declare any variables needed for the subroutine
+V.Local.iBiRunID.Declare(Long)
+V.Local.iCnt.Declare(Long)
+V.Local.iLogID.Declare(Long)
+V.Local.iRptID.Declare(Long)
+V.Local.sSQL.Declare(String)
+V.Local.sPrinter.Declare(String)
+
+'getting label data from custom table
+F.Intrinsic.Control.For(V.Local.iCnt,0,V.DataTable.dtJobs.RowCount--,1)
+	F.Intrinsic.Control.If(V.DataTable.dtJobs(V.Local.iCnt).SEL!FieldVal,=, True)
+
+		F.Intrinsic.String.Build("Select Job, Suffix, Instance, Part, Description, Order_No, Order_Line, Qty, Due_Date, TotalLength, TotalWidth, WKG1, WKG2, WKG3, WKG4, WKG5, Drill_Code, Jssi, Panel, SHIP_NAME From GCG_5364_Label_Data Where JSSI= '{0}'",V.DataTable.dtJobs(V.Local.icnt).JSSI!FieldValTrim,V.Local.sSql)
+
+		F.Data.DataTable.CreateFromSQL("Label","con",V.Local.sSql,True)
+		F.Intrinsic.Control.If(V.DataTable.Label.RowCount--,<>,-1)
+			'adding po, customer name and text to label data
+			F.Data.DataTable.AddColumn("Label","PO","String")
+			F.Data.DataTable.AddColumn("Label","Customer","String")
+			F.Data.DataTable.AddColumn("Label","Name_Customer","String")
+			F.Data.DataTable.AddColumn("Label","Text","String")
+			F.Data.DataTable.AddColumn("Label","MATL","String")
+			F.Data.DataTable.AddColumn("Label","Finish","String")
+			F.Data.DataTable.AddColumn("Label","Mat_Desc","String")
+			F.Data.DataTable.AddColumn("Label","Fin_Desc","String")
+			F.Data.DataTable.AddColumn("Label","SO_QTY","String")
+			
+			'populating po
+			F.Intrinsic.String.Build("Select Order_No, Customer_Po as PO From V_Order_Header Where Order_No = '{0}'",V.DataTable.Label(V.DataTable.Label.RowCount--).Order_No!FieldValTrim,V.Local.sSql)
+			F.Data.Dictionary.CreateFromSQL("PO","con",V.Local.sSql)
+			F.Data.Dictionary.SetDefaultReturn("PO"," ")
+			F.Data.DataTable.FillFromDictionary("Label","PO","Order_No","PO")
+			
+			F.Data.Dictionary.Close("PO")
+			'populating customer name
+			F.Intrinsic.String.Build("Select Order_No, Name_Customer From V_Order_Header A Left Join V_Customer_Master B on A.Customer = B.Customer Where Order_No = '{0}'",V.DataTable.Label(V.DataTable.Label.RowCount--).Order_No!FieldValTrim,V.Local.sSql)
+			F.Data.Dictionary.CreateFromSQL("Cust","con",V.Local.sSql)
+			F.Data.Dictionary.SetDefaultReturn("Cust"," ")
+			F.Data.DataTable.FillFromDictionary("Label","Cust","Order_No","Name_Customer")
+			
+			F.Data.Dictionary.Close("Cust")
+			'populating notes from custom oe lines table
+			F.Intrinsic.String.Build("Select Order_No, Notes as Text From GCG_5364_OE_LINES Where Order_No = '{0}' and Record_No = '{1}'",V.DataTable.Label(V.DataTable.Label.RowCount--).Order_No!FieldValTrim,V.DataTable.Label(V.DataTable.Label.RowCount--).Order_Line!FieldValTrim,V.Local.sSql)
+			F.Data.Dictionary.CreateFromSQL("Notes","con",V.Local.sSql)
+			F.Data.Dictionary.SetDefaultReturn("Notes"," ")
+			F.Data.DataTable.FillFromDictionary("Label","Notes","Order_No","Text")
+			
+			F.Data.Dictionary.Close("Notes")
+			
+			'populating Material from custom oe lines table
+			F.Intrinsic.String.Build("Select Order_No, Matl From GCG_5364_OE_LINES Where Order_No = '{0}' and Record_No = '{1}'",V.DataTable.Label(V.DataTable.Label.RowCount--).Order_No!FieldValTrim,V.DataTable.Label(V.DataTable.Label.RowCount--).Order_Line!FieldValTrim,V.Local.sSql)
+			F.Data.Dictionary.CreateFromSQL("Mat","con",V.Local.sSql)
+			F.Data.Dictionary.SetDefaultReturn("Mat"," ")
+			F.Data.DataTable.FillFromDictionary("Label","Mat","Order_No","MATL")
+			
+			F.Data.Dictionary.Close("Mat")
+			
+			F.Data.Dictionary.CreateFromSQL("InvDesc","con","Select Part, Description From V_Inventory_Mstr")
+			F.Data.Dictionary.SetDefaultReturn("InvDesc"," ")
+			F.Data.DataTable.FillFromDictionary("Label","InvDesc","MATL","Mat_Desc")
+			
+			'populating Finish from custom oe lines table
+			F.Intrinsic.String.Build("Select Order_No, Finish From GCG_5364_OE_LINES Where Order_No = '{0}' and Record_No = '{1}'",V.DataTable.Label(V.DataTable.Label.RowCount--).Order_No!FieldValTrim,V.DataTable.Label(V.DataTable.Label.RowCount--).Order_Line!FieldValTrim,V.Local.sSql)
+			F.Data.Dictionary.CreateFromSQL("Fin","con",V.Local.sSql)
+			F.Data.Dictionary.SetDefaultReturn("Fin"," ")
+			F.Data.DataTable.FillFromDictionary("Label","Fin","Order_No","Finish")
+			
+			F.Data.Dictionary.Close("Fin")
+			
+			F.Data.DataTable.FillFromDictionary("Label","InvDesc","Finish","Fin_Desc")
+			
+			F.Data.Dictionary.Close("InvDesc")
+			
+			'populating Finish from custom oe lines table
+			F.Intrinsic.String.Build("Select Order_No, Qty_Order From GCG_5364_OE_LINES Where Order_No = '{0}' and Record_No = '{1}'",V.DataTable.Label(V.DataTable.Label.RowCount--).Order_No!FieldValTrim,V.DataTable.Label(V.DataTable.Label.RowCount--).Order_Line!FieldValTrim,V.Local.sSql)
+			F.Data.Dictionary.CreateFromSQL("Qty","con",V.Local.sSql)
+			F.Data.Dictionary.SetDefaultReturn("Qty"," ")
+			F.Data.DataTable.FillFromDictionary("Label","Qty","Order_No","SO_QTY")
+			
+			F.Data.Dictionary.Close("Qty")
+		
+			'printing codesoft label
+			F.Global.BI.GetRunID(V.Local.iBiRunID)
+			F.Global.BI.GetIDFromName("GCG_5364_Cutrite.lab",V.Local.iRptID)
+			F.Global.BI.StartLogging(V.Local.iBiRunID,V.Local.iRptID,-1,"GCG_5364_Cutrite",V.Local.iLogID)
+		
+			F.Global.BI.StopLogging(V.Local.iLogID)
+		
+			F.Global.BI.PrintCodesoftLabelFromDataTable(V.Local.iBiRunID,V.Local.iLogID,"Label","",True)
+		F.Intrinsic.Control.EndIf
+		F.Data.DataTable.Close("Label")
+	F.Intrinsic.Control.EndIf
+F.Intrinsic.Control.Next(V.Local.iCnt)
+
+F.Intrinsic.Control.Catch
+	F.Intrinsic.Control.CallSub(ErrorMessage, "ErrorNumber", V.Ambient.ErrorNumber, "ErrorDescription", V.Ambient.ErrorDescription, "Subroutine", V.Ambient.CurrentSubroutine, "UNATTENDED", V.Global.bUnattended, "Project", "5364", "ProjectTitle", "5364 Vinyl Press", "Callback", "frmVinylPress_UnLoad")
+F.Intrinsic.Control.EndTry
+Program.Sub.cmdReprint_Click.End
+
+Program.Sub.cmdSave_Click.Start
+F.Intrinsic.Control.Try
+'declare any variables needed for the subroutine
+V.Local.fQty.Declare(Float)
+
+V.Local.fQty.Set(V.Screen.frmQty!txtQty.Text)
+V.Global.bMultQty.Set(True)
+F.Intrinsic.Control.If(V.Local.fQty.Trim,>,0.00)
+	F.Intrinsic.Control.If(V.Global.sUpdateFlag,=,"Y")
+		V.Global.fGoodPcs.Set(V.Local.fQty)
+		Gui.frmQty..Visible(False)
+	F.Intrinsic.Control.Else
+		V.Global.fQtyWork.Set(V.Local.fQty)
+		Gui.frmQty..Visible(False)
+		Gui.frmVinylPress..Enabled(True)
+	F.Intrinsic.Control.EndIf
+F.Intrinsic.Control.Else
+	F.Intrinsic.UI.Msgbox("You must enter a quantity to continue.","Warning")
+F.Intrinsic.Control.EndIf
+
+F.Intrinsic.Control.Catch
+	F.Intrinsic.Control.CallSub(ErrorMessage, "ErrorNumber", V.Ambient.ErrorNumber, "ErrorDescription", V.Ambient.ErrorDescription, "Subroutine", V.Ambient.CurrentSubroutine, "UNATTENDED", V.Global.bUnattended, "Project", "5364", "ProjectTitle", "5364 Vinyl Press", "Callback", "frmVinylPress_UnLoad")
+F.Intrinsic.Control.EndTry
+Program.Sub.cmdSave_Click.End
+
+Program.Sub.frmVinylPress_Unload.Start
+F.Intrinsic.Control.Try
+'declare any variables needed for the subroutine
+
+'Close any dataview/datatables that are still open
+
+'Close the connection to the database
+F.ODBC.Connection!con.Close
+
+'End the project 
+F.Intrinsic.Control.End
+
+F.Intrinsic.Control.Catch
+	F.Intrinsic.Control.CallSub(ErrorMessage, "ErrorNumber", V.Ambient.ErrorNumber, "ErrorDescription", V.Ambient.ErrorDescription, "Subroutine", V.Ambient.CurrentSubroutine, "UNATTENDED", V.Global.bUnattended, "Project", "5364", "ProjectTitle", "5364 Vinyl Press", "Callback", "frmVinylPress_UnLoad")
+F.Intrinsic.Control.EndTry
+Program.Sub.frmVinylPress_Unload.End
+
+Program.Sub.frmScrap_Unload.Start
+F.Intrinsic.Control.Try
+'hide/close the form
+Gui.frmScrap..Visible(False)
+Gui.frmVinylPress..Enabled(True)
+F.Intrinsic.Control.Catch
+	F.Intrinsic.Control.CallSub(ErrorMessage, "ErrorNumber", V.Ambient.ErrorNumber, "ErrorDescription", V.Ambient.ErrorDescription, "Subroutine", V.Ambient.CurrentSubroutine, "UNATTENDED", V.Global.bUnattended, "Project", "5364", "ProjectTitle", "5364 Vinyl Press", "Callback", "frmVinylPress_UnLoad")
+F.Intrinsic.Control.EndTry
+Program.Sub.frmScrap_Unload.End
+
+Program.Sub.frmIssue_Unload.Start
+F.Intrinsic.Control.Try
+'Hide/Close the form
+F.Data.DataTable.DeleteRow("dtIssueMat")
+Gui.frmIssue..Visible(false)
+Gui.frmVinylPress..Enabled(True)
+Gui.frmVinylPress..AlwaysOnTop(True)
+Gui.frmVinylPress..AlwaysOnTop(False)
+Gui.frmVinylPress.txtPieceSerial.SetFocus
+
+F.Intrinsic.Control.Catch
+	F.Intrinsic.Control.CallSub(ErrorMessage, "ErrorNumber", V.Ambient.ErrorNumber, "ErrorDescription", V.Ambient.ErrorDescription, "Subroutine", V.Ambient.CurrentSubroutine, "UNATTENDED", V.Global.bUnattended, "Project", "5364", "ProjectTitle", "5364 Vinyl Press", "Callback", "frmVinylPress_UnLoad")
+F.Intrinsic.Control.EndTry
+Program.Sub.frmIssue_Unload.End
+
+Program.Sub.ErrorMessage.Start
+'basic error message for replacing catch block
+'this is really just for when printing the message and ending program
+'pass error number, error description, current subroutine
+'optional callback sub, this will be called before ending
+'optional unattended parameters, those subs may not exist if not using them but won't be called
+F.Intrinsic.Control.Try
+
+V.Local.iError.Declare(Long)
+V.Local.sErrorDescription.Declare(String)
+V.Local.sSubroutine.Declare(String)
+V.Local.sError.Declare(String)
+V.Local.bExists.Declare(Boolean)
+V.Local.sCallback.Declare(String)
+
+V.Local.iError.Set(V.Args.ErrorNumber)
+V.Local.sErrorDescription.Set(V.Args.ErrorDescription)
+V.Local.sSubroutine.Set(V.Args.Subroutine)
+
+'make sure we aren't in an error loop
+F.Intrinsic.Control.If(V.Global.bError)
+	F.Intrinsic.Control.End
+
+F.Intrinsic.Control.EndIf
+V.Global.bError.Set(True)
+
+F.Intrinsic.String.Build("Project: {0}{1}{1}Subroutine: {2}{1}Error Occurred {3} with description {4}{1}{1}GAB Version: {5}", V.Caller.ScriptFile, V.Ambient.Newline, V.Local.sSubroutine, V.Local.iError, V.Local.sErrorDescription, V.Ambient.GABVersion, V.Local.sError)
+
+F.Intrinsic.Variable.ArgExists("UNATTENDED", V.Local.bExists)
+F.Intrinsic.Control.If(V.Local.bExists)
+	F.Intrinsic.Control.If(V.Args.UNATTENDED)
+		F.Intrinsic.Control.CallSub(UnattendedErrorMessage, "MESSAGE", V.Local.sError, "PROJECT", V.Args.PROJECT, "PROJECTTITLE", V.Args.PROJECTTITLE)
+	F.Intrinsic.Control.Else
+		F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.EndIf
+F.Intrinsic.Control.Else
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+F.Intrinsic.Control.EndIf
+
+F.Intrinsic.Variable.ArgExists("Callback", V.Local.bExists)
+F.Intrinsic.Control.If(V.Local.bExists)
+	V.Local.sCallback.Set(V.Args.Callback.Trim)
+	F.Intrinsic.Control.CallSub(V.Local.sCallback)
+F.Intrinsic.Control.EndIf
+
+F.Intrinsic.Control.End
+
+F.Intrinsic.Control.Catch
+	F.Intrinsic.String.Build("Project: {0}{1}{1}Subroutine: {2}{1}Error Occurred {3} with description {4}{1}{1}GAB Version: {5}",V.Caller.ScriptFile,V.Ambient.Newline,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Ambient.GABVersion,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.End
+
+F.Intrinsic.Control.EndTry
+Program.Sub.ErrorMessage.End
+
+Program.Sub.ddlWC_Change.Start
+f.Intrinsic.Control.Try
+	f.Intrinsic.Control.CallSub(ReSpecsWC)
+f.Intrinsic.Control.Catch
+	F.Intrinsic.String.Build("Project: {0}{1}{1}Subroutine: {2}{1}Error Occurred {3} with description {4}{1}{1}GAB Version: {5}",V.Caller.ScriptFile,V.Ambient.Newline,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Ambient.GABVersion,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.End
+F.Intrinsic.Control.EndTry
+Program.Sub.ddlWC_Change.End
+
+Program.Sub.Comments.Start
+${$5$}$3.0.0.0$}$1
+${$6$}$nle$}$20230110142217705$}$kjzCRYkA6UEoRnCwndYnRZ/cZPRzu9Gc9n78oVVg3BFrU74X2XO5efpaYHIGFZ9Z
+Program.Sub.Comments.End
