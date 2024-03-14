@@ -1,0 +1,672 @@
+﻿Program.Sub.ScreenSU.Start
+Gui.f_Main..Create
+Gui.f_Main..Caption("Consolidated Schedule Builder")
+Gui.f_Main..Size(13095,8820)
+Gui.f_Main..MinX(0)
+Gui.f_Main..MinY(0)
+Gui.f_Main..Position(0,0)
+Gui.f_Main..FontName("Tahoma")
+Gui.f_Main..FontSize(8.25)
+Gui.f_Main..MousePointer(0)
+Gui.f_Main..Event(UnLoad,f_Main_UnLoad)
+Gui.f_Main..BackColor(-2147483633)
+Gui.f_Main.GsGcMain.Create(GsGridControl)
+Gui.f_Main.GsGcMain.Size(12735,6270)
+Gui.f_Main.GsGcMain.Position(120,1245)
+Gui.f_Main.GsGcMain.Dock(0)
+Gui.f_Main.GsGcMain.Anchor(15)
+Gui.f_Main.lblWC.Create(Label,"Workcenter:",True,2535,375,0,105,240,True,0,"Tahoma",16,-2147483633,0)
+Gui.f_Main.cmdSave.Create(Button)
+Gui.f_Main.cmdSave.Enabled(False)
+Gui.f_Main.cmdSave.Size(2025,705)
+Gui.f_Main.cmdSave.Position(120,7560)
+Gui.f_Main.cmdSave.Caption("Save")
+Gui.f_Main.cmdSave.FontName("Tahoma")
+Gui.f_Main.cmdSave.FontSize(26)
+Gui.f_Main.cmdSave.Anchor(6)
+Gui.f_Main.cmdSave.Event(Click,cmdSave_Click)
+Gui.f_Main.ddlWC.Create(DropDownList)
+Gui.f_Main.ddlWC.Size(3165,465)
+Gui.f_Main.ddlWC.Position(105,660)
+Gui.f_Main.ddlWC.FontName("Tahoma")
+Gui.f_Main.ddlWC.FontSize(14)
+Gui.f_Main.ddlWC.Event(Change,ddlWC_Change)
+Gui.f_Main.cmdRemove.Create(Button)
+Gui.f_Main.cmdRemove.Size(4125,705)
+Gui.f_Main.cmdRemove.Position(8730,7560)
+Gui.f_Main.cmdRemove.Caption("Remove Selected Jobs")
+Gui.f_Main.cmdRemove.FontName("Tahoma")
+Gui.f_Main.cmdRemove.FontSize(16)
+Gui.f_Main.cmdRemove.Anchor(10)
+Gui.f_Main.cmdRemove.Event(Click,cmdRemove_Click)
+Gui.f_Main.txtScan.Create(TextBox,"",True,3660,450,0,3525,660,False,0,"Tahoma",14,-2147483633,1)
+Gui.f_Main.txtScan.Event(KeyPressEnter,txtScan_KeyPressEnter)
+Gui.f_Main.lblScan.Create(Label,"Serial # or WO Barcode:",True,4320,375,0,3525,240,True,0,"Tahoma",16,-2147483633,0)
+Gui.f_Main.lblPrinter.Create(Label,"Label Printer:",True,1095,255,0,9405,915,True,0,"Arial",8,-2147483633,0)
+Gui.f_Main.lblPrinter.Anchor(9)
+Gui.f_Main.ddlPrinter.Create(DropDownList)
+Gui.f_Main.ddlPrinter.Size(2265,330)
+Gui.f_Main.ddlPrinter.Position(10590,780)
+Gui.f_Main.ddlPrinter.Anchor(9)
+Program.Sub.ScreenSU.End
+
+Program.Sub.Preflight.Start
+V.Global.bError.Declare(Boolean)
+V.Global.bUnattended.Declare(Boolean)
+V.Global.bWOScan.Declare(Boolean)
+V.Global.sWC.Declare(String)
+V.Global.sScanedSerial.Declare(String)
+V.Global.iMoldingQty.Declare(Long)
+Program.Sub.Preflight.End
+
+Program.Sub.Main.Start
+F.Intrinsic.Control.Try 
+
+F.Intrinsic.Control.CallSub(PopulateDDL)
+'call the subroutine that creates the grid
+F.Intrinsic.Control.CallSub(CreateGrid)
+
+'call the subroutine that formats the grid
+F.Intrinsic.Control.CallSub(FormatGrid)
+Gui.f_Main.txtScan.Enabled(True)
+Gui.f_Main..Show
+
+F.Intrinsic.Control.Catch
+	F.Intrinsic.Control.CallSub(ErrorMessage, "ErrorNumber", V.Ambient.ErrorNumber, "ErrorDescription", V.Ambient.ErrorDescription, "Subroutine", V.Ambient.CurrentSubroutine, "UNATTENDED", V.Global.bUnattended, "Project", "5364", "ProjectTitle", "5364 Spray Schedule", "Callback", "f_Main_UnLoad")
+F.Intrinsic.Control.EndTry
+Program.Sub.Main.End
+
+Program.Sub.PopulateDDL.Start
+F.Intrinsic.Control.Try
+V.Local.iCnt.Declare(Long)
+V.Local.sSQL.Declare(String)
+V.Local.sRet.Declare(String)
+
+F.ODBC.Connection!ConC.OpenCommonConnection
+
+'creating dictionary for sentinel enabled printers
+V.Local.sSql.Set("Select PrinterName, rtrim(Sentinelalias) From Server_Printers Where Sentinelenabled = 1 and Sentinelalias <> '' Order By Sentinelalias")
+F.Data.Dictionary.CreateFromSQL("Printer","ConC",V.Local.sSql)
+
+Gui.f_Main.ddlPrinter.AddItem("",0)
+Gui.f_Main.ddlPrinter.AddItems("Dictionary","Printer")
+
+F.Data.Dictionary.Close("Printer")
+
+F.ODBC.Connection!ConC.Close
+
+F.ODBC.Connection!Con.OpenCompanyConnection
+
+'build query to pull the non-vinyl workcenters - will need to get the specific non-vinyl workcenters
+V.Local.sSQL.Set("SELECT DISTINCT(MACHINE) FROM V_WORKCENTERS WHERE MACHINE <> 'PRES' AND MACHINE <> 'HOM1' AND MACHINE <> 'ZIND'")
+F.ODBC.Connection!con.ExecuteAndReturn(V.Local.sSQL,V.Local.sRet)
+
+F.ODBC.Connection!Con.Close
+
+F.Intrinsic.Control.If(V.Local.sRet,=,"")
+	F.Intrinsic.UI.Msgbox("There are no existing non-vinyl workcenters. Please set up the workcenters and try again!")
+	F.Intrinsic.Control.End
+F.Intrinsic.Control.Else
+	'split the values that re returned
+	F.Intrinsic.String.Split(V.Local.sRet,"#$#", V.Local.sRet)
+
+	'Lopp through all of the workcenters that were returned and add each non-vinyl workcenter to the dropdown
+	F.Intrinsic.Control.For(V.Local.iCnt,0,V.Local.sRet.UBound,1)
+		Gui.f_Main.ddlWC.AddItem(V.Local.sRet(V.Local.iCnt))
+	F.Intrinsic.Control.Next(V.Local.iCnt)
+F.Intrinsic.Control.EndIf
+Gui.f_Main.txtScan.Enabled(True)
+F.Intrinsic.Control.Catch
+	F.Intrinsic.Control.CallSub(ErrorMessage, "ErrorNumber", V.Ambient.ErrorNumber, "ErrorDescription", V.Ambient.ErrorDescription, "Subroutine", V.Ambient.CurrentSubroutine, "UNATTENDED", V.Global.bUnattended, "Project", "5364", "ProjectTitle", "5364 Spray Schedule", "Callback", "f_Main_UnLoad")
+F.Intrinsic.Control.EndTry
+Program.Sub.PopulateDDL.End
+
+Program.Sub.CreateGrid.Start
+F.Intrinsic.Control.Try
+
+'check to see if the datatable already exists. If it does, close it before creating a new one
+F.Intrinsic.Control.If(V.DataTable.dtJobs.Exists,=,True)
+	F.Data.DataTable.Close("dtJobs")
+F.Intrinsic.Control.EndIf
+
+F.Data.DataTable.Create("dtJobs", True)
+F.Data.DataTable.AddColumn("dtJobs", "SEL", "BOOLEAN")
+F.Data.DataTable.AddColumn("dtJobs", "JOB", "STRING")
+F.Data.DataTable.AddColumn("dtJobs", "SUFFIX", "STRING")
+F.Data.DataTable.AddColumn("dtJobs", "PART", "STRING")
+F.Data.DataTable.AddColumn("dtJobs", "SERIAL", "String")
+F.Data.DataTable.AddColumn("dtJobs", "QTY", "FLOAT")
+
+F.Intrinsic.Control.Catch
+	F.Intrinsic.Control.CallSub(ErrorMessage, "ErrorNumber", V.Ambient.ErrorNumber, "ErrorDescription", V.Ambient.ErrorDescription, "Subroutine", V.Ambient.CurrentSubroutine, "UNATTENDED", V.Global.bUnattended, "Project", "5364", "ProjectTitle", "5364 Spray Schedule", "Callback", "f_Main_UnLoad")
+F.Intrinsic.Control.EndTry
+Program.Sub.CreateGrid.End
+
+Program.Sub.FormatGrid.Start
+F.Intrinsic.Control.Try
+V.Local.sGV.Declare(String)
+V.Local.sProperty.Declare(String)
+V.Local.sDefault.Declare(String)
+
+Gui.f_Main.GsGcMain.SuspendLayout
+
+Gui.f_Main.GsGcMain.AddGridviewFromDatatable("gvJobs", "dtJobs")
+V.Local.sGV.Set("gvJobs")
+
+'set the properities for the grid (need to determine if all of the columns will be read-only, etc)
+Gui.f_Main.GsGcMain.SetGridviewProperty(V.Local.sGV,"AllowColumnResizing",True)
+Gui.f_Main.GsGcMain.SetGridviewProperty(V.Local.sGV,"AllowColumnMoving",True)
+Gui.f_Main.GsGcMain.SetGridviewProperty(V.Local.sGV,"MultiSelect",False)
+Gui.f_Main.GsGcMain.SetGridviewProperty(V.Local.sGV,"Showgrouppanel", False)
+Gui.f_Main.GsGcMain.SetGridviewProperty(V.Local.sGV,"ColumnPanelRowHeight",35)
+Gui.f_Main.GsGcMain.SetGridviewProperty(V.Local.sGV,"OptionsViewColumnAutoWidth", True)
+Gui.f_Main.GsGcMain.SetGridviewProperty(V.Local.sGV,"OptionsViewRowAutoHeight", True)
+Gui.f_Main.GsGcMain.SetGridviewProperty(V.Local.sGV, "RowHeight",24)
+
+v.Local.sProperty.Set("CAPTION")
+V.Local.sDefault.Set("")
+
+Gui.f_Main.GsGcMain.SetColumnProperty(V.Local.sGV, "SEL", V.Local.sProperty, " ")
+Gui.f_Main.GsGcMain.SetColumnProperty(V.Local.sGV, "JOB", V.Local.sProperty, "Job")
+Gui.f_Main.GsGcMain.SetColumnProperty(V.Local.sGV, "SUFFIX", V.Local.sProperty, "Suffix")
+Gui.f_Main.GsGcMain.SetColumnProperty(V.Local.sGV, "PART", V.Local.sProperty, "Part")
+Gui.f_Main.GsGcMain.SetColumnProperty(V.Local.sGV, "SERIAL", V.Local.sProperty, "Serial")
+Gui.f_Main.GsGcMain.SetColumnProperty(V.Local.sGV, "QTY", V.Local.sProperty, "Quantity")
+
+V.Local.sProperty.Set("HeaderFontBold")
+V.Local.sDefault.Set("True")
+Gui.f_Main.GsGcMain.SetColumnProperty(V.Local.sGV, "SEL", V.Local.sProperty, V.Local.sDefault)
+Gui.f_Main.GsGcMain.SetColumnProperty(V.Local.sGV, "JOB", V.Local.sProperty, V.Local.sDefault)
+Gui.f_Main.GsGcMain.SetColumnProperty(V.Local.sGV, "SUFFIX", V.Local.sProperty, V.Local.sDefault)
+Gui.f_Main.GsGcMain.SetColumnProperty(V.Local.sGV, "PART", V.Local.sProperty, V.Local.sDefault)
+Gui.f_Main.GsGcMain.SetColumnProperty(V.Local.sGV, "SERIAL", V.Local.sProperty, V.Local.sDefault)
+Gui.f_Main.GsGcMain.SetColumnProperty(V.Local.sGV, "QTY", V.Local.sProperty, V.Local.sDefault)
+
+V.Local.sProperty.Set("HeaderBackColor")
+V.Local.sDefault.Set("MediumSeaGreen")
+Gui.f_Main.GsGcMain.SetColumnProperty(V.Local.sGV, "SEL", V.Local.sProperty, V.Local.sDefault)
+Gui.f_Main.GsGcMain.SetColumnProperty(V.Local.sGV, "JOB", V.Local.sProperty, V.Local.sDefault)
+Gui.f_Main.GsGcMain.SetColumnProperty(V.Local.sGV, "SUFFIX", V.Local.sProperty, V.Local.sDefault)
+Gui.f_Main.GsGcMain.SetColumnProperty(V.Local.sGV, "PART", V.Local.sProperty, V.Local.sDefault)
+Gui.f_Main.GsGcMain.SetColumnProperty(V.Local.sGV, "SERIAL", V.Local.sProperty, V.Local.sDefault)
+Gui.f_Main.GsGcMain.SetColumnProperty(V.Local.sGV, "QTY", V.Local.sProperty, V.Local.sDefault)
+
+V.Local.sProperty.Set("HeaderFontSize")
+V.Local.sDefault.Set(16)
+Gui.f_Main.GsGcMain.SetColumnProperty(V.Local.sGV, "SEL", V.Local.sProperty, V.Local.sDefault)
+Gui.f_Main.GsGcMain.SetColumnProperty(V.Local.sGV, "JOB", V.Local.sProperty, V.Local.sDefault)
+Gui.f_Main.GsGcMain.SetColumnProperty(V.Local.sGV, "SUFFIX", V.Local.sProperty, V.Local.sDefault)
+Gui.f_Main.GsGcMain.SetColumnProperty(V.Local.sGV, "PART", V.Local.sProperty, V.Local.sDefault)
+Gui.f_Main.GsGcMain.SetColumnProperty(V.Local.sGV, "SERIAL", V.Local.sProperty, V.Local.sDefault)
+Gui.f_Main.GsGcMain.SetColumnProperty(V.Local.sGV, "QTY", V.Local.sProperty, V.Local.sDefault)
+
+V.Local.sProperty.Set("cellFontSize")
+V.Local.sDefault.Set(14)
+Gui.f_Main.GsGcMain.SetColumnProperty(V.Local.sGV, "SEL", V.Local.sProperty, V.Local.sDefault)
+Gui.f_Main.GsGcMain.SetColumnProperty(V.Local.sGV, "JOB", V.Local.sProperty, V.Local.sDefault)
+Gui.f_Main.GsGcMain.SetColumnProperty(V.Local.sGV, "SUFFIX", V.Local.sProperty, V.Local.sDefault)
+Gui.f_Main.GsGcMain.SetColumnProperty(V.Local.sGV, "PART", V.Local.sProperty, V.Local.sDefault)
+Gui.f_Main.GsGcMain.SetColumnProperty(V.Local.sGV, "SERIAL", V.Local.sProperty, V.Local.sDefault)
+Gui.f_Main.GsGcMain.SetColumnProperty(V.Local.sGV, "QTY", V.Local.sProperty, V.Local.sDefault)
+
+
+V.Local.sProperty.Set("ReadOnly")
+V.Local.sDefault.Set("True")
+Gui.f_Main.GsGcMain.SetColumnProperty(V.Local.sGV, "SEL", V.Local.sProperty, False)
+Gui.f_Main.GsGcMain.SetColumnProperty(V.Local.sGV, "JOB", V.Local.sProperty, V.Local.sDefault)
+Gui.f_Main.GsGcMain.SetColumnProperty(V.Local.sGV, "SUFFIX", V.Local.sProperty, V.Local.sDefault)
+Gui.f_Main.GsGcMain.SetColumnProperty(V.Local.sGV, "PART", V.Local.sProperty, V.Local.sDefault)
+Gui.f_Main.GsGcMain.SetColumnProperty(V.Local.sGV, "SERIAL", V.Local.sProperty, V.Local.sDefault)
+Gui.f_Main.GsGcMain.SetColumnProperty(V.Local.sGV, "QTY", V.Local.sProperty, False)
+
+V.Local.sProperty.Set("AllowEdit")
+V.Local.sDefault.Set("False")
+Gui.f_Main.GsGcMain.SetColumnProperty(V.Local.sGV, "SEL", V.Local.sProperty, True)
+Gui.f_Main.GsGcMain.SetColumnProperty(V.Local.sGV, "JOB", V.Local.sProperty, V.Local.sDefault)
+Gui.f_Main.GsGcMain.SetColumnProperty(V.Local.sGV, "SUFFIX", V.Local.sProperty, V.Local.sDefault)
+Gui.f_Main.GsGcMain.SetColumnProperty(V.Local.sGV, "PART", V.Local.sProperty, V.Local.sDefault)
+Gui.f_Main.GsGcMain.SetColumnProperty(V.Local.sGV, "SERIAL", V.Local.sProperty, V.Local.sDefault)
+Gui.f_Main.GsGcMain.SetColumnProperty(V.Local.sGV, "QTY", V.Local.sProperty, True)
+
+V.Local.sProperty.Set("MinWIdth")
+V.Local.sDefault.Set(75)
+Gui.f_Main.GsGcMain.SetColumnProperty(V.Local.sGV, "SEL", V.Local.sProperty, 30)
+Gui.f_Main.GsGcMain.SetColumnProperty(V.Local.sGV, "JOB", V.Local.sProperty, 60)
+Gui.f_Main.GsGcMain.SetColumnProperty(V.Local.sGV, "SUFFIX", V.Local.sProperty, 50)
+Gui.f_Main.GsGcMain.SetColumnProperty(V.Local.sGV, "PART", V.Local.sProperty, 150)
+Gui.f_Main.GsGcMain.SetColumnProperty(V.Local.sGV, "SERIAL", V.Local.sProperty, 150)
+Gui.f_Main.GsGcMain.SetColumnProperty(V.Local.sGV, "QTY", V.Local.sProperty, 50)
+
+V.Local.sProperty.Set("MaxWidth")
+Gui.f_Main.GsGcMain.SetColumnProperty(V.Local.sGV, "SEL", V.Local.sProperty, 30)
+
+V.Local.sProperty.Set("CellHAlignment")
+V.Local.sDefault.Set("Center")
+Gui.f_Main.GsGcMain.SetColumnProperty(V.Local.sGV, "SEL", V.Local.sProperty, V.Local.sDefault)
+
+Gui.f_Main.GsGcMain.MainView("gvJobs")
+Gui.f_Main.GsGcMain.ResumeLayout
+
+
+F.Intrinsic.Control.Catch
+	F.Intrinsic.Control.CallSub(ErrorMessage, "ErrorNumber", V.Ambient.ErrorNumber, "ErrorDescription", V.Ambient.ErrorDescription, "Subroutine", V.Ambient.CurrentSubroutine, "UNATTENDED", V.Global.bUnattended, "Project", "5364", "ProjectTitle", "5364 Spray Schedule", "Callback", "f_Main_UnLoad")
+F.Intrinsic.Control.EndTry
+Program.Sub.FormatGrid.End
+
+Program.Sub.ddlWC_Change.Start
+F.Intrinsic.Control.Try
+V.Local.sWC.Declare(String)
+
+V.Local.sWC.Set(V.Screen.f_Main!ddlWC.Value)
+F.Intrinsic.Control.If(V.Global.sWC.Trim,<>,"", "AND", V.Global.sWC.Trim,<>,V.Local.sWC.Trim)
+	F.Intrinsic.Control.If(V.DataTable.dtJobs.RowCount--,>,-1)
+		F.Data.DataTable.DeleteRow("dtJobs")
+		V.Global.sWC.Set(V.Screen.f_Main!ddlWC.Value)
+	F.Intrinsic.Control.Else
+		F.Intrinsic.Control.ExitSub
+	F.Intrinsic.Control.EndIf
+F.Intrinsic.Control.ElseIf(V.Global.sWC.Trim,=,"")
+	V.Global.sWC.Set(V.Screen.f_Main!ddlWC.Value)
+	F.Intrinsic.Control.ExitSub
+F.Intrinsic.Control.EndIf
+
+F.Intrinsic.Control.Catch
+	F.Intrinsic.Control.CallSub(ErrorMessage, "ErrorNumber", V.Ambient.ErrorNumber, "ErrorDescription", V.Ambient.ErrorDescription, "Subroutine", V.Ambient.CurrentSubroutine, "UNATTENDED", V.Global.bUnattended, "Project", "5364", "ProjectTitle", "5364 Spray Schedule", "Callback", "f_Main_UnLoad")
+F.Intrinsic.Control.EndTry
+Program.Sub.ddlWC_Change.End
+
+Program.Sub.txtScan_KeyPressEnter.Start
+F.Intrinsic.Control.Try
+V.Local.bRet.Declare(Boolean)
+V.Local.sScan.Declare(String)
+V.Local.sRet.Declare(String)
+V.Local.bSerial.Declare(Boolean)
+V.Local.sSql.Declare(String)
+
+Gui.f_Main.txtScan.Enabled(False)
+F.Intrinsic.Control.If(V.Screen.f_Main!ddlWC.Value,<>,"")
+	Gui.f_Main.cmdSave.Enabled(True)
+F.Intrinsic.Control.Else
+	F.Intrinsic.UI.Msgbox("You must select a workcenter before you can continue!")
+	Gui.f_Main.txtScan.Enabled(True)
+	
+	Gui.f_Main.txtScan.SetFocus
+	F.Intrinsic.Control.ExitSub
+F.Intrinsic.Control.EndIf
+
+F.Intrinsic.Control.If(V.Screen.f_Main!txtScan.Text,=,"")
+	F.Intrinsic.UI.Msgbox("You must scan a Serial Number or Work Order Barcode before you can continue!")
+	Gui.f_Main.txtScan.Enabled(True)
+	
+	Gui.f_Main.txtScan.SetFocus
+	F.Intrinsic.Control.ExitSub
+F.Intrinsic.Control.EndIf
+
+V.Local.sScan.Set(V.Screen.f_Main!txtScan.Text)
+F.Intrinsic.String.IsInString(V.Local.sScan,"$%",True,V.Local.bRet)
+
+F.Intrinsic.Control.If(V.Local.bRet,=,True)
+	V.Global.bWOScan.Set(True)
+F.Intrinsic.Control.Else
+	V.Global.bWOScan.Set(False)
+	'checking tha current scanned serial is not marked as scrap
+	F.Intrinsic.String.Build("Select Top 1 Scrap From GCG_5364_JOB_DTL Where rtrim(JSSI) = '{0}' and Scrap = 'Y' Order By Seq Desc",v.Local.sScan.Trim,V.Local.sSql)
+	F.ODBC.Connection!Conx.OpenCompanyConnection
+		F.ODBC.Connection!Conx.ExecuteAndReturn(V.Local.sSql,V.Local.sRet)
+	F.ODBC.Connection!conx.Close
+	
+	F.Intrinsic.Control.If(V.Local.sRet.Trim,=,"Y")
+		F.Intrinsic.UI.Msgbox("Serial is Marked as Scrap.")
+		Gui.f_Main.txtScan.Enabled(True)
+
+		Gui.f_Main.txtScan.SetFocus
+		F.Intrinsic.Control.ExitSub
+	F.Intrinsic.Control.EndIf
+'	F.Intrinsic.String.IsInString(V.Global.sScanedSerial,V.Local.sScan,True,V.Local.bSerial)
+'	F.Intrinsic.Control.If(V.Local.bSerial)
+'		F.Intrinsic.UI.Msgbox("Scanned Serial has already been scanned onto the Shedule.......","Attention")
+'		F.Intrinsic.Control.ExitSub
+'	F.Intrinsic.Control.Else
+'		F.Intrinsic.Control.If(V.Global.sScanedSerial.Trim,=,"")
+'			V.Global.sScanedSerial.Set(V.Local.sScan)
+'		F.Intrinsic.Control.Else
+'			F.Intrinsic.String.Build("{0}*!*{1}",V.Global.sScanedSerial,V.Local.sScan,V.Global.sScanedSerial)
+'		F.Intrinsic.Control.EndIf
+'	F.Intrinsic.Control.EndIf
+F.Intrinsic.Control.EndIf
+
+F.Intrinsic.Control.CallSub(LoadJobs)
+
+Gui.f_Main.txtScan.Enabled(True)
+
+Gui.f_Main.txtScan.SetFocus
+
+F.Intrinsic.Control.Catch
+	F.Intrinsic.Control.CallSub(ErrorMessage, "ErrorNumber", V.Ambient.ErrorNumber, "ErrorDescription", V.Ambient.ErrorDescription, "Subroutine", V.Ambient.CurrentSubroutine, "UNATTENDED", V.Global.bUnattended, "Project", "5364", "ProjectTitle", "5364 Spray Schedule", "Callback", "f_Main_UnLoad")
+F.Intrinsic.Control.EndTry
+Program.Sub.txtScan_KeyPressEnter.End
+
+Program.Sub.LoadJobs.Start
+F.Intrinsic.Control.Try
+V.Local.iCnt.Declare(Long)
+V.Local.fQty.Declare(Float)
+V.Local.sJob.Declare(String)
+V.Local.sSuffix.Declare(String)
+V.Local.sSQL.Declare(String)
+V.Local.sRet.Declare(String)
+V.Local.sSerial.Declare(String)
+V.Local.sQty.Declare(String)
+V.Local.sFilter.Declare(String)
+V.Local.iTempQty.Declare(Long,0)
+
+F.ODBC.Connection!Con.OpenCompanyConnection
+
+'if a WO is scanned, query based on the WO/Suffix
+F.Intrinsic.Control.If(V.Global.bWOScan,=,True)
+	F.Intrinsic.String.Split(V.Screen.f_Main!txtScan.Text,"$%", V.Local.sRet)
+	F.Intrinsic.String.Split(V.Local.sRet(1),"-", V.Local.sRet)
+	V.Local.sJob.Set(V.Local.sRet(0).Trim)
+	V.Local.sSuffix.Set(V.Local.sRet(1))
+	F.Intrinsic.String.Build("SELECT JOB, SUFFIX, PART FROM V_Job_Header WHERE JOB = '{0}' AND SUFFIX = '{1}' GROUP BY JOB,SUFFIX, PART", V.Local.sJob.Trim, V.Local.sSuffix.Trim, V.Local.sSQL)
+	F.ODBC.Connection!con.ExecuteAndReturn(V.Local.sSQL, V.Local.sRet)
+	F.Intrinsic.String.Split(V.Local.sRet,"*!*", V.Local.sRet)
+	F.Intrinsic.Control.If(V.DataTable.dtJobs.RowCount--,<,0)
+		F.Data.DataTable.AddRow("dtJobs", "SEL", 0,"JOB", V.Local.sRet(0).Trim, "SUFFIX", V.Local.sRet(1).Trim, "PART", V.Local.sRet(2).Trim, "QTY",1)
+	F.Intrinsic.Control.Else
+		F.Intrinsic.String.Build("Job = '{0}' and Suffix = '{1}'",V.Local.sRet(0).Trim,V.Local.sRet(1).Trim,V.Local.sFilter)
+		F.Data.DataView.Create("dtJobs","vdtJobs",22,V.Local.sFilter,"")
+		F.Intrinsic.Control.If(V.DataView.dtJobs!vdtJobs.RowCount--,<>,-1)
+			F.Intrinsic.Math.Add(V.DataView.dtJobs!vdtJobs(V.DataView.dtJobs!vdtJobs.RowCount--).Qty!FieldVal,1,V.Local.fQty)
+			F.Data.DataView.SetValue("dtJobs","vdtJobs",-1,"QTY",V.Local.fQty)
+		F.Intrinsic.Control.Else
+			F.Data.DataTable.AddRow("dtJobs", "SEL", 0,"JOB", V.Local.sRet(0).Trim, "SUFFIX", V.Local.sRet(1).Trim, "PART", V.Local.sRet(2).Trim, "QTY", 1)
+		F.Intrinsic.Control.EndIf
+		F.Data.DataView.Close("dtJobs","vdtJobs")
+	F.Intrinsic.Control.EndIf
+	
+F.Intrinsic.Control.Else
+	V.Local.sSerial.Set(V.Screen.f_Main!txtScan.Text)
+	F.Intrinsic.String.Build("SELECT DISTINCT QTY FROM GCG_5364_LABEL_DATA WHERE rtrim(JSSI) = '{0}'",V.Local.sSerial.Trim,V.Local.sSQL)
+	F.ODBC.Connection!con.ExecuteAndReturn(V.Local.sSQL,V.Local.sRet)
+	F.Intrinsic.Control.If(V.Local.sRet.Long,>,1)
+		V.Global.iMoldingQty.Set(V.Local.sRet.Long)
+		F.Intrinsic.UI.Inputbox("Enter Scanned Qty","Getting Qty",V.Local.sRet.Long,V.Local.sRet)
+		F.Intrinsic.Control.If(V.Local.sRet.IsNumeric)
+			F.Intrinsic.Control.If(V.Local.sRet.Long,>,V.Global.iMoldingQty)
+				F.Intrinsic.UI.Msgbox("Entered Qty greater than Open Qty on Work Order.  Open Qty will be used.","Attention")
+				V.Local.iTempQty.Set(V.Global.iMoldingQty)
+			F.Intrinsic.Control.Else
+				V.Local.iTempQty.Set(V.Local.sRet.Long)
+			F.Intrinsic.Control.EndIf
+		F.Intrinsic.Control.Else
+			V.Local.iTempQty.Set(1)
+		F.Intrinsic.Control.EndIf
+	F.Intrinsic.Control.Else
+		V.Local.iTempQty.Set(1)
+	F.Intrinsic.Control.EndIf
+''if a serial # is scanned, find the job based on the serial number
+'	V.Local.sSerial.Set(V.Screen.f_Main!txtScan.Text)
+	F.Intrinsic.String.Build("SELECT JOB, SUFFIX, PART, JSSI, QTY FROM GCG_5364_LABEL_DATA WHERE rtrim(JSSI) = '{0}' ", V.Local.sSerial.Trim, V.Local.sSQL)
+	F.ODBC.Connection!con.ExecuteAndReturn(V.Local.sSQL, V.Local.sRet)
+	F.Intrinsic.String.Split(V.Local.sRet,"*!*", V.Local.sRet)
+	
+	F.Intrinsic.Control.If(V.Local.sRet.Trim,=,"")
+		F.Intrinsic.UI.Msgbox("No Job Found for Scaned Serial","Attention")
+		Gui.f_Main.txtScan.Text("")
+		F.Intrinsic.Control.ExitSub
+	F.Intrinsic.Control.EndIf
+	F.Intrinsic.Control.If(V.DataTable.dtJobs.RowCount--,<,0)
+		F.Data.DataTable.AddRow("dtJobs", "SEL", 0,"JOB", V.Local.sRet(0).Trim, "SUFFIX", V.Local.sRet(1).Trim, "PART", V.Local.sRet(2).Trim, "QTY",V.Local.iTempQty,"SERIAL",V.Local.sRet(3).Trim)
+	F.Intrinsic.Control.Else
+		F.Intrinsic.String.Build("Serial = '{0}'",V.Local.sRet(3).Trim,V.Local.sFilter)
+		F.Data.DataView.Create("dtJobs","vdtJobs",22,V.Local.sFilter,"")
+		F.Intrinsic.Control.If(V.DataView.dtJobs!vdtJobs.RowCount--,<>,-1)
+			F.Intrinsic.Control.If(V.Local.sRet(4).Float,>,1)
+				F.Intrinsic.Math.Add(V.DataView.dtJobs!vdtJobs(V.DataView.dtJobs!vdtJobs.RowCount--).Qty!FieldVal,V.Local.iTempQty,V.Local.fQty)
+				F.Intrinsic.Control.If(V.Local.fQty,<=,V.Local.sRet(4).Float)
+					F.Data.DataView.SetValue("dtJobs","vdtJobs",-1,"QTY",V.Local.fQty)
+				F.Intrinsic.Control.Else
+					F.Intrinsic.UI.Msgbox("Qty for Serial has been Reached.  Do you still want to add Scanned Serial to the Schedule?","Attention",4,V.Local.iCnt)
+					F.Intrinsic.Control.If(V.Local.iCnt,=,6)
+						F.Data.DataView.SetValue("dtJobs","vdtJobs",-1,"QTY",V.Local.fQty)
+					F.Intrinsic.Control.EndIf
+				F.Intrinsic.Control.EndIf
+			F.Intrinsic.Control.Else
+				F.Intrinsic.UI.Msgbox("Qty for Serial has been Reached.  Do you still want to add Scanned Serial to the Schedule?","Attention",4,V.Local.iCnt)
+				F.Intrinsic.Control.If(V.Local.iCnt,=,6)
+					F.Intrinsic.Math.Add(V.DataView.dtJobs!vdtJobs(V.DataView.dtJobs!vdtJobs.RowCount--).Qty!FieldVal,V.Local.iTempQty,V.Local.fQty)
+					F.Data.DataView.SetValue("dtJobs","vdtJobs",-1,"QTY",V.Local.fQty)
+				F.Intrinsic.Control.EndIf
+			F.Intrinsic.Control.EndIf
+		F.Intrinsic.Control.Else
+			F.Data.DataTable.AddRow("dtJobs", "SEL", 0,"JOB", V.Local.sRet(0).Trim, "SUFFIX", V.Local.sRet(1).Trim, "PART", V.Local.sRet(2).Trim,"SERIAL",V.Local.sRet(3).Trim, "QTY", V.Local.iTempQty)
+		F.Intrinsic.Control.EndIf
+		F.Data.DataView.Close("dtJobs","vdtJobs")
+	F.Intrinsic.Control.EndIf
+	
+F.Intrinsic.Control.EndIf
+
+F.ODBC.Connection!Con.Close
+
+Gui.f_Main.txtScan.Text("")
+F.Intrinsic.Control.Catch
+	F.Intrinsic.Control.CallSub(ErrorMessage, "ErrorNumber", V.Ambient.ErrorNumber, "ErrorDescription", V.Ambient.ErrorDescription, "Subroutine", V.Ambient.CurrentSubroutine, "UNATTENDED", V.Global.bUnattended, "Project", "5364", "ProjectTitle", "5364 Spray Schedule", "Callback", "f_Main_UnLoad")
+F.Intrinsic.Control.EndTry
+Program.Sub.LoadJobs.End
+
+Program.Sub.cmdSave_Click.Start
+F.Intrinsic.Control.Try
+V.Local.fQty.Declare(Float)
+V.Local.iColumnIndex.Declare(Long)
+V.Local.iCnt.Declare(Long)
+V.Local.sSQL.Declare(String)
+V.Local.sRet.Declare(String)
+V.Local.sSchedID.Declare(String)
+V.Local.sJob.Declare(String)
+V.Local.sSuffix.Declare(String)
+V.Local.sPart.Declare(String)
+V.Local.sWC.Declare(String)
+V.Local.sSelected.Declare(String)
+V.Local.sMessage.Declare(String)
+V.Local.sSerial.Declare(String)
+V.Local.iRunID.Declare(Long)
+V.Local.iLogID.Declare(Long)
+V.Local.iRptID.Declare(Long)
+V.Local.iRet.Declare(Long)
+V.Local.sParam.Declare(String)
+
+V.Global.sScanedSerial.Set("")
+
+F.ODBC.Connection!Con.OpenCompanyConnection
+
+V.Local.sWC.Set(V.Screen.f_Main!ddlWC.Value)
+'query the table to get the last schedule ID
+V.Local.sSQL.Set("SELECT SCHEDULE_ID FROM GCG_5364_LAST_SCHED")
+F.ODBC.Connection!con.ExecuteAndReturn(V.Local.sSQL, V.Local.sRet)
+F.Intrinsic.Control.If(V.Local.sRet,=,"")
+	V.Local.sSchedID.Set("000001")
+	F.ODBC.Connection!Con.Execute("INSERT INTO GCG_5364_LAST_SCHED (SCHEDULE_ID) VALUES ('000001')")
+F.Intrinsic.Control.Else
+	V.Local.sSchedID.Set(V.Local.sRet.++)
+	F.Intrinsic.Control.If(V.Local.sRet.Long,=,999999)
+		V.Local.sSchedID.Set("000001")
+		'removing info from table for old sched info
+		F.Intrinsic.String.Build("Delete From GCG_5364_SPRAY_JOB_D Where Schedule_Id = '{0}'",V.Local.sSchedID,V.Local.sSQL)
+		F.ODBC.Connection!Con.Execute(V.Local.sSQL)
+		F.Intrinsic.String.Build("Delete From GCG_5364_SPRAY_SCH Where Schedule_Id = '{0}'",V.Local.sSchedID,V.Local.sSQL)
+		F.ODBC.Connection!Con.Execute(V.Local.sSQL)
+	F.Intrinsic.Control.Else
+		F.Intrinsic.String.LPad(V.Local.sRet,0, 6, V.Local.sSchedID)
+	F.Intrinsic.Control.EndIf
+	F.Intrinsic.String.Build("UPDATE GCG_5364_LAST_SCHED Set SCHEDULE_ID = '{0}'",V.Local.sSchedID,V.Local.sSQL)
+	F.ODBC.Connection!Con.Execute(V.Local.sSQL)
+F.Intrinsic.Control.EndIf
+
+'write the records to a custom table
+F.Intrinsic.Control.For(V.Local.iCnt, 0, V.DataTable.dtJobs.RowCount--,1)
+	Gui.f_Main.GsGcMain.GetColumnIndexByName("gvJobs", "SEL", V.Local.iColumnIndex)
+	Gui.f_Main.GsGcMain.GetCellValue("gvJobs", V.Local.iColumnIndex, V.Local.iCnt,V.Local.sSelected)
+	
+	V.Local.sJob.Set(V.DataTable.dtJobs(V.Local.iCnt).JOB!FieldValtrim)
+	V.Local.sSuffix.Set(V.DataTable.dtJobs(V.Local.iCnt).SUFFIX!FieldValtrim)
+	V.Local.sPart.Set(V.DataTable.dtJobs(V.Local.iCnt).PART!FieldValtrim)
+	V.Local.fQty.Set(V.DataTable.dtJobs(V.Local.iCnt).QTY!FieldVal)
+	V.Local.sSerial.Set(V.DataTable.dtJobs(V.Local.iCnt).SERIAL!FieldVal)
+	
+	F.Intrinsic.String.Build("INSERT INTO GCG_5364_SPRAY_SCH (SCHEDULE_ID, JOB, SUFFIX, PART, QTY, WC, SERIAL) VALUES ('{0}', '{1}', '{2}', '{3}', {4}, '{5}', '{6}')", V.Local.sSchedID, V.Local.sJob.Trim, V.Local.sSuffix.Trim, V.Local.sPart.Trim, V.Local.fQty, V.Local.sWC.Trim, V.Local.sSerial.Trim, V.Local.sSQL)
+	F.ODBC.Connection!con.Execute(V.Local.sSQL)
+		
+F.Intrinsic.Control.Next(V.Local.iCnt)
+
+F.ODBC.Connection!Con.Close
+
+F.Global.BI.GetIDFromName("GCG_5364_S_Sched.rpt",V.Local.iRptID)
+F.Global.BI.GetRunID(V.Local.iRunID)
+
+F.Global.BI.StartLogging(V.Local.iRunID,V.Local.iRptID,-1,"",V.Local.iLogID)
+
+V.Local.sParam.Set("Sched")
+F.Global.BI.StopLogging(V.Local.iLogID)
+F.Global.BI.RunReportPreProcessor(V.Local.iRunID,V.Local.iLogID,V.Local.sParam,V.Local.sSchedID,"",-1,False,"",-1,"",-1,"","",V.Local.iRet)
+
+F.Data.DataTable.DeleteRow("dtJobs")
+Gui.f_Main.ddlWC.ClearSelected
+Gui.f_Main.txtScan.Text("")
+
+F.Intrinsic.Control.Catch
+	F.Intrinsic.Control.CallSub(ErrorMessage, "ErrorNumber", V.Ambient.ErrorNumber, "ErrorDescription", V.Ambient.ErrorDescription, "Subroutine", V.Ambient.CurrentSubroutine, "UNATTENDED", V.Global.bUnattended, "Project", "5364", "ProjectTitle", "5364 Spray Schedule", "Callback", "f_Main_UnLoad")
+F.Intrinsic.Control.EndTry
+Program.Sub.cmdSave_Click.End
+
+Program.Sub.cmdRemove_Click.Start
+F.Intrinsic.Control.Try
+V.Local.iCnt.Declare(Long)
+V.Local.iRet.Declare(Long)
+V.Local.iSer.Declare(Long)
+V.Local.sSerial.Declare(String)
+V.Local.sSql.Declare(String)
+V.Local.sJssi.Declare(String)
+V.Local.sTemp.Declare(String)
+
+F.Intrinsic.UI.Msgbox("Are you sure you want to remove the selected jobs?", "Warning", 4, V.Local.iRet)
+
+F.Data.DataView.Create("dtJobs","RemovJobs",22,"SEL = True","")
+
+F.ODBC.Connection!con.OpenCompanyConnection
+
+F.Intrinsic.Control.If(V.Local.iRet,=,6)
+	F.Intrinsic.Control.For(V.Local.iCnt,V.DataView.dtJobs!RemovJobs.RowCount--,0,-1)
+'		F.Intrinsic.String.Split(V.Global.sScanedSerial,"*!*",V.Local.sSerial)
+'		F.Intrinsic.String.Build("Select Top 1 Left(JSSI,9) From GCG_5364_Label_Data Where Job = '000155' and Suffix = '001'",V.DataView.dtJobs!RemovJobs(V.Local.ic).Job!FieldValTrim,V.DataView.dtJobs!RemovJobs(V.Local.ic).Suffix!FieldValTrim,V.Local.sSql)
+'		F.ODBC.Connection!con.ExecuteAndReturn(V.Local.sSql,V.Local.sJssi)
+'		F.Intrinsic.Control.For(V.Local.iSer,0,V.Local.sSerial.UBound,1)
+'			F.Intrinsic.Control.If(V.Local.sSerial(V.Local.iSer).Left9,<>,V.Local.sJssi)
+'				F.Intrinsic.Control.If(V.Local.sTemp.Trim,=,"")
+'					V.Local.sTemp.Set(V.Local.sSerial(V.Local.iSer))
+'				F.Intrinsic.Control.Else
+'					F.Intrinsic.String.Build("{0}*!*{1}",V.Local.sTemp,V.Local.sSerial(V.Local.iSer),V.Local.sTemp)
+'				F.Intrinsic.Control.EndIf
+'			F.Intrinsic.Control.EndIf
+'		F.Intrinsic.Control.Next(V.Local.iSer)
+		F.Data.DataTable.DeleteRow("dtJobs", V.DataView.dtJobs!RemovJobs(V.Local.iCnt).DataTableIndex)
+	F.Intrinsic.Control.Next(V.Local.iCnt)
+'	
+'	V.Global.sScanedSerial.Set(V.Local.sTemp)
+F.Intrinsic.Control.Else
+	F.Data.DataView.SetValue("dtJobs","RemovJobs",-1,"SEL",0)
+F.Intrinsic.Control.EndIf
+
+F.Data.DataView.Close("dtJobs","RemovJobs")
+
+F.ODBC.Connection!con.Close
+
+'F.Intrinsic.Control.For(V.Local.iCnt, V.DataTable.dtJobs.RowCount--,0,-1)
+'	F.Intrinsic.Control.If(V.DataTable.dtJobs(V.Local.iCnt).SEL!FieldVal,=,True)
+'		F.Intrinsic.Control.If(V.Local.iRet,=,6)
+'			F.Data.DataTable.DeleteRow("dtJobs", V.Local.iCnt)
+'		F.Intrinsic.Control.Else
+'			F.Data.DataTable.SetValue("dtJobs", V.Local.iCnt, "SEL", 0)
+'			F.Intrinsic.Control.Next(V.Local.iCnt)
+'		F.Intrinsic.Control.EndIf
+'	F.Intrinsic.Control.EndIf
+'F.Intrinsic.Control.Next(V.Local.iCnt)
+
+F.Intrinsic.Control.Catch
+	F.Intrinsic.Control.CallSub(ErrorMessage, "ErrorNumber", V.Ambient.ErrorNumber, "ErrorDescription", V.Ambient.ErrorDescription, "Subroutine", V.Ambient.CurrentSubroutine, "UNATTENDED", V.Global.bUnattended, "Project", "5364", "ProjectTitle", "5364 Spray Schedule", "Callback", "f_Main_UnLoad")
+F.Intrinsic.Control.EndTry
+Program.Sub.cmdRemove_Click.End
+
+Program.Sub.f_Main_UnLoad.Start
+F.Intrinsic.Control.Try
+
+F.Intrinsic.Control.If(V.ODBC.Con.State,=,1)
+	F.ODBC.Connection!Con.Close
+F.Intrinsic.Control.EndIf
+
+'End the program
+F.Intrinsic.Control.End
+
+F.Intrinsic.Control.Catch
+	F.Intrinsic.Control.End
+F.Intrinsic.Control.EndTry
+Program.Sub.f_Main_UnLoad.End
+
+Program.Sub.ErrorMessage.Start
+'basic error message for replacing catch block
+'this is really just for when printing the message and ending program
+'pass error number, error description, current subroutine
+'optional callback sub, this will be called before ending
+'optional unattended parameters, those subs may not exist if not using them but won't be called
+F.Intrinsic.Control.Try
+
+V.Local.iError.Declare(Long)
+V.Local.sErrorDescription.Declare(String)
+V.Local.sSubroutine.Declare(String)
+V.Local.sError.Declare(String)
+V.Local.bExists.Declare(Boolean)
+V.Local.sCallback.Declare(String)
+
+V.Local.iError.Set(V.Args.ErrorNumber)
+V.Local.sErrorDescription.Set(V.Args.ErrorDescription)
+V.Local.sSubroutine.Set(V.Args.Subroutine)
+
+'make sure we aren't in an error loop
+F.Intrinsic.Control.If(V.Global.bError)
+	F.Intrinsic.Control.End
+
+F.Intrinsic.Control.EndIf
+V.Global.bError.Set(True)
+
+F.Intrinsic.String.Build("Project: {0}{1}{1}Subroutine: {2}{1}Error Occurred {3} with description {4}{1}{1}GAB Version: {5}", V.Caller.ScriptFile, V.Ambient.Newline, V.Local.sSubroutine, V.Local.iError, V.Local.sErrorDescription, V.Ambient.GABVersion, V.Local.sError)
+
+F.Intrinsic.Variable.ArgExists("UNATTENDED", V.Local.bExists)
+F.Intrinsic.Control.If(V.Local.bExists)
+	F.Intrinsic.Control.If(V.Args.UNATTENDED)
+		F.Intrinsic.Control.CallSub(UnattendedErrorMessage, "MESSAGE", V.Local.sError, "PROJECT", V.Args.PROJECT, "PROJECTTITLE", V.Args.PROJECTTITLE)
+	F.Intrinsic.Control.Else
+		F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.EndIf
+F.Intrinsic.Control.Else
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+F.Intrinsic.Control.EndIf
+
+F.Intrinsic.Variable.ArgExists("Callback", V.Local.bExists)
+F.Intrinsic.Control.If(V.Local.bExists)
+	V.Local.sCallback.Set(V.Args.Callback.Trim)
+	F.Intrinsic.Control.CallSub(V.Local.sCallback)
+F.Intrinsic.Control.EndIf
+
+F.Intrinsic.Control.End
+
+F.Intrinsic.Control.Catch
+	F.Intrinsic.String.Build("Project: {0}{1}{1}Subroutine: {2}{1}Error Occurred {3} with description {4}{1}{1}GAB Version: {5}",V.Caller.ScriptFile,V.Ambient.Newline,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Ambient.GABVersion,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.End
+
+F.Intrinsic.Control.EndTry
+Program.Sub.ErrorMessage.End
+
+Program.Sub.Comments.Start
+${$5$}$20.1.8413.19752$}$1
+${$6$}$gsandoval$}$20230711083202313$}$pxyipsmdqasyAY7lJ5+YqAibKN4I37/YudkzCwm6ngSdTZJ0XeoTQCYBTfH2FSz2lruZfxldRm7CkTHi+kPgnw==
+Program.Sub.Comments.End
