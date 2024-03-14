@@ -1,0 +1,334 @@
+Program.Sub.ScreenSU.Start
+Gui.FormBinStatus..Create
+Gui.FormBinStatus..Caption("Sales Order Bin Status View")
+Gui.FormBinStatus..Size(15345,10830)
+Gui.FormBinStatus..MinX(0)
+Gui.FormBinStatus..MinY(0)
+Gui.FormBinStatus..Position(0,0)
+Gui.FormBinStatus..BackColor(-2147483633)
+Gui.FormBinStatus..MousePointer(0)
+Gui.FormBinStatus..Event(UnLoad,FormBinStatus_UnLoad)
+Gui.FormBinStatus.GsGridBinStatus.Create(GsGridControl)
+Gui.FormBinStatus.GsGridBinStatus.Size(14970,9945)
+Gui.FormBinStatus.GsGridBinStatus.Position(105,105)
+Gui.FormBinStatus.GsGridBinStatus.Anchor(15)
+Gui.FormBinStatus.lblTimer.Create(Label,"60",True,675,255,0,105,10155,True,0,"Arial",12,-2147483633,0)
+Gui.FormBinStatus.lblTimer.Anchor(6)
+Gui.FormBinStatus.lblTimer.FontStyle(True,False,False,False,False)
+Gui.FormBinStatus.lblTimer.ForeColor(0)
+Gui.FormBinStatus.timer1.Create(Timer)
+Gui.FormBinStatus.timer1.Size(495,495)
+Gui.FormBinStatus.timer1.Position(900,10095)
+Gui.FormBinStatus.timer1.Event(Timer,timerStatus_Timer)
+Gui.FormBinStatus.timer1.Interval(1000)
+Program.Sub.ScreenSU.End
+
+Program.Sub.Preflight.Start
+V.Global.iTimer.Declare(Long,60)
+Program.Sub.Preflight.End
+
+Program.Sub.Main.Start
+F.Intrinsic.Control.SetErrorHandler("Main_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+
+Gui.FormBinStatus.lblTimer.ForeColor(V.Color.Black)
+Gui.FormBinStatus.lblTimer.DefaultValue(v.Global.iTimer)
+	
+F.Intrinsic.Control.CallSub(Get_Data)
+Gui.FormBinStatus.timer1.Enabled(True)
+
+Gui.FormBinStatus..Show
+
+Gui.FormBinStatus..AlwaysOnTop(True)
+Gui.FormBinStatus..AlwaysOnTop(False)
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("Main_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_5364_Bin_Status.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(FormBinStatus_UnLoad)
+Function.Intrinsic.Control.EndIf
+Program.Sub.Main.End
+
+Program.Sub.FormBinStatus_UnLoad.Start
+F.Intrinsic.Control.SetErrorHandler("FormBinStatus_UnLoad_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+
+F.Intrinsic.Control.If(V.ODBC.Con.State,=,1)
+	F.ODBC.Connection!con.Close
+F.Intrinsic.Control.EndIf
+
+F.Intrinsic.Control.End
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("FormBinStatus_UnLoad_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.Control.End
+Function.Intrinsic.Control.EndIf
+Program.Sub.FormBinStatus_UnLoad.End
+
+Program.Sub.Get_Data.Start
+F.Intrinsic.Control.SetErrorHandler("Get_Data_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+V.Local.sSql.Declare(String,"")
+V.Local.i.Declare(Long,0)
+V.Local.fQty.Declare(Float)
+
+'V.Local.sSql.Set("Select Distinct Bin From V_Item_Master Where Quantity > 0 Union Select Distinct Bin From GCG_5364_Wip_Queue Where Bin Not In(select Distinct Bin From V_Item_Master Where Quantity > 0)")
+V.Local.sSql.Set("Select Distinct Bin From V_Item_Master Where Quantity > 0")
+F.ODBC.Connection!Con.OpenCompanyConnection
+
+F.Intrinsic.Control.If(V.DataTable.Bin.Exists)
+	Gui.FormBinStatus.GsGridBinStatus.SuspendLayout
+	F.Data.DataTable.CreateFromSQL("Temp","con",V.Local.sSql,True)
+	F.Data.DataTable.DeleteRow("Bin")
+	F.Data.DataTable.AcceptChanges("Bin")
+	F.Data.DataTable.Merge("Temp","Bin",False,4)
+	F.Data.DataTable.Close("Temp")
+	
+	F.Data.Dictionary.CreateFromSQL("Ord","con","Select Bin, Order_No From GCG_5364_Bin_Alloc")
+	F.Data.Dictionary.SetDefaultReturn("Ord"," ")
+	F.Data.DataTable.FillFromDictionary("Bin","Ord","Bin","Order_No")
+	F.Data.Dictionary.Close("Ord")
+	
+'	F.Data.Dictionary.CreateFromSQL("Qty","con","Select Bin, Sum(Quantity) From V_Item_Master Group by Bin")
+'	F.Data.Dictionary.SetDefaultReturn("Qty","0")
+'	F.Data.DataTable.FillFromDictionary("Bin","Qty","Bin","Inv_Qty")
+'	F.Data.Dictionary.Close("Qty")
+	F.Intrinsic.Control.For(V.Local.i,0,V.DataTable.Bin.RowCount--,1)
+		F.Intrinsic.String.Build("Select Sum(Quantity) From V_Item_Master Where Bin = '{0}' and Heat like '{1}%'",V.DataTable.Bin(V.Local.i).Bin!FieldValTrim,V.DataTable.Bin(V.Local.i).Order_NO!FieldValTrim,V.Local.sSql)
+		F.ODBC.Connection!Con.ExecuteAndReturn(v.Local.sSql,V.Local.fQty)
+		F.Data.DataTable.SetValue("Bin",V.Local.i,"Inv_Qty",V.Local.fQty)
+	F.Intrinsic.Control.Next(V.Local.i)
+	
+	F.Data.Dictionary.CreateFromSQL("QQty","con","Select Bin, Sum(QTY_SCANNED) From GCG_5364_Wip_Queue Group by Bin")
+	F.Data.Dictionary.SetDefaultReturn("QQty","0")
+	F.Data.DataTable.FillFromDictionary("Bin","QQty","Bin","Que_Qty")
+	F.Data.Dictionary.Close("QQty")
+	
+	F.Data.Dictionary.CreateFromSQL("SOQty","con","Select Order_No, sum(Qty_BO) from V_ORDER_LINES Where Product_Line Not In(select Prod_line from PL_MASTER where ucase(Descr) = 'EXPENSE' or ucase(Descr) = 'SALES' or ucase(Descr) = 'INDIRECT') Group By Order_No")
+	F.Data.Dictionary.SetDefaultReturn("SOQty","0")
+	F.Data.DataTable.FillFromDictionary("Bin","SOQty","Order_No","Qty_Order")
+	F.Data.Dictionary.Close("SOQty")
+	
+	F.Data.Dictionary.CreateFromSQL("Cust","con","Select Order_No, Name_Customer From V_Order_Lines a Join V_Customer_Master b on a.Customer = b.Customer")
+	F.Data.Dictionary.SetDefaultReturn("Cust","0")
+	F.Data.DataTable.FillFromDictionary("Bin","Cust","Order_No","Customer")
+	F.Data.Dictionary.Close("Cust")
+	
+	F.Data.DataView.Create("Bin","Temp",22,"Qty_Order = 0","")
+	F.Intrinsic.Control.For(V.Local.i,V.DataView.Bin!Temp.RowCount--,0,-1)
+		F.Data.DataTable.DeleteRow("Bin",V.DataView.Bin!Temp(V.Local.i).DataTableIndex)
+	F.Intrinsic.Control.Next(V.Local.i)
+	F.Data.DataView.Close("Bin","Temp")
+	F.Data.DataTable.AcceptChanges("Bin")
+	
+	Gui.FormBinStatus.GsGridBinStatus.ResumeLayout
+F.Intrinsic.Control.Else
+	F.Data.DataTable.CreateFromSQL("Bin","con",V.Local.sSql,True)
+	F.Data.DataTable.AddColumn("Bin","Order_No",String)
+	F.Data.DataTable.AddColumn("Bin","Customer",String)
+	F.Data.DataTable.AddColumn("Bin","Qty_Order",Float)
+	F.Data.DataTable.AddColumn("Bin","Inv_Qty",Float)
+	F.Data.DataTable.AddColumn("Bin","Que_Qty",Float)
+
+	F.Data.DataTable.AddExpressionColumn("Bin","STATUS","FLOAT","100*[Inv_Qty]/[Qty_Order]")
+	
+	F.Data.Dictionary.CreateFromSQL("Ord","con","Select Bin, Order_No From GCG_5364_Bin_Alloc")
+	F.Data.Dictionary.SetDefaultReturn("Ord"," ")
+	F.Data.DataTable.FillFromDictionary("Bin","Ord","Bin","Order_No")
+	F.Data.Dictionary.Close("Ord")
+	
+'	F.Data.Dictionary.CreateFromSQL("Qty","con","Select Bin, Sum(Quantity) From V_Item_Master Group by Bin")
+'	F.Data.Dictionary.SetDefaultReturn("Qty","0")
+'	F.Data.DataTable.FillFromDictionary("Bin","Qty","Bin","Inv_Qty")
+'	F.Data.Dictionary.Close("Qty")
+	F.Intrinsic.Control.For(V.Local.i,0,V.DataTable.Bin.RowCount--,1)
+		F.Intrinsic.String.Build("Select Sum(Quantity) From V_Item_Master Where Bin = '{0}' and Heat like '{1}%'",V.DataTable.Bin(V.Local.i).Bin!FieldValTrim,V.DataTable.Bin(V.Local.i).Order_NO!FieldValTrim,V.Local.sSql)
+		F.ODBC.Connection!Con.ExecuteAndReturn(v.Local.sSql,V.Local.fQty)
+		F.Data.DataTable.SetValue("Bin",V.Local.i,"Inv_Qty",V.Local.fQty)
+	F.Intrinsic.Control.Next(V.Local.i)
+	
+	F.Data.Dictionary.CreateFromSQL("QQty","con","Select Bin, Sum(QTY_SCANNED) From GCG_5364_Wip_Queue Group by Bin")
+	F.Data.Dictionary.SetDefaultReturn("QQty","0")
+	F.Data.DataTable.FillFromDictionary("Bin","QQty","Bin","Que_Qty")
+	F.Data.Dictionary.Close("QQty")
+	
+	F.Data.Dictionary.CreateFromSQL("SOQty","con","Select Order_No, sum(Qty_BO) from V_ORDER_LINES Where Product_Line Not In(select Prod_line from PL_MASTER where ucase(Descr) = 'EXPENSE' or ucase(Descr) = 'SALES' or ucase(Descr) = 'INDIRECT') Group By Order_No")
+	F.Data.Dictionary.SetDefaultReturn("SOQty","0")
+	F.Data.DataTable.FillFromDictionary("Bin","SOQty","Order_No","Qty_Order")
+	F.Data.Dictionary.Close("SOQty")
+	
+	F.Data.DataView.Create("Bin","Temp",22,"Qty_Order = 0","")
+	F.Intrinsic.Control.For(V.Local.i,V.DataView.Bin!Temp.RowCount--,0,-1)
+		F.Data.DataTable.DeleteRow("Bin",V.DataView.Bin!Temp(V.Local.i).DataTableIndex)
+	F.Intrinsic.Control.Next(V.Local.i)
+	F.Data.DataView.Close("Bin","Temp")
+	F.Data.DataTable.AcceptChanges("Bin")
+	
+	F.Data.Dictionary.CreateFromSQL("Cust","con","Select Order_No, Name_Customer From V_Order_Lines a Join V_Customer_Master b on a.Customer = b.Customer")
+	F.Data.Dictionary.SetDefaultReturn("Cust","0")
+	F.Data.DataTable.FillFromDictionary("Bin","Cust","Order_No","Customer")
+	F.Data.Dictionary.Close("Cust")
+	
+	F.Intrinsic.Control.CallSub(Set_Properties)
+	
+F.Intrinsic.Control.EndIf
+
+F.ODBC.Connection!Con.Close
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("Get_Data_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_5364_Bin_Status.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(FormBinStatus_UnLoad)
+Function.Intrinsic.Control.EndIf
+Program.Sub.Get_Data.End
+
+Program.Sub.Set_Properties.Start
+F.Intrinsic.Control.SetErrorHandler("Set_Properties_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+
+F.Data.DataView.Create("Bin","VBin",22,"Order_No <> ''","")
+
+Gui.FormBinStatus.GsGridBinStatus.AddGridviewFromDataview("GBin","Bin","VBin")
+
+Gui.FormBinStatus.GsGridBinStatus.SetGridviewProperty("GBin","Editable",False)
+Gui.FormBinStatus.GsGridBinStatus.SetGridviewProperty("GBin","ReadOnly",True)
+Gui.FormBinStatus.GsGridBinStatus.SetGridviewProperty("GBin","OptionsViewRowAutoHeight",True)
+Gui.FormBinStatus.GsGridBinStatus.SetGridviewProperty("GBin","ColumnPanelRowHeight" ,38)
+
+Gui.FormBinStatus.GsGridBinStatus.SetColumnProperty("GBin","Bin","Caption","Bin")
+Gui.FormBinStatus.GsGridBinStatus.SetColumnProperty("GBin","Order_No","Caption","Sales Order")
+Gui.FormBinStatus.GsGridBinStatus.SetColumnProperty("GBin","Customer","Caption","Customer")
+Gui.FormBinStatus.GsGridBinStatus.SetColumnProperty("GBin","Qty_Order","Caption","Order Qty")
+Gui.FormBinStatus.GsGridBinStatus.SetColumnProperty("GBin","Inv_Qty","Caption","Inventory Qty")
+Gui.FormBinStatus.GsGridBinStatus.SetColumnProperty("GBin","Que_Qty","Caption","Queued Qty")
+Gui.FormBinStatus.GsGridBinStatus.SetColumnProperty("GBin","Status","Caption","Status")
+
+Gui.FormBinStatus.GsGridBinStatus.SetColumnProperty("GBin","Bin","CellFontSize","36")
+Gui.FormBinStatus.GsGridBinStatus.SetColumnProperty("GBin","Order_No","CellFontSize","36")
+Gui.FormBinStatus.GsGridBinStatus.SetColumnProperty("GBin","Customer","CellFontSize","36")
+Gui.FormBinStatus.GsGridBinStatus.SetColumnProperty("GBin","Qty_Order","CellFontSize","36")
+Gui.FormBinStatus.GsGridBinStatus.SetColumnProperty("GBin","Inv_Qty","CellFontSize","36")
+Gui.FormBinStatus.GsGridBinStatus.SetColumnProperty("GBin","Que_Qty","CellFontSize","36")
+Gui.FormBinStatus.GsGridBinStatus.SetColumnProperty("GBin","Status","CellFontSize","36")
+
+Gui.FormBinStatus.GsGridBinStatus.SetColumnProperty("GBin","Bin","CellWordWrap","Wrap")
+Gui.FormBinStatus.GsGridBinStatus.SetColumnProperty("GBin","Order_No","CellWordWrap","Wrap")
+Gui.FormBinStatus.GsGridBinStatus.SetColumnProperty("GBin","Customer","CellWordWrap","Wrap")
+Gui.FormBinStatus.GsGridBinStatus.SetColumnProperty("GBin","Qty_Order","CellWordWrap","Wrap")
+Gui.FormBinStatus.GsGridBinStatus.SetColumnProperty("GBin","Inv_Qty","CellWordWrap","Wrap")
+Gui.FormBinStatus.GsGridBinStatus.SetColumnProperty("GBin","Que_Qty","CellWordWrap","Wrap")
+Gui.FormBinStatus.GsGridBinStatus.SetColumnProperty("GBin","Status","CellWordWrap","Wrap")
+
+Gui.FormBinStatus.GsGridBinStatus.SetColumnProperty("GBin","Bin","HeaderFontSize","26")
+Gui.FormBinStatus.GsGridBinStatus.SetColumnProperty("GBin","Order_No","HeaderFontSize","26")
+Gui.FormBinStatus.GsGridBinStatus.SetColumnProperty("GBin","Customer","HeaderFontSize","26")
+Gui.FormBinStatus.GsGridBinStatus.SetColumnProperty("GBin","Qty_Order","HeaderFontSize","26")
+Gui.FormBinStatus.GsGridBinStatus.SetColumnProperty("GBin","Inv_Qty","HeaderFontSize","26")
+Gui.FormBinStatus.GsGridBinStatus.SetColumnProperty("GBin","Que_Qty","HeaderFontSize","26")
+Gui.FormBinStatus.GsGridBinStatus.SetColumnProperty("GBin","Status","HeaderFontSize","26")
+
+Gui.FormBinStatus.GsGridBinStatus.SetColumnProperty("GBin","Bin","HeaderFontBold",True)
+Gui.FormBinStatus.GsGridBinStatus.SetColumnProperty("GBin","Order_No","HeaderFontBold",True)
+Gui.FormBinStatus.GsGridBinStatus.SetColumnProperty("GBin","Customer","HeaderFontBold",True)
+Gui.FormBinStatus.GsGridBinStatus.SetColumnProperty("GBin","Qty_Order","HeaderFontBold",True)
+Gui.FormBinStatus.GsGridBinStatus.SetColumnProperty("GBin","Inv_Qty","HeaderFontBold",True)
+Gui.FormBinStatus.GsGridBinStatus.SetColumnProperty("GBin","Que_Qty","HeaderFontBold",True)
+Gui.FormBinStatus.GsGridBinStatus.SetColumnProperty("GBin","Status","HeaderFontBold",True)
+
+Gui.FormBinStatus.GsGridBinStatus.SetColumnProperty("GBin","Bin","HeaderBackColor","MediumSeaGreen")
+Gui.FormBinStatus.GsGridBinStatus.SetColumnProperty("GBin","Order_No","HeaderBackColor","MediumSeaGreen")
+Gui.FormBinStatus.GsGridBinStatus.SetColumnProperty("GBin","Customer","HeaderBackColor","MediumSeaGreen")
+Gui.FormBinStatus.GsGridBinStatus.SetColumnProperty("GBin","Qty_Order","HeaderBackColor","MediumSeaGreen")
+Gui.FormBinStatus.GsGridBinStatus.SetColumnProperty("GBin","Inv_Qty","HeaderBackColor","MediumSeaGreen")
+Gui.FormBinStatus.GsGridBinStatus.SetColumnProperty("GBin","Que_Qty","HeaderBackColor","MediumSeaGreen")
+Gui.FormBinStatus.GsGridBinStatus.SetColumnProperty("GBin","Status","HeaderBackColor","MediumSeaGreen")
+
+Gui.FormBinStatus.GsGridBinStatus.SetColumnProperty("GBin","Qty_Order","HeaderHAlignment","Center")
+Gui.FormBinStatus.GsGridBinStatus.SetColumnProperty("GBin","Inv_Qty","HeaderHAlignment","Center")
+Gui.FormBinStatus.GsGridBinStatus.SetColumnProperty("GBin","Que_Qty","HeaderHAlignment","Center")
+Gui.FormBinStatus.GsGridBinStatus.SetColumnProperty("GBin","Status","HeaderHAlignment","Center")
+
+Gui.FormBinStatus.GsGridBinStatus.SetColumnProperty("GBin","Qty_Order","CellHAlignment","Center")
+Gui.FormBinStatus.GsGridBinStatus.SetColumnProperty("GBin","Inv_Qty","CellHAlignment","Center")
+Gui.FormBinStatus.GsGridBinStatus.SetColumnProperty("GBin","Que_Qty","CellHAlignment","Center")
+Gui.FormBinStatus.GsGridBinStatus.SetColumnProperty("GBin","Status","CellHAlignment","Center")
+Gui.FormBinStatus.GsGridBinStatus.SetColumnProperty("GBin","Bin","CellHAlignment","Center")
+
+Gui.FormBinStatus.GsGridBinStatus.SetColumnProperty("GBin","STATUS","ProgressBarEnabled",True)
+Gui.FormBinStatus.GsGridBinStatus.SetColumnProperty("GBin","STATUS","ProgressBarMinimum","0")
+Gui.FormBinStatus.GsGridBinStatus.SetColumnProperty("GBin","STATUS","ProgressBarMaximum","100")
+Gui.FormBinStatus.GsGridBinStatus.SetColumnProperty("GBin","STATUS","ProgressBarShowTitle",True)
+Gui.FormBinStatus.GsGridBinStatus.SetColumnProperty("GBin","STATUS","ProgressBarPercentView",True)
+Gui.FormBinStatus.GsGridBinStatus.SetColumnProperty("GBin","STATUS","ProgressBarStartColor",V.Color.LtGrey)
+Gui.FormBinStatus.GsGridBinStatus.SetColumnProperty("GBin","STATUS","ProgressBarEndColor",V.Color.LtGrey)
+
+Gui.FormBinStatus.GsGridBinStatus.AddStyleFormatCondition("GBin","Qty_Order","ParentGreen","Expression","[Inv_Qty] >= [Qty_Order]")
+Gui.FormBinStatus.GsGridBinStatus.SetStyleFormatConditionProperty("GBin","Qty_Order","ParentGreen","BackColor",V.Color.LtGreen)
+Gui.FormBinStatus.GsGridBinStatus.SetStyleFormatConditionProperty("GBin","Qty_Order","ParentGreen","ApplyToRow",True)
+
+Gui.FormBinStatus.GsGridBinStatus.MainView("GBin")
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("Set_Properties_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_5364_Bin_Status.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(FormBinStatus_UnLoad)
+Function.Intrinsic.Control.EndIf
+Program.Sub.Set_Properties.End
+
+Program.Sub.timerStatus_Timer.Start
+F.Intrinsic.Control.SetErrorHandler("timerStatus_Timer_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+
+Gui.FormBinStatus.timerStatus.Enabled(False)
+F.Intrinsic.Control.BlockEvents
+f.Intrinsic.Math.Sub(v.Global.iTimer,1,v.Global.iTimer)
+
+f.Intrinsic.Control.If(v.Global.iTimer,<=,0)
+'	Function.Intrinsic.Debug.InvokeDebugger
+'	Function.Intrinsic.Debug.Stop
+'	
+	F.Intrinsic.Control.CallSub(Get_Data)
+	v.Global.iTimer.Set(60)
+	Gui.FormBinStatus.lblTimer.ForeColor(v.Color.Black)
+	Gui.FormBinStatus.lblTimer.Caption(v.Global.iTimer)
+
+F.Intrinsic.Control.Else
+	F.Intrinsic.Control.If(V.Global.iTimer,<,10)
+		Gui.FormBinStatus.lblTimer.ForeColor(v.Color.Red)
+	F.Intrinsic.Control.EndIf
+	Gui.FormBinStatus.lblTimer.Caption(v.Global.iTimer)
+F.Intrinsic.Control.EndIf
+
+F.Intrinsic.Control.UnBlockEvents
+Gui.FormBinStatus.timerStatus.Enabled(True)
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("timerStatus_Timer_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_5364_Bin_Status.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(FormBinStatus_UnLoad)
+Function.Intrinsic.Control.EndIf
+Program.Sub.timerStatus_Timer.End
