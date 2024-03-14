@@ -1,0 +1,185 @@
+Program.Sub.ScreenSU.Start
+Gui.FormBinAlloc..Create
+Gui.FormBinAlloc..Caption("Sales Order Bin Allocation")
+Gui.FormBinAlloc..Size(7155,10035)
+Gui.FormBinAlloc..MinX(0)
+Gui.FormBinAlloc..MinY(0)
+Gui.FormBinAlloc..Position(0,0)
+Gui.FormBinAlloc..BackColor(-2147483633)
+Gui.FormBinAlloc..MousePointer(0)
+Gui.FormBinAlloc..Event(UnLoad,FormBinAlloc_UnLoad)
+Gui.FormBinAlloc.GsGridControl1.Create(GsGridControl)
+Gui.FormBinAlloc.GsGridControl1.Size(6735,8625)
+Gui.FormBinAlloc.GsGridControl1.Position(165,315)
+Gui.FormBinAlloc.GsGridControl1.Event(CellValueChanged,GsGridControl1_CellValueChanged)
+Gui.FormBinAlloc.cmdSave.Create(Button)
+Gui.FormBinAlloc.cmdSave.Size(915,375)
+Gui.FormBinAlloc.cmdSave.Position(195,9075)
+Gui.FormBinAlloc.cmdSave.Caption("Save")
+Gui.FormBinAlloc.cmdSave.Event(Click,cmdSave_Click)
+Program.Sub.ScreenSU.End
+
+Program.Sub.Preflight.Start
+V.Global.sBin.Declare(String,"")
+Program.Sub.Preflight.End
+
+Program.Sub.Main.Start
+F.Intrinsic.Control.SetErrorHandler("Main_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+
+Gui.FormBinAlloc.cmdSave.Enabled(False)
+
+F.Intrinsic.Control.CallSub(Get_Data)
+F.Intrinsic.Control.CallSub(Set_Prop)
+
+Gui.FormBinAlloc..Show
+Gui.FormBinAlloc..AlwaysOnTop(True)
+Gui.FormBinAlloc..AlwaysOnTop(False)
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("Main_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_5364_Bin_Alloc.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(FormBinAlloc_UnLoad)
+Function.Intrinsic.Control.EndIf
+Program.Sub.Main.End
+
+Program.Sub.cmdSave_Click.Start
+F.Intrinsic.Control.SetErrorHandler("Main_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+V.Local.sSql.Declare(String,"")
+V.Local.i.Declare(Long,0)
+
+Gui.FormBinAlloc.cmdSave.Enabled(False)
+Gui.FormBinAlloc..Enabled(False)
+
+F.Data.DataView.Create("Alloc","VAlloc",22,"To_Bin <> ''","")
+F.ODBC.Connection!Con.OpenCompanyConnection
+F.Intrinsic.Control.For(V.Local.i,0,V.DataView.Alloc!VAlloc.RowCount--,1)
+	F.Intrinsic.String.Build("Update GCG_5364_Bin_Alloc Set Bin = '{0}' Where Bin = '{1}' and Order_No = '{2}'",V.DataView.Alloc!VAlloc(V.Local.i).To_Bin!FieldValTrim,V.DataView.Alloc!VAlloc(V.Local.i).Bin!FieldValtrim,V.DataView.Alloc!VAlloc(V.Local.i).Order_No!FieldValTrim,V.Local.sSql)
+	F.ODBC.Connection!Con.Execute(V.Local.sSql)
+F.Intrinsic.Control.Next(V.Local.i)
+F.ODBC.Connection!Con.Close
+F.Data.DataView.Close("Alloc","VAlloc")
+
+F.Intrinsic.Control.CallSub(Get_Data)
+
+Gui.FormBinAlloc..Enabled(True)
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("Main_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_5364_Bin_Alloc.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(FormBinAlloc_UnLoad)
+Function.Intrinsic.Control.EndIf
+Program.Sub.cmdSave_Click.End
+
+Program.Sub.GsGridControl1_CellValueChanged.Start
+F.Intrinsic.Control.SetErrorHandler("GsGridControl1_CellValueChanged_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+
+Gui.FormBinAlloc.cmdSave.Enabled(True)
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("GsGridControl1_CellValueChanged_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_5364_Bin_Alloc.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(FormBinAlloc_UnLoad)
+Function.Intrinsic.Control.EndIf
+Program.Sub.GsGridControl1_CellValueChanged.End
+
+Program.Sub.FormBinAlloc_UnLoad.Start
+F.Intrinsic.Control.SetErrorHandler("FormBinAlloc_UnLoad_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+
+F.Intrinsic.Control.End
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("FormBinAlloc_UnLoad_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.Control.End
+Function.Intrinsic.Control.EndIf
+Program.Sub.FormBinAlloc_UnLoad.End
+
+Program.Sub.Get_Data.Start
+F.Intrinsic.Control.SetErrorHandler("Get_Data_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+
+F.ODBC.Connection!Con.OpenCompanyConnection
+
+F.Intrinsic.Control.If(V.DataTable.Alloc.Exists)
+	F.Data.DataTable.CreateFromSQL("Temp","con","Select Order_No, Bin From GCG_5364_Bin_Alloc",True)
+	F.Data.DataTable.DeleteRow("Alloc")
+	F.Data.DataTable.AcceptChanges("Alloc")
+	F.Data.DataTable.Merge("Temp","Alloc",False,4)
+	F.Data.DataTable.Close("Temp")
+F.Intrinsic.Control.Else
+	F.Data.DataTable.CreateFromSQL("Alloc","con","Select Order_No, Bin From GCG_5364_Bin_Alloc",True)
+	F.Data.DataTable.AddColumn("Alloc","To_Bin",String)
+	F.ODBC.Connection!Con.ExecuteAndReturn("Select Bin From GCG_5364_Bin_Maint",V.Global.sBin)
+	F.Intrinsic.String.Replace(V.Global.sBin,"#$#","*!*",V.Global.sBin)
+	F.Intrinsic.String.Build("*!*{0}",V.Global.sBin,V.Global.sBin)
+F.Intrinsic.Control.EndIf
+
+F.ODBC.Connection!Con.Close
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("Get_Data_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_5364_Bin_Alloc.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(FormBinAlloc_UnLoad)
+Function.Intrinsic.Control.EndIf
+Program.Sub.Get_Data.End
+
+Program.Sub.Set_Prop.Start
+F.Intrinsic.Control.SetErrorHandler("Set_Prop_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+
+Gui.FormBinAlloc.GsGridControl1.AddGridviewFromDatatable("GAlloc","Alloc")
+
+Gui.FormBinAlloc.GsGridControl1.SetColumnProperty("GAlloc","Order_NO","Caption","Order #")
+Gui.FormBinAlloc.GsGridControl1.SetColumnProperty("GAlloc","Order_NO","ReadOnly",True)
+Gui.FormBinAlloc.GsGridControl1.SetColumnProperty("GAlloc","Order_NO","AllowEdit",False)
+
+Gui.FormBinAlloc.GsGridControl1.SetColumnProperty("GAlloc","Bin","Caption","Bin")
+Gui.FormBinAlloc.GsGridControl1.SetColumnProperty("GAlloc","Bin","ReadOnly",True)
+Gui.FormBinAlloc.GsGridControl1.SetColumnProperty("GAlloc","Bin","AllowEdit",False)
+
+Gui.FormBinAlloc.GsGridControl1.SetColumnProperty("GAlloc","To_Bin","Caption","To Bin")
+Gui.FormBinAlloc.GsGridControl1.SetColumnProperty("GAlloc","To_Bin","ReadOnly",False)
+Gui.FormBinAlloc.GsGridControl1.SetColumnProperty("GAlloc","To_Bin","AllowEdit",True)
+
+Gui.FormBinAlloc.GsGridControl1.ColumnEdit("GAlloc","To_Bin","Dropdownlist",V.Global.sBin)
+
+Gui.FormBinAlloc.GsGridControl1.MainView("GAlloc")
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("Set_Prop_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_5364_Bin_Alloc.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(FormBinAlloc_UnLoad)
+Function.Intrinsic.Control.EndIf
+Program.Sub.Set_Prop.End
