@@ -1,0 +1,202 @@
+﻿Program.Sub.ScreenSU.Start
+Gui.f_Main..Create(BaseForm)
+Gui.f_Main..Caption("Inventory Sort Code Upload")
+Gui.f_Main..Size(404,117)
+Gui.f_Main..MinX(0)
+Gui.f_Main..MinY(0)
+Gui.f_Main..Position(0,0)
+Gui.f_Main..AlwaysOnTop(False)
+Gui.f_Main..FontName("Tahoma")
+Gui.f_Main..FontSize(8.25)
+Gui.f_Main..ControlBox(True)
+Gui.f_Main..MaxButton(False)
+Gui.f_Main..MinButton(True)
+Gui.f_Main..MousePointer(0)
+Gui.f_Main..Moveable(True)
+Gui.f_Main..Sizeable(False)
+Gui.f_Main..ShowInTaskBar(True)
+Gui.f_Main..TitleBar(True)
+Gui.f_Main..Event(UnLoad,f_Main_UnLoad)
+Gui.f_Main.lblFilePath.Create(Label,"Please Select an Excel File to Upload:",True,178,13,0,7,7,True,0,"Tahoma",8.25,,0,0)
+Gui.f_Main.lblFilePath.BorderStyle(0)
+Gui.f_Main.txtFilePath.Create(TextBox,"",True,389,20,0,7,27,True,0,"Tahoma",8.25,,1)
+Gui.f_Main.cmdUpload.Create(Button)
+Gui.f_Main.cmdUpload.Enabled(True)
+Gui.f_Main.cmdUpload.Visible(True)
+Gui.f_Main.cmdUpload.Zorder(0)
+Gui.f_Main.cmdUpload.Size(75,23)
+Gui.f_Main.cmdUpload.Position(321,56)
+Gui.f_Main.cmdUpload.Caption("Upload")
+Gui.f_Main.cmdUpload.FontName("Tahoma")
+Gui.f_Main.cmdUpload.FontSize(8.25)
+Gui.f_Main.cmdUpload.Event(Click,cmdUpload_Click)
+Gui.f_Main.cmdCancel.Create(Button)
+Gui.f_Main.cmdCancel.Enabled(True)
+Gui.f_Main.cmdCancel.Visible(True)
+Gui.f_Main.cmdCancel.Zorder(0)
+Gui.f_Main.cmdCancel.Size(75,23)
+Gui.f_Main.cmdCancel.Position(8,56)
+Gui.f_Main.cmdCancel.Caption("Cancel")
+Gui.f_Main.cmdCancel.FontName("Tahoma")
+Gui.f_Main.cmdCancel.FontSize(8.25)
+Gui.f_Main.cmdCancel.Event(Click,cmdCancel_Click)
+Program.Sub.ScreenSU.End
+
+Program.Sub.Preflight.Start
+V.Global.bError.Declare(Boolean)
+V.Global.bUnattended.Declare(Boolean)
+Program.Sub.Preflight.End
+
+Program.Sub.Main.Start
+F.Intrinsic.Control.Try
+V.Local.sIcon.Declare(String)
+V.Local.sFilePath.Declare(String)
+Function.Intrinsic.UI.UsePixels ' Allows you to use Pixels instead of Twips throughout
+
+F.Intrinsic.String.Build("{0}\ART\gss2.ico",V.Caller.GlobalDir,V.Local.sIcon)
+Gui.f_Main..Icon(V.Local.sIcon)
+
+F.Intrinsic.String.Build("{0}\Part Code_Sort List.xlsx", V.Caller.FilesDir,V.Local.sFilePath)
+Gui.f_Main.txtFilePath.Text(V.Local.sFilePath)
+
+F.ODBC.Connection!con.OpenConnection(V.Ambient.PDSN, V.Ambient.PUser,V.Ambient.PPass)
+Gui.f_Main..Show
+
+F.Intrinsic.Control.Catch
+	F.Intrinsic.Control.CallSub(ErrorMessage, "ErrorNumber", V.Ambient.ErrorNumber, "ErrorDescription", V.Ambient.ErrorDescription, "Subroutine", V.Ambient.CurrentSubroutine, "UNATTENDED", V.Global.bUnattended, "Project", "5364", "ProjectTitle", "5364 Sort Code Upload", "Callback", "f_Main_Unload")
+F.Intrinsic.Control.EndTry
+Program.Sub.Main.End
+
+Program.Sub.cmdUpload_Click.Start
+F.Intrinsic.Control.Try
+V.Local.iCnt.Declare(Long)
+V.Local.iRow.Declare(Long)
+V.Local.iRowCnt.Declare(Long)
+V.Local.iWorksheetCnt.Declare(Long)
+V.Local.sExcelData.Declare(String)
+V.Local.sFilePath.Declare(String)
+V.Local.sCodeSort.Declare(String)
+V.Local.sDescription.Declare(String)
+V.Local.sLoc.Declare(String)
+V.Local.sPart.Declare(String)
+V.Local.sSQL.Declare(String)
+V.Local.sFilePath.Set(V.Screen.f_Main!txtFilePath.Text)
+V.Local.iWorksheetCnt.Set(1)
+
+F.Intrinsic.Control.If(V.Local.sFilePath,=,"")
+	F.Intrinsic.UI.Msgbox("You must select an excel file before you can run the upload!", "Required Field")
+	F.Intrinsic.Control.ExitSub
+F.Intrinsic.Control.EndIf
+
+F.Automation.MSExcel.CreateAppObject("MSExcel")
+F.Automation.MSExcel.OpenWorkbook("MSExcel", "Guide Tree", V.Local.sFilePath)
+F.Automation.MSExcel.OpenWorksheet("Guide Tree", "Guide Sheet", V.Local.iWorksheetCnt)
+
+F.Automation.MSExcel.RowCount("Guide Sheet", V.Local.iRowCnt)
+
+F.Intrinsic.Control.For(V.Local.iRow,2,V.Local.iRowCnt,1)
+	F.Automation.MSExcel.ReadRow("Guide Sheet", V.Local.iRow, 1, 4, V.Local.sExcelData)
+	
+	F.Intrinsic.String.Split(V.Local.sExcelData,"*!*",V.Local.sExcelData)
+	F.Intrinsic.Control.If(V.Local.sExcelData,<>,"")
+		V.Local.sPart.Set(V.Local.sExcelData(0))
+		V.Local.sLoc.Set(V.Local.sExcelData(1))
+		V.Local.sDescription.Set(V.Local.sExcelData(2))
+		V.Local.sCodeSort.Set(V.Local.sExcelData(3))
+	
+		F.Intrinsic.String.Build("UPDATE INVENTORY_MSTR SET CODE_SORT = '{0}' WHERE PART = '{1}' AND LOCATION = '{2}' ",V.Local.sCodeSort.Trim, V.Local.sPart.Trim, V.Local.sLoc.Trim,V.Local.sSQL)
+		F.ODBC.Connection!con.Execute(V.Local.sSQL)
+	F.Intrinsic.Control.EndIf
+F.Intrinsic.Control.Next(V.Local.iRow)
+
+F.Automation.MSExcel.DestroyAllObjects("MSExcel", "Guide Tree", "Guide Sheet")
+
+F.Intrinsic.UI.Msgbox("Upload Complete!")
+
+F.Intrinsic.Control.Catch
+	F.Intrinsic.Control.CallSub(ErrorMessage, "ErrorNumber", V.Ambient.ErrorNumber, "ErrorDescription", V.Ambient.ErrorDescription, "Subroutine", V.Ambient.CurrentSubroutine, "UNATTENDED", V.Global.bUnattended, "Project", "5364", "ProjectTitle", "5364 Sort Code Upload", "Callback", "f_Main_Unload")
+F.Intrinsic.Control.EndTry
+Program.Sub.cmdUpload_Click.End
+
+Program.Sub.cmdCancel_Click.Start
+F.Intrinsic.Control.Try
+
+Gui.f_Main..Visible(False)
+F.Intrinsic.Control.CallSub(f_Main_Unload)
+
+F.Intrinsic.Control.Catch
+	F.Intrinsic.Control.CallSub(ErrorMessage, "ErrorNumber", V.Ambient.ErrorNumber, "ErrorDescription", V.Ambient.ErrorDescription, "Subroutine", V.Ambient.CurrentSubroutine, "UNATTENDED", V.Global.bUnattended, "Project", "5364", "ProjectTitle", "5364 Sort Code Upload", "Callback", "f_Main_Unload")
+F.Intrinsic.Control.EndTry
+Program.Sub.cmdCancel_Click.End
+
+Program.Sub.f_Main_UnLoad.Start
+F.Intrinsic.Control.Try
+'close the connection
+F.ODBC.Connection!con.Close
+'end the program
+F.Intrinsic.Control.End
+
+F.Intrinsic.Control.Catch
+	F.Intrinsic.Control.CallSub(ErrorMessage, "ErrorNumber", V.Ambient.ErrorNumber, "ErrorDescription", V.Ambient.ErrorDescription, "Subroutine", V.Ambient.CurrentSubroutine, "UNATTENDED", V.Global.bUnattended, "Project", "5364", "ProjectTitle", "5364 Sort Code Upload", "Callback", "f_Main_Unload")
+F.Intrinsic.Control.EndTry
+Program.Sub.f_Main_UnLoad.End
+
+Program.Sub.ErrorMessage.Start
+'basic error message for replacing catch block
+'this is really just for when printing the message and ending program
+'pass error number, error description, current subroutine
+'optional callback sub, this will be called before ending
+'optional unattended parameters, those subs may not exist if not using them but won't be called
+F.Intrinsic.Control.Try
+
+V.Local.iError.Declare(Long)
+V.Local.sErrorDescription.Declare(String)
+V.Local.sSubroutine.Declare(String)
+V.Local.sError.Declare(String)
+V.Local.bExists.Declare(Boolean)
+V.Local.sCallback.Declare(String)
+
+V.Local.iError.Set(V.Args.ErrorNumber)
+V.Local.sErrorDescription.Set(V.Args.ErrorDescription)
+V.Local.sSubroutine.Set(V.Args.Subroutine)
+
+'make sure we aren't in an error loop
+F.Intrinsic.Control.If(V.Global.bError)
+	F.Intrinsic.Control.End
+
+F.Intrinsic.Control.EndIf
+V.Global.bError.Set(True)
+
+F.Intrinsic.String.Build("Project: {0}{1}{1}Subroutine: {2}{1}Error Occurred {3} with description {4}{1}{1}GAB Version: {5}", V.Caller.ScriptFile, V.Ambient.Newline, V.Local.sSubroutine, V.Local.iError, V.Local.sErrorDescription, V.Ambient.GABVersion, V.Local.sError)
+
+F.Intrinsic.Variable.ArgExists("UNATTENDED", V.Local.bExists)
+F.Intrinsic.Control.If(V.Local.bExists)
+	F.Intrinsic.Control.If(V.Args.UNATTENDED)
+		F.Intrinsic.Control.CallSub(UnattendedErrorMessage, "MESSAGE", V.Local.sError, "PROJECT", V.Args.PROJECT, "PROJECTTITLE", V.Args.PROJECTTITLE)
+	F.Intrinsic.Control.Else
+		F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.EndIf
+F.Intrinsic.Control.Else
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+F.Intrinsic.Control.EndIf
+
+F.Intrinsic.Variable.ArgExists("Callback", V.Local.bExists)
+F.Intrinsic.Control.If(V.Local.bExists)
+	V.Local.sCallback.Set(V.Args.Callback.Trim)
+	F.Intrinsic.Control.CallSub(V.Local.sCallback)
+F.Intrinsic.Control.EndIf
+
+F.Intrinsic.Control.End
+
+F.Intrinsic.Control.Catch
+	F.Intrinsic.String.Build("Project: {0}{1}{1}Subroutine: {2}{1}Error Occurred {3} with description {4}{1}{1}GAB Version: {5}",V.Caller.ScriptFile,V.Ambient.Newline,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Ambient.GABVersion,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.End
+
+F.Intrinsic.Control.EndTry
+Program.Sub.ErrorMessage.End
+
+Program.Sub.Comments.Start
+${$5$}$3.0.0.0$}$1
+${$6$}$acollins$}$20200507130716826$}$h98hERc2yV72q0GaUGlwSaoK/aefTdVkMo60XrNJzOAQrRGwPDhZB7T4mDfZORE9GkAJPJXklpVhiBnThOmKQQ==
+Program.Sub.Comments.End
