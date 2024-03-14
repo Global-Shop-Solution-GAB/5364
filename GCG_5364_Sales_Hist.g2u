@@ -1,0 +1,662 @@
+Program.Sub.ScreenSU.Start
+Gui.FormINVCHist..Create
+Gui.FormINVCHist..Size(15360,10695)
+Gui.FormINVCHist..MinX(0)
+Gui.FormINVCHist..MinY(0)
+Gui.FormINVCHist..Position(0,0)
+Gui.FormINVCHist..BackColor(-2147483633)
+Gui.FormINVCHist..MousePointer(0)
+Gui.FormINVCHist..Event(UnLoad,FormINVCHist_UnLoad)
+Gui.FormINVCHist..Caption("Custom Invoice History")
+Gui.FormINVCHist.lblFrom.Create(Label,"From",True,780,255,0,150,300,True,0,"Arial",8,-2147483633,0)
+Gui.FormINVCHist.dtpStart.Create(DatePicker)
+Gui.FormINVCHist.dtpStart.Size(1935,285)
+Gui.FormINVCHist.dtpStart.Position(915,210)
+Gui.FormINVCHist.lblTo.Create(Label,"To",True,465,255,0,2970,300,True,0,"Arial",8,-2147483633,0)
+Gui.FormINVCHist.dtpEnd.Create(DatePicker)
+Gui.FormINVCHist.dtpEnd.Size(1935,285)
+Gui.FormINVCHist.dtpEnd.Position(3450,210)
+Gui.FormINVCHist.cmdREFRESH.Create(Button)
+Gui.FormINVCHist.cmdREFRESH.Size(525,375)
+Gui.FormINVCHist.cmdREFRESH.Position(5625,180)
+Gui.FormINVCHist.cmdREFRESH.Caption("REFRESH")
+Gui.FormINVCHist.cmdREFRESH.Event(Click,cmdREFRESH_Click)
+Gui.FormINVCHist.GsGridHist.Create(GsGridControl)
+Gui.FormINVCHist.GsGridHist.Size(14790,9165)
+Gui.FormINVCHist.GsGridHist.Position(210,630)
+Gui.FormINVCHist.GsGridHist.Anchor(15)
+Gui.FormINVCHist.GsGridHist.Event(RowCellClick,GsGridHist_RowCellClick)
+Gui.FormINVCHist.cmdExport.Create(Button)
+Gui.FormINVCHist.cmdExport.Size(1050,375)
+Gui.FormINVCHist.cmdExport.Position(13950,150)
+Gui.FormINVCHist.cmdExport.Anchor(9)
+Gui.FormINVCHist.cmdExport.Caption("Export")
+Gui.FormINVCHist.cmdExport.Event(Click,cmdExport_Click)
+Program.Sub.ScreenSU.End
+
+Program.Sub.Preflight.Start
+Program.Sub.Preflight.End
+
+Program.Sub.Main.Start
+F.Intrinsic.Control.SetErrorHandler("Main_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+V.Local.sSql.Declare(String,"")
+
+F.Intrinsic.Control.SelectCase(V.Caller.Hook)
+	F.Intrinsic.Control.Case(15226)
+		F.Intrinsic.Control.CallSub(Get_Sales_Hist)
+		F.Intrinsic.Control.CallSub(Exit)
+	
+	F.Intrinsic.Control.Case(28532)
+		F.ODBC.Connection!Con.OpenCompanyConnection
+		F.Intrinsic.String.Build("Delete From GCG_5364_BIN_ALLOC Where Order_NO = '{0}'",V.Passed.First-Order,V.Local.sSql)
+		F.ODBC.Connection!Con.Execute(V.Local.sSql)
+		F.ODBC.Connection!Con.Close
+		
+	F.Intrinsic.Control.CaseElse
+		F.Intrinsic.Control.If(V.Ambient.IsInTaskScheduler)
+			F.Intrinsic.Control.CallSub(Process_Queued_Batch)
+		F.Intrinsic.Control.Else
+			F.Intrinsic.Control.CallSub(Get_Data)
+			F.Intrinsic.Control.CallSub(Set_Properties)
+			gui.FormINVCHist..Show
+			gui.FormINVCHist..AlwaysOnTop(True)
+			gui.FormINVCHist..AlwaysOnTop(False)
+		F.Intrinsic.Control.EndIf
+		
+F.Intrinsic.Control.EndSelect
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("Main_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_5364_Sales_Hist.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(Exit)
+Function.Intrinsic.Control.EndIf
+Program.Sub.Main.End
+
+Program.Sub.Exit.Start
+F.Intrinsic.Control.SetErrorHandler("Exit_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+
+F.Intrinsic.Control.End
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("Exit_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.Control.End
+Function.Intrinsic.Control.EndIf
+Program.Sub.Exit.End
+
+Program.Sub.Get_Sales_Hist.Start
+F.Intrinsic.Control.SetErrorHandler("Get_Sales_Hist_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+V.Local.sSql.Declare(String,"")
+V.Local.i.Declare(Long,0)
+
+F.ODBC.Connection!Con.OpenCompanyConnection
+F.Intrinsic.String.Build("Select Distinct Invc, Order_Num From AR_Batch_Trans Where Batch = '{0}'",V.Passed.Batch.Trim,V.Local.sSql)
+
+F.Data.DataTable.CreateFromSQL("Batch","con",V.Local.sSql,True)
+
+F.Intrinsic.Control.If(V.DataTable.Batch.RowCount--,<>,-1)
+	F.Data.DataTable.SaveToDB("Batch","con","GCG_5364_Q_Batch","Invc*!*Order_Num",256,"Invc@!@Invc*!*Order_Num@!@Order_Num")
+F.Intrinsic.Control.EndIf
+'F.Intrinsic.Control.For(v.Local.i,0,V.DataTable.Batch.RowCount--,1)
+'	F.Intrinsic.String.Build("Select INVOICE, A.ORDER_NO, ORDER_SUFFIX, ORDER_LINE, DATE_INVOICE, MATL, MATL_DESC, FINISH, FIN_DESC, WIDTH, LENGTH, DRILL_CODE, NOTES, BATCH_NOTES From V_ORDER_HIST_LINE A JOIN GCG_5364_OE_LINES B on A.ORDER_NO = B.ORDER_NO and A.ORDER_LINE = B.RECORD_NO Where INVOICE = '{0}' and A.ORDER_NO = '{1}'",V.DataTable.Batch(V.Local.i).Invc!FieldValtrim,V.DataTable.Batch(V.Local.i).Order_Num!FieldValtrim,V.Local.sSql)
+'	F.Data.DataTable.CreateFromSQL("INVCHIST","Con",V.Local.sSql,True)
+'	F.Data.DataTable.SaveToDB("INVCHIST","con","GCG_5364_INVC_HIST"," ",128,"INVOICE@!@INVOICE*!*ORDER_NO@!@ORDER_NO*!*ORDER_SUFFIX@!@ORDER_SUFFIX*!*ORDER_LINE@!@ORDER_LINE*!*DATE_INVOICE@!@DATE_INVOICE*!*MATL@!@MATL*!*MATL_DESC@!@MATL_DESC*!*FINISH@!@FINISH*!*FIN_DESC@!@FIN_DESC*!*WIDTH@!@WIDTH*!*LENGTH@!@LENGTH*!*DRILL_CODE@!@DRILL_CODE*!*NOTES@!@NOTES*!*BATCH_NOTES@!@BATCH_NOTES")
+'	F.Data.DataTable.Close("INVCHIST")
+'F.Intrinsic.Control.Next(V.Local.i)
+
+F.ODBC.Connection!Con.Close
+
+F.Data.DataTable.Close("Batch")
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("Get_Sales_Hist_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_5364_Sales_Hist.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(Exit)
+Function.Intrinsic.Control.EndIf
+Program.Sub.Get_Sales_Hist.End
+
+Program.Sub.cmdREFRESH_Click.Start
+F.Intrinsic.Control.SetErrorHandler("cmdREFRESH_Click_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+
+F.Intrinsic.Control.CallSub(Get_Data)
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("cmdREFRESH_Click_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_5364_Sales_Hist.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(Exit)
+Function.Intrinsic.Control.EndIf
+Program.Sub.cmdREFRESH_Click.End
+
+Program.Sub.Get_Data.Start
+F.Intrinsic.Control.SetErrorHandler("Get_Data_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+V.Local.dStart.Declare(Date)
+V.Local.dEnd.Declare(Date)
+V.Local.sSql.Declare(String,"")
+
+V.Local.dStart.Set(V.Screen.FormINVCHist!dtpStart.Value)
+V.Local.dEnd.Set(V.Screen.FormINVCHist!dtpEnd.Value)
+
+F.ODBC.Connection!con.OpenCompanyConnection
+
+F.Intrinsic.Control.If(V.DataTable.Invoice.Exists)
+	F.Intrinsic.String.Build("Select PART, LOCATION, DESCRIPTION, PRODUCT_LINE, A.INVOICE, A.ORDER_NO, A.ORDER_SUFFIX, A.ORDER_LINE, CUSTOMER, NAME_CUST_SHIP, CUSTOMER_PO, JOB, SUFFIX, A.DATE_INVOICE, SALESPERSON, SHIP_VIA, A.DATE_SHIPPED, QTY_SHIPPED, COST, PRICE, EXTENSION, MATL, MATL_DESC, FINISH, FIN_DESC, LENGTH, WIDTH, DRILL_CODE, NOTES, BATCH_NOTES, USER_1, USER_2, USER_3, USER_4, USER_5 FROM V_ORDER_HIST_LINE A LEFT JOIN GCG_5364_INVC_HIST B ON A.INVOICE = B.INVOICE AND A.ORDER_NO = B.ORDER_NO AND A.ORDER_SUFFIX = B.ORDER_SUFFIX AND A.ORDER_LINE = B.ORDER_LINE WHERE A.ORDER_LINE <> '8000' AND A.DATE_INVOICE BETWEEN '{0}' AND '{1}'",v.Local.dStart.PervasiveDate,V.Local.dEnd.PervasiveDate,V.Local.sSql)
+	F.Data.DataTable.CreateFromSQL("Temp","con",V.Local.sSql,True)
+	F.Data.DataTable.DeleteRow("INVOICE")
+	F.Data.DataTable.AcceptChanges("INVOICE")
+	F.Data.DataTable.Merge("Temp","INVOICE",false,4)
+	F.Data.DataTable.Close("Temp")
+F.Intrinsic.Control.Else
+	F.Intrinsic.String.Build("Select PART, LOCATION, DESCRIPTION, PRODUCT_LINE, A.INVOICE, A.ORDER_NO, A.ORDER_SUFFIX, A.ORDER_LINE, CUSTOMER, NAME_CUST_SHIP, CUSTOMER_PO, JOB, SUFFIX, A.DATE_INVOICE, SALESPERSON, SHIP_VIA, A.DATE_SHIPPED, QTY_SHIPPED, COST, PRICE, EXTENSION, MATL, MATL_DESC, FINISH, FIN_DESC, LENGTH, WIDTH, DRILL_CODE, NOTES, BATCH_NOTES, USER_1, USER_2, USER_3, USER_4, USER_5 FROM V_ORDER_HIST_LINE A LEFT JOIN GCG_5364_INVC_HIST B ON A.INVOICE = B.INVOICE AND A.ORDER_NO = B.ORDER_NO AND A.ORDER_SUFFIX = B.ORDER_SUFFIX AND A.ORDER_LINE = B.ORDER_LINE WHERE A.ORDER_LINE <> '8000' AND A.DATE_INVOICE BETWEEN '{0}' AND '{1}'",v.Local.dStart.PervasiveDate,V.Local.dEnd.PervasiveDate,V.Local.sSql)
+	F.Data.DataTable.CreateFromSQL("INVOICE","con",V.Local.sSql,True)
+	F.Data.DataTable.AddColumn("Invoice","Code_Sort",String)
+F.Intrinsic.Control.EndIf
+
+F.Data.Dictionary.CreateFromSQL("CodeSort","con","Select Order_No, Code_SOrt from V_ORDER_HIST_HEAD")
+F.Data.Dictionary.SetDefaultReturn("CodeSort"," ")
+F.Data.DataTable.FillFromDictionary("Invoice","CodeSort","ORDER_NO","Code_Sort")
+F.Data.Dictionary.Close("CodeSort")
+
+F.ODBC.Connection!Con.Close
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("Get_Data_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_5364_Sales_Hist.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(Exit)
+Function.Intrinsic.Control.EndIf
+Program.Sub.Get_Data.End
+
+Program.Sub.Set_Properties.Start
+F.Intrinsic.Control.SetErrorHandler("Set_Properties_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+V.Local.sSerialize.Declare(String,"")
+V.Local.sCaption.Declare(String,"")
+
+gui.FormINVCHist.GsGridHist.AddGridviewFromDatatable("GInvoice","INVOICE")
+GUI.FormINVCHist.GsGridHist.SetGridviewProperty("GInvoice", "OptionsViewColumnAutoWidth", False)
+Gui.FormINVCHist.GsGridHist.SetGridviewProperty("GInvoice","Showgrouppanel",True)
+Gui.FormINVCHist.GsGridHist.SetGridviewProperty("GInvoice","Multiselect",False)
+Gui.FormINVCHist.GsGridHist.SetGridviewProperty("GInvoice","OptionsViewShowAutoFilterRow",True)
+Gui.FormINVCHist.GsGridHist.SetGridviewProperty("GInvoice","OptionsFindAlwaysVisible",True)
+
+Gui.FormINVCHist.GsGridHist.SetColumnProperty("GInvoice","PART","Caption","Part Number") 
+Gui.FormINVCHist.GsGridHist.SetColumnProperty("GInvoice","PART","AllowEdit",False)
+Gui.FormINVCHist.GsGridHist.SetColumnProperty("GInvoice","PART","HeaderForeColor",v.Color.PRI-GSS-00)
+Gui.FormINVCHist.GsGridHist.SetColumnProperty("GInvoice","PART","HeaderFontBold",True)
+Gui.FormINVCHist.GsGridHist.SetColumnProperty("GInvoice","PART","ReadOnly",True)
+Gui.FormINVCHist.GsGridHist.SetColumnProperty("GInvoice","PART","IsHyperlink",True)
+
+Gui.FormINVCHist.GsGridHist.SetColumnProperty("GInvoice","LOCATION","Caption","Location") 
+Gui.FormINVCHist.GsGridHist.SetColumnProperty("GInvoice","LOCATION","AllowEdit",False)
+Gui.FormINVCHist.GsGridHist.SetColumnProperty("GInvoice","LOCATION","HeaderForeColor",v.Color.PRI-GSS-00)
+Gui.FormINVCHist.GsGridHist.SetColumnProperty("GInvoice","LOCATION","HeaderFontBold",True)
+Gui.FormINVCHist.GsGridHist.SetColumnProperty("GInvoice","LOCATION","ReadOnly",True)
+
+Gui.FormINVCHist.GsGridHist.SetColumnProperty("GInvoice","DESCRIPTION","Caption","Description")
+Gui.FormINVCHist.GsGridHist.SetColumnProperty("GInvoice","DESCRIPTION","AllowEdit",False)
+Gui.FormINVCHist.GsGridHist.SetColumnProperty("GInvoice","DESCRIPTION","HeaderForeColor",v.Color.PRI-GSS-00)
+Gui.FormINVCHist.GsGridHist.SetColumnProperty("GInvoice","DESCRIPTION","HeaderFontBold",True)
+Gui.FormINVCHist.GsGridHist.SetColumnProperty("GInvoice","DESCRIPTION","ReadOnly",True)
+
+Gui.FormINVCHist.GsGridHist.SetColumnProperty("GInvoice","PRODUCT_LINE","Caption","Product_Line")
+Gui.FormINVCHist.GsGridHist.SetColumnProperty("GInvoice","PRODUCT_LINE","AllowEdit",False)
+Gui.FormINVCHist.GsGridHist.SetColumnProperty("GInvoice","PRODUCT_LINE","HeaderForeColor",v.Color.PRI-GSS-00)
+Gui.FormINVCHist.GsGridHist.SetColumnProperty("GInvoice","PRODUCT_LINE","HeaderFontBold",True)
+Gui.FormINVCHist.GsGridHist.SetColumnProperty("GInvoice","PRODUCT_LINE","ReadOnly",True)
+
+Gui.FormINVCHist.GsGridHist.SetColumnProperty("GInvoice","INVOICE","Caption","Invoice")
+Gui.FormINVCHist.GsGridHist.SetColumnProperty("GInvoice","INVOICE","AllowEdit",False)
+Gui.FormINVCHist.GsGridHist.SetColumnProperty("GInvoice","INVOICE","HeaderForeColor",v.Color.PRI-GSS-00)
+Gui.FormINVCHist.GsGridHist.SetColumnProperty("GInvoice","INVOICE","HeaderFontBold",True)
+Gui.FormINVCHist.GsGridHist.SetColumnProperty("GInvoice","INVOICE","ReadOnly",True)
+
+Gui.FormINVCHist.GsGridHist.SetColumnProperty("GInvoice","ORDER_NO","Caption","Sales Order")
+Gui.FormINVCHist.GsGridHist.SetColumnProperty("GInvoice","ORDER_NO","AllowEdit",False)
+Gui.FormINVCHist.GsGridHist.SetColumnProperty("GInvoice","ORDER_NO","HeaderForeColor",v.Color.PRI-GSS-00)
+Gui.FormINVCHist.GsGridHist.SetColumnProperty("GInvoice","ORDER_NO","HeaderFontBold",True)
+Gui.FormINVCHist.GsGridHist.SetColumnProperty("GInvoice","ORDER_NO","ReadOnly",True)
+Gui.FormINVCHist.GsGridHist.SetColumnProperty("GInvoice","ORDER_NO","IsHyperlink",True)
+
+Gui.FormINVCHist.GsGridHist.SetColumnProperty("GInvoice","ORDER_SUFFIX","Caption","Order Suffix")
+Gui.FormINVCHist.GsGridHist.SetColumnProperty("GInvoice","ORDER_SUFFIX","AllowEdit",False)
+Gui.FormINVCHist.GsGridHist.SetColumnProperty("GInvoice","ORDER_SUFFIX","Visible",False)
+Gui.FormINVCHist.GsGridHist.SetColumnProperty("GInvoice","ORDER_SUFFIX","HeaderForeColor",v.Color.PRI-GSS-00)
+Gui.FormINVCHist.GsGridHist.SetColumnProperty("GInvoice","ORDER_SUFFIX","HeaderFontBold",True)
+Gui.FormINVCHist.GsGridHist.SetColumnProperty("GInvoice","ORDER_SUFFIX","ReadOnly",True)
+
+Gui.FormINVCHist.GsGridHist.SetColumnProperty("GInvoice","ORDER_LINE","Caption","Order Line")
+Gui.FormINVCHist.GsGridHist.SetColumnProperty("GInvoice","ORDER_LINE","AllowEdit",False)
+Gui.FormINVCHist.GsGridHist.SetColumnProperty("GInvoice","ORDER_LINE","HeaderForeColor",v.Color.PRI-GSS-00)
+Gui.FormINVCHist.GsGridHist.SetColumnProperty("GInvoice","ORDER_LINE","HeaderFontBold",True)
+Gui.FormINVCHist.GsGridHist.SetColumnProperty("GInvoice","ORDER_LINE","ReadOnly",True)
+
+Gui.FormINVCHist.GsGridHist.SetColumnProperty("GInvoice","CUSTOMER","Caption","Customer")
+Gui.FormINVCHist.GsGridHist.SetColumnProperty("GInvoice","CUSTOMER","AllowEdit",False)
+Gui.FormINVCHist.GsGridHist.SetColumnProperty("GInvoice","CUSTOMER","HeaderForeColor",v.Color.PRI-GSS-00)
+Gui.FormINVCHist.GsGridHist.SetColumnProperty("GInvoice","CUSTOMER","HeaderFontBold",True)
+Gui.FormINVCHist.GsGridHist.SetColumnProperty("GInvoice","CUSTOMER","ReadOnly",True)
+
+Gui.FormINVCHist.GsGridHist.SetColumnProperty("GInvoice","NAME_CUST_SHIP","Caption","Customer Name")
+Gui.FormINVCHist.GsGridHist.SetColumnProperty("GInvoice","NAME_CUST_SHIP","AllowEdit",False)
+Gui.FormINVCHist.GsGridHist.SetColumnProperty("GInvoice","NAME_CUST_SHIP","HeaderForeColor",v.Color.PRI-GSS-00)
+Gui.FormINVCHist.GsGridHist.SetColumnProperty("GInvoice","NAME_CUST_SHIP","HeaderFontBold",True)
+Gui.FormINVCHist.GsGridHist.SetColumnProperty("GInvoice","NAME_CUST_SHIP","ReadOnly",True)
+
+Gui.FormINVCHist.GsGridHist.SetColumnProperty("GInvoice","CUSTOMER_PO","Caption","Customer PO")
+Gui.FormINVCHist.GsGridHist.SetColumnProperty("GInvoice","CUSTOMER_PO","AllowEdit",False)
+Gui.FormINVCHist.GsGridHist.SetColumnProperty("GInvoice","CUSTOMER_PO","HeaderForeColor",v.Color.PRI-GSS-00)
+Gui.FormINVCHist.GsGridHist.SetColumnProperty("GInvoice","CUSTOMER_PO","HeaderFontBold",True)
+Gui.FormINVCHist.GsGridHist.SetColumnProperty("GInvoice","CUSTOMER_PO","ReadOnly",True)
+
+Gui.FormINVCHist.GsGridHist.SetColumnProperty("GInvoice","JOB","Caption","Job")
+Gui.FormINVCHist.GsGridHist.SetColumnProperty("GInvoice","JOB","AllowEdit",False)
+Gui.FormINVCHist.GsGridHist.SetColumnProperty("GInvoice","JOB","Visible",True)
+Gui.FormINVCHist.GsGridHist.SetColumnProperty("GInvoice","JOB","HeaderForeColor",v.Color.PRI-GSS-00)
+Gui.FormINVCHist.GsGridHist.SetColumnProperty("GInvoice","JOB","HeaderFontBold",True)
+Gui.FormINVCHist.GsGridHist.SetColumnProperty("GInvoice","JOB","ReadOnly",True)
+Gui.FormINVCHist.GsGridHist.SetColumnProperty("GInvoice","JOB","IsHyperlink",True)
+
+Gui.FormINVCHist.GsGridHist.SetColumnProperty("GInvoice","SUFFIX","Caption","Suffix")
+Gui.FormINVCHist.GsGridHist.SetColumnProperty("GInvoice","SUFFIX","AllowEdit",False)
+Gui.FormINVCHist.GsGridHist.SetColumnProperty("GInvoice","SUFFIX","HeaderForeColor",v.Color.PRI-GSS-00)
+Gui.FormINVCHist.GsGridHist.SetColumnProperty("GInvoice","SUFFIX","HeaderFontBold",True)
+Gui.FormINVCHist.GsGridHist.SetColumnProperty("GInvoice","SUFFIX","ReadOnly",True)
+
+Gui.FormINVCHist.GsGridHist.SetColumnProperty("GInvoice","DATE_INVOICE","Caption","Invoice Date")
+Gui.FormINVCHist.GsGridHist.SetColumnProperty("GInvoice","DATE_INVOICE","AllowEdit",False)
+Gui.FormINVCHist.GsGridHist.SetColumnProperty("GInvoice","DATE_INVOICE","HeaderForeColor",v.Color.PRI-GSS-00)
+Gui.FormINVCHist.GsGridHist.SetColumnProperty("GInvoice","DATE_INVOICE","HeaderFontBold",True)
+Gui.FormINVCHist.GsGridHist.SetColumnProperty("GInvoice","DATE_INVOICE","ReadOnly",True)
+Gui.FormINVCHist.GsGridHist.SetColumnProperty("GInvoice","DATE_INVOICE","DisplayCustomDatetime","d")
+
+Gui.FormINVCHist.GsGridHist.SetColumnProperty("GInvoice","DATE_SHIPPED","Caption","Ship Date")
+Gui.FormINVCHist.GsGridHist.SetColumnProperty("GInvoice","DATE_SHIPPED","AllowEdit",False)
+Gui.FormINVCHist.GsGridHist.SetColumnProperty("GInvoice","DATE_SHIPPED","HeaderForeColor",v.Color.PRI-GSS-00)
+Gui.FormINVCHist.GsGridHist.SetColumnProperty("GInvoice","DATE_SHIPPED","HeaderFontBold",True)
+Gui.FormINVCHist.GsGridHist.SetColumnProperty("GInvoice","DATE_SHIPPED","ReadOnly",True)
+Gui.FormINVCHist.GsGridHist.SetColumnProperty("GInvoice","DATE_SHIPPED","DisplayCustomDatetime","d")
+
+Gui.FormINVCHist.GsGridHist.SetColumnProperty("GInvoice","SALESPERSON","Caption","Salesperson")
+Gui.FormINVCHist.GsGridHist.SetColumnProperty("GInvoice","SALESPERSON","AllowEdit",False)
+Gui.FormINVCHist.GsGridHist.SetColumnProperty("GInvoice","SALESPERSON","HeaderForeColor",v.Color.PRI-GSS-00)
+Gui.FormINVCHist.GsGridHist.SetColumnProperty("GInvoice","SALESPERSON","HeaderFontBold",True)
+Gui.FormINVCHist.GsGridHist.SetColumnProperty("GInvoice","SALESPERSON","ReadOnly",True)
+
+Gui.FormINVCHist.GsGridHist.SetColumnProperty("GInvoice","SHIP_VIA","Caption","Ship Via")
+Gui.FormINVCHist.GsGridHist.SetColumnProperty("GInvoice","SHIP_VIA","AllowEdit",False)
+Gui.FormINVCHist.GsGridHist.SetColumnProperty("GInvoice","SHIP_VIA","HeaderForeColor",v.Color.PRI-GSS-00)
+Gui.FormINVCHist.GsGridHist.SetColumnProperty("GInvoice","SHIP_VIA","HeaderFontBold",True)
+Gui.FormINVCHist.GsGridHist.SetColumnProperty("GInvoice","SHIP_VIA","ReadOnly",True)
+
+Gui.FormINVCHist.GsGridHist.SetColumnProperty("GInvoice","QTY_SHIPPED","Caption","Ship Qty")
+Gui.FormINVCHist.GsGridHist.SetColumnProperty("GInvoice","QTY_SHIPPED","AllowEdit",False)
+Gui.FormINVCHist.GsGridHist.SetColumnProperty("GInvoice","QTY_SHIPPED","HeaderForeColor",v.Color.PRI-GSS-00)
+Gui.FormINVCHist.GsGridHist.SetColumnProperty("GInvoice","QTY_SHIPPED","HeaderFontBold",True)
+Gui.FormINVCHist.GsGridHist.SetColumnProperty("GInvoice","QTY_SHIPPED","ReadOnly",True)
+
+Gui.FormINVCHist.GsGridHist.SetColumnProperty("GInvoice","COST","Caption","Cost")
+Gui.FormINVCHist.GsGridHist.SetColumnProperty("GInvoice","COST","AllowEdit",False)
+Gui.FormINVCHist.GsGridHist.SetColumnProperty("GInvoice","COST","HeaderForeColor",v.Color.PRI-GSS-00)
+Gui.FormINVCHist.GsGridHist.SetColumnProperty("GInvoice","COST","HeaderFontBold",True)
+Gui.FormINVCHist.GsGridHist.SetColumnProperty("GInvoice","COST","ReadOnly",True)
+
+Gui.FormINVCHist.GsGridHist.SetColumnProperty("GInvoice","PRICE","Caption","Price")
+Gui.FormINVCHist.GsGridHist.SetColumnProperty("GInvoice","PRICE","AllowEdit",False)
+Gui.FormINVCHist.GsGridHist.SetColumnProperty("GInvoice","PRICE","HeaderForeColor",v.Color.PRI-GSS-00)
+Gui.FormINVCHist.GsGridHist.SetColumnProperty("GInvoice","PRICE","HeaderFontBold",True)
+Gui.FormINVCHist.GsGridHist.SetColumnProperty("GInvoice","PRICE","ReadOnly",True)
+
+Gui.FormINVCHist.GsGridHist.SetColumnProperty("GInvoice","EXTENSION","Caption","Extension")
+Gui.FormINVCHist.GsGridHist.SetColumnProperty("GInvoice","EXTENSION","AllowEdit",False)
+Gui.FormINVCHist.GsGridHist.SetColumnProperty("GInvoice","EXTENSION","HeaderForeColor",v.Color.PRI-GSS-00)
+Gui.FormINVCHist.GsGridHist.SetColumnProperty("GInvoice","EXTENSION","HeaderFontBold",True)
+Gui.FormINVCHist.GsGridHist.SetColumnProperty("GInvoice","EXTENSION","ReadOnly",True)
+
+Gui.FormINVCHist.GsGridHist.SetColumnProperty("GInvoice","MATL","Caption","Material")
+Gui.FormINVCHist.GsGridHist.SetColumnProperty("GInvoice","MATL","AllowEdit",False)
+Gui.FormINVCHist.GsGridHist.SetColumnProperty("GInvoice","MATL","HeaderForeColor",v.Color.PRI-GSS-00)
+Gui.FormINVCHist.GsGridHist.SetColumnProperty("GInvoice","MATL","HeaderFontBold",True)
+Gui.FormINVCHist.GsGridHist.SetColumnProperty("GInvoice","MATL","ReadOnly",True)
+
+Gui.FormINVCHist.GsGridHist.SetColumnProperty("GInvoice","MATL_DESC","Caption","Material Description")
+Gui.FormINVCHist.GsGridHist.SetColumnProperty("GInvoice","MATL_DESC","AllowEdit",False)
+Gui.FormINVCHist.GsGridHist.SetColumnProperty("GInvoice","MATL_DESC","HeaderForeColor",v.Color.PRI-GSS-00)
+Gui.FormINVCHist.GsGridHist.SetColumnProperty("GInvoice","MATL_DESC","HeaderFontBold",True)
+Gui.FormINVCHist.GsGridHist.SetColumnProperty("GInvoice","MATL_DESC","ReadOnly",True)
+
+Gui.FormINVCHist.GsGridHist.SetColumnProperty("GInvoice","FINISH","Caption","Finish")
+Gui.FormINVCHist.GsGridHist.SetColumnProperty("GInvoice","FINISH","AllowEdit",False)
+Gui.FormINVCHist.GsGridHist.SetColumnProperty("GInvoice","FINISH","HeaderForeColor",v.Color.PRI-GSS-00)
+Gui.FormINVCHist.GsGridHist.SetColumnProperty("GInvoice","FINISH","HeaderFontBold",True)
+Gui.FormINVCHist.GsGridHist.SetColumnProperty("GInvoice","FINISH","ReadOnly",True)
+
+Gui.FormINVCHist.GsGridHist.SetColumnProperty("GInvoice","FIN_DESC","Caption","Finish Description")
+Gui.FormINVCHist.GsGridHist.SetColumnProperty("GInvoice","FIN_DESC","AllowEdit",False)
+Gui.FormINVCHist.GsGridHist.SetColumnProperty("GInvoice","FIN_DESC","HeaderForeColor",v.Color.PRI-GSS-00)
+Gui.FormINVCHist.GsGridHist.SetColumnProperty("GInvoice","FIN_DESC","HeaderFontBold",True)
+Gui.FormINVCHist.GsGridHist.SetColumnProperty("GInvoice","FIN_DESC","ReadOnly",True)
+
+Gui.FormINVCHist.GsGridHist.SetColumnProperty("GInvoice","LENGTH","Caption","Length")
+Gui.FormINVCHist.GsGridHist.SetColumnProperty("GInvoice","LENGTH","AllowEdit",False)
+Gui.FormINVCHist.GsGridHist.SetColumnProperty("GInvoice","LENGTH","HeaderForeColor",v.Color.PRI-GSS-00)
+Gui.FormINVCHist.GsGridHist.SetColumnProperty("GInvoice","LENGTH","HeaderFontBold",True)
+Gui.FormINVCHist.GsGridHist.SetColumnProperty("GInvoice","LENGTH","ReadOnly",True)
+
+Gui.FormINVCHist.GsGridHist.SetColumnProperty("GInvoice","WIDTH","Caption","Width")
+Gui.FormINVCHist.GsGridHist.SetColumnProperty("GInvoice","WIDTH","AllowEdit",False)
+Gui.FormINVCHist.GsGridHist.SetColumnProperty("GInvoice","WIDTH","HeaderForeColor",v.Color.PRI-GSS-00)
+Gui.FormINVCHist.GsGridHist.SetColumnProperty("GInvoice","WIDTH","HeaderFontBold",True)
+Gui.FormINVCHist.GsGridHist.SetColumnProperty("GInvoice","WIDTH","ReadOnly",True)
+
+Gui.FormINVCHist.GsGridHist.SetColumnProperty("GInvoice","DRILL_CODE","Caption","Drill Code")
+Gui.FormINVCHist.GsGridHist.SetColumnProperty("GInvoice","DRILL_CODE","AllowEdit",False)
+Gui.FormINVCHist.GsGridHist.SetColumnProperty("GInvoice","DRILL_CODE","HeaderForeColor",v.Color.PRI-GSS-00)
+Gui.FormINVCHist.GsGridHist.SetColumnProperty("GInvoice","DRILL_CODE","HeaderFontBold",True)
+Gui.FormINVCHist.GsGridHist.SetColumnProperty("GInvoice","DRILL_CODE","ReadOnly",True)
+
+Gui.FormINVCHist.GsGridHist.SetColumnProperty("GInvoice","NOTES","Caption","Notes")
+Gui.FormINVCHist.GsGridHist.SetColumnProperty("GInvoice","NOTES","AllowEdit",False)
+Gui.FormINVCHist.GsGridHist.SetColumnProperty("GInvoice","NOTES","HeaderForeColor",v.Color.PRI-GSS-00)
+Gui.FormINVCHist.GsGridHist.SetColumnProperty("GInvoice","NOTES","HeaderFontBold",True)
+Gui.FormINVCHist.GsGridHist.SetColumnProperty("GInvoice","NOTES","ReadOnly",True)
+
+Gui.FormINVCHist.GsGridHist.SetColumnProperty("GInvoice","BATCH_NOTES","Caption","Batch Notes")
+Gui.FormINVCHist.GsGridHist.SetColumnProperty("GInvoice","BATCH_NOTES","AllowEdit",False)
+Gui.FormINVCHist.GsGridHist.SetColumnProperty("GInvoice","BATCH_NOTES","HeaderForeColor",v.Color.PRI-GSS-00)
+Gui.FormINVCHist.GsGridHist.SetColumnProperty("GInvoice","BATCH_NOTES","HeaderFontBold",True)
+Gui.FormINVCHist.GsGridHist.SetColumnProperty("GInvoice","BATCH_NOTES","ReadOnly",True)
+
+F.ODBC.Connection!ConU.OpenCompanyConnection
+F.ODBC.Connection!ConU.ExecuteAndReturn("Select Label From OE_USER_FLDS_LN Where Key_ID = '01'",V.Local.sCaption)
+
+Gui.FormINVCHist.GsGridHist.SetColumnProperty("GInvoice","USER_1","Caption",V.Local.sCaption)
+Gui.FormINVCHist.GsGridHist.SetColumnProperty("GInvoice","USER_1","AllowEdit",False)
+Gui.FormINVCHist.GsGridHist.SetColumnProperty("GInvoice","USER_1","HeaderForeColor",v.Color.PRI-GSS-00)
+Gui.FormINVCHist.GsGridHist.SetColumnProperty("GInvoice","USER_1","HeaderFontBold",True)
+Gui.FormINVCHist.GsGridHist.SetColumnProperty("GInvoice","USER_1","ReadOnly",True)
+
+F.ODBC.Connection!ConU.ExecuteAndReturn("Select Label From OE_USER_FLDS_LN Where Key_ID = '02'",V.Local.sCaption)
+
+Gui.FormINVCHist.GsGridHist.SetColumnProperty("GInvoice","USER_2","Caption",V.Local.sCaption)
+Gui.FormINVCHist.GsGridHist.SetColumnProperty("GInvoice","USER_2","AllowEdit",False)
+Gui.FormINVCHist.GsGridHist.SetColumnProperty("GInvoice","USER_2","HeaderForeColor",v.Color.PRI-GSS-00)
+Gui.FormINVCHist.GsGridHist.SetColumnProperty("GInvoice","USER_2","HeaderFontBold",True)
+Gui.FormINVCHist.GsGridHist.SetColumnProperty("GInvoice","USER_2","ReadOnly",True)
+
+F.ODBC.Connection!ConU.ExecuteAndReturn("Select Label From OE_USER_FLDS_LN Where Key_ID = '03'",V.Local.sCaption)
+
+Gui.FormINVCHist.GsGridHist.SetColumnProperty("GInvoice","USER_3","Caption",V.Local.sCaption)
+Gui.FormINVCHist.GsGridHist.SetColumnProperty("GInvoice","USER_3","AllowEdit",False)
+Gui.FormINVCHist.GsGridHist.SetColumnProperty("GInvoice","USER_3","HeaderForeColor",v.Color.PRI-GSS-00)
+Gui.FormINVCHist.GsGridHist.SetColumnProperty("GInvoice","USER_3","HeaderFontBold",True)
+Gui.FormINVCHist.GsGridHist.SetColumnProperty("GInvoice","USER_3","ReadOnly",True)
+
+F.ODBC.Connection!ConU.ExecuteAndReturn("Select Label From OE_USER_FLDS_LN Where Key_ID = '04'",V.Local.sCaption)
+
+Gui.FormINVCHist.GsGridHist.SetColumnProperty("GInvoice","USER_4","Caption",V.Local.sCaption)
+Gui.FormINVCHist.GsGridHist.SetColumnProperty("GInvoice","USER_4","AllowEdit",False)
+Gui.FormINVCHist.GsGridHist.SetColumnProperty("GInvoice","USER_4","HeaderForeColor",v.Color.PRI-GSS-00)
+Gui.FormINVCHist.GsGridHist.SetColumnProperty("GInvoice","USER_4","HeaderFontBold",True)
+Gui.FormINVCHist.GsGridHist.SetColumnProperty("GInvoice","USER_4","ReadOnly",True)
+
+F.ODBC.Connection!ConU.ExecuteAndReturn("Select Label From OE_USER_FLDS_LN Where Key_ID = '05'",V.Local.sCaption)
+
+Gui.FormINVCHist.GsGridHist.SetColumnProperty("GInvoice","USER_5","Caption",V.Local.sCaption)
+Gui.FormINVCHist.GsGridHist.SetColumnProperty("GInvoice","USER_5","AllowEdit",False)
+Gui.FormINVCHist.GsGridHist.SetColumnProperty("GInvoice","USER_5","HeaderForeColor",v.Color.PRI-GSS-00)
+Gui.FormINVCHist.GsGridHist.SetColumnProperty("GInvoice","USER_5","HeaderFontBold",True)
+Gui.FormINVCHist.GsGridHist.SetColumnProperty("GInvoice","USER_5","ReadOnly",True)
+
+Gui.FormINVCHist.GsGridHist.SetColumnProperty("GInvoice","Code_Sort","Caption","Created By")
+Gui.FormINVCHist.GsGridHist.SetColumnProperty("GInvoice","Code_Sort","AllowEdit",False)
+Gui.FormINVCHist.GsGridHist.SetColumnProperty("GInvoice","Code_Sort","HeaderForeColor",v.Color.PRI-GSS-00)
+Gui.FormINVCHist.GsGridHist.SetColumnProperty("GInvoice","Code_Sort","HeaderFontBold",True)
+Gui.FormINVCHist.GsGridHist.SetColumnProperty("GInvoice","Code_Sort","ReadOnly",True)
+
+F.ODBC.Connection!ConU.Close
+
+F.Global.Registry.ReadValue(V.Caller.User, V.Caller.CompanyCode, "GINVOICE", 5364, 1100, 6, "", V.Local.sSerialize)
+
+F.Intrinsic.Control.If(V.Local.sSerialize.Trim,<>,"")
+	Gui.FormINVCHist.GsGridHist.Deserialize(V.Local.sSerialize)
+F.Intrinsic.Control.EndIf
+
+gui.FormINVCHist.GsGridHist.MainView("GInvoice")
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("Set_Properties_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_5364_Sales_Hist.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(Exit)
+Function.Intrinsic.Control.EndIf
+Program.Sub.Set_Properties.End
+
+Program.Sub.FormINVCHist_UnLoad.Start
+F.Intrinsic.Control.SetErrorHandler("FormINVCHist_UnLoad_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+V.Local.sSerialize.Declare(String,"")
+
+Gui.FormINVCHist.GsGridHist.Serialize("GInvoice",V.Local.sSerialize)
+
+F.Global.Registry.AddValue(V.Caller.User,V.Caller.CompanyCode,"GInvoice",5364,1100,False,"Serialize",False,0,-999.0,1/1/1980,12:00:00 AM,V.Local.sSerialize)
+
+F.Intrinsic.Control.CallSub(Exit)
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("FormINVCHist_UnLoad_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_5364_Sales_Hist.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(Exit)
+Function.Intrinsic.Control.EndIf
+Program.Sub.FormINVCHist_UnLoad.End
+
+Program.Sub.GsGridHist_RowCellClick.Start
+F.Intrinsic.Control.SetErrorHandler("GsGridHist_RowCellClick_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+v.Local.iUserID.Declare
+v.Local.sPart.Declare
+v.Local.sLoc.Declare
+v.Local.sRev.Declare
+v.Local.sOrder.Declare
+V.Local.sCustomerNo.Declare
+V.Local.sParams.Declare
+V.Local.sJob.Declare
+v.Local.sSuffix.Declare
+v.Local.bViewPartPermission.Declare
+v.Local.sSupplyDemandPath.Declare
+v.Local.bViewSOHistory.Declare
+v.Local.bViewWOHistory.Declare
+v.Local.sSDPath.Declare
+v.Local.iRet.Declare
+V.Local.sSql.Declare
+	
+f.Intrinsic.Control.BlockEvents	
+
+F.Intrinsic.Control.SelectCase(v.Args.Column.UCase)
+	f.Intrinsic.Control.Case("PART")
+		f.Global.Security.GetUserId(v.Caller.User,v.Caller.CompanyCode,v.Local.iUserID)
+		F.Global.Security.CheckUserFunctionPermission(v.Local.iUserID,"507",v.Caller.CompanyCode,v.Local.bViewPartPermission)'view part
+		f.Intrinsic.Control.If(v.Local.bViewPartPermission)
+			Gui.FormINVCHist.GsGridHist.GetCellValueByColumnName("GInvoice","Part",V.Args.RowIndex,V.Local.sPart)
+			Gui.FormINVCHist.GsGridHist.GetCellValueByColumnName("GInvoice","Location",V.Args.RowIndex,V.Local.sLoc)
+			
+			F.Intrinsic.String.RPad(V.Local.sPart,20," ",V.Local.sPart)
+			F.Intrinsic.String.Right(V.Local.sPart,3,V.Local.sRev)
+			F.Intrinsic.String.Left(V.Local.sPart,17,V.Local.sPart)
+			
+			Function.Intrinsic.Task.SetEnvironmentVariable("PARTNUMBER", v.Local.sPart.Trim)
+			Function.Intrinsic.Task.SetEnvironmentVariable("LOCATIONCODE",v.Local.sLoc.Trim)
+
+			Function.Intrinsic.Task.SetEnvironmentVariable("PARTNUMBERREVISION",v.Local.sRev.Trim)
+			
+			'f.Intrinsic.String.Build("{0}\SupplyAndDemand.exe",v.Caller.PluginsDir,v.Local.sSDPath)									
+			f.Intrinsic.String.Build("{0}BIN\SupplyAndDemand.exe",v.Caller.LocalGSSTempDir,v.Local.sSDPath)
+			Function.Intrinsic.Task.LaunchAsync(v.Local.sSDPath,0,v.Local.iRet)												
+		f.Intrinsic.Control.EndIf		
+	f.Intrinsic.Control.Case("ORDER_NO")
+	
+		f.Global.Security.GetUserId(v.Caller.User,v.Caller.CompanyCode,v.Local.iUserID)
+		F.Global.Security.CheckUserFunctionPermission(v.Local.iUserID,"204",v.Caller.CompanyCode,v.Local.bViewSOHistory)'sales order view
+		f.Intrinsic.Control.If(v.Local.bviewSOHistory)			
+			
+			Gui.FormINVCHist.GsGridHist.GetCellValueByColumnName("GInvoice","ORDER_NO",V.Args.RowIndex,V.Local.sOrder)
+			
+			f.Intrinsic.String.LPad(v.Local.sOrder,"0",7,v.Local.sOrder)
+			
+			Gui.FormINVCHist.GsGridHist.GetCellValueByColumnName("GInvoice","Customer",V.Args.RowIndex,V.Local.sCustomerNo)
+			
+			F.Intrinsic.String.Build("{0}!*!{1}",V.Local.sOrder,V.Local.sCustomerNo,V.Local.sParams)
+			F.Global.General.CallWrapperAsync(7070,V.Local.sParams)
+		f.Intrinsic.Control.EndIf	
+		
+	f.Intrinsic.Control.Case("JOB")
+		f.Global.Security.GetUserId(v.Caller.User,v.Caller.CompanyCode,v.Local.iUserID)
+		F.Global.Security.CheckUserFunctionPermission(v.Local.iUserID,"100",v.Caller.CompanyCode,v.Local.bViewWOHistory)
+		'work order view
+		f.Intrinsic.Control.If(v.Local.bViewWOHistory)
+			Gui.FormINVCHist.GsGridHist.GetCellValueByColumnName("GInvoice","JOB",V.Args.RowIndex,V.Local.sJob)
+			Gui.FormINVCHist.GsGridHist.GetCellValueByColumnName("GInvoice","SUFFIX",V.Args.RowIndex,V.Local.sSuffix)
+			F.ODBC.Connection!Conx.OpenCompanyConnection
+			F.Intrinsic.String.Build("Select Job From V_Job_Header Where Job = '{0}' and Suffix = '{1}'",V.Local.sJob,V.Local.sSuffix,V.Local.sSql)
+			F.ODBC.Connection!Conx.ExecuteAndReturn(V.Local.sSql,V.Local.sSql)
+			F.ODBC.Connection!Conx.Close
+			F.Intrinsic.Control.If(V.Local.sSql.Trim,<>,"")
+				F.Intrinsic.String.Build("7!*!{0}!*!{1}!*!A",V.Local.sJob,V.Local.sSuffix,V.Local.sParams)
+			F.Intrinsic.Control.Else
+				F.Intrinsic.String.Build("7!*!{0}!*!{1}!*!H",V.Local.sJob,V.Local.sSuffix,V.Local.sParams)
+			F.Intrinsic.Control.EndIf
+			F.Global.General.CallWrapperAsync(450000,V.Local.sParams)
+		f.Intrinsic.Control.EndIf			
+
+F.Intrinsic.Control.EndSelect
+
+f.Intrinsic.Control.UnBlockEvents
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("GsGridHist_RowCellClick_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_5364_Sales_Hist.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(Exit)
+Function.Intrinsic.Control.EndIf
+Program.Sub.GsGridHist_RowCellClick.End
+
+Program.Sub.cmdExport_Click.Start
+F.Intrinsic.Control.SetErrorHandler("cmdExport_Click_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+V.Local.sFileExport.Declare(String,"")
+V.Local.sMsg.Declare(String,"")
+V.Local.bExcel.Declare(Boolean,False)
+V.Local.bFileLocked.Declare(Boolean,False)
+
+F.Automation.MSExcel.CheckPresence(V.Local.bExcel)
+F.Intrinsic.Control.If(V.Local.bExcel)
+	F.Intrinsic.String.Build("{0}\GCG_5364_SaleHist_Export.xlsx",V.Caller.LocalGssTempDir,V.Local.sFileExport)
+	F.Intrinsic.File.IsFileLocked(V.Local.sFileExport,V.Local.bFileLocked)
+	F.Intrinsic.Control.If(V.Local.bFileLocked)
+		F.Intrinsic.String.Build("File is already open. Please close and export again.{0}File: {1}",V.Ambient.NewLine,V.Local.sFileExport,V.Local.sMsg)
+		F.Intrinsic.UI.Msgbox(V.Local.sMsg,"File In Use")
+	F.Intrinsic.Control.Else
+		Gui.FormINVCHist.GsGridHist.Export(V.Local.sFileExport,"xlsx")
+		F.Intrinsic.Task.ShellExec(0,"",V.Local.sFileExport,"","",1)
+	F.Intrinsic.Control.EndIf
+F.Intrinsic.Control.Else
+	F.Intrinsic.String.Build("{0}\GCG_5364_SaleHist_Export.csv",V.Caller.LocalGssTempDir,V.Local.sFileExport)
+	F.Intrinsic.File.IsFileLocked(V.Local.sFileExport,V.Local.bFileLocked)
+	F.Intrinsic.Control.If(V.Local.bFileLocked)
+		F.Intrinsic.String.Build("File is already open. Please close and export again.{0}File: {1}",V.Ambient.NewLine,V.Local.sFileExport,V.Local.sMsg)
+		F.Intrinsic.UI.Msgbox(V.Local.sMsg,"File In Use")
+	F.Intrinsic.Control.Else
+		Gui.FormINVCHist.GsGridHist.Export(V.Local.sFileExport,"csv")
+	F.Intrinsic.Control.EndIf
+	F.Intrinsic.Task.ShellExec(0,"",V.Local.sFileExport,"","",1)
+F.Intrinsic.Control.EndIf
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("cmdExport_Click_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_5364_Sales_Hist.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(Exit)
+Function.Intrinsic.Control.EndIf
+Program.Sub.cmdExport_Click.End
+
+Program.Sub.Process_Queued_Batch.Start
+F.Intrinsic.Control.SetErrorHandler("Process_Queued_Batch_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+V.Local.sSql.Declare(String,"")
+V.Local.i.Declare(Long,0)
+
+F.ODBC.Connection!Con.OpenCompanyConnection(999)
+V.Local.sSql.Set("Select Invc, Order_Num From GCG_5364_Q_Batch")
+
+F.Data.DataTable.CreateFromSQL("Batch","con",V.Local.sSql,True)
+
+F.Intrinsic.Control.For(v.Local.i,0,V.DataTable.Batch.RowCount--,1)
+	F.Intrinsic.String.Build("Select INVOICE, A.ORDER_NO, ORDER_SUFFIX, ORDER_LINE, DATE_INVOICE, MATL, MATL_DESC, FINISH, FIN_DESC, WIDTH, LENGTH, DRILL_CODE, NOTES, BATCH_NOTES From V_ORDER_HIST_LINE A JOIN GCG_5364_OE_LINES B on A.ORDER_NO = B.ORDER_NO and A.ORDER_LINE = B.RECORD_NO Where INVOICE = '{0}' and A.ORDER_NO = '{1}'",V.DataTable.Batch(V.Local.i).Invc!FieldValtrim,V.DataTable.Batch(V.Local.i).Order_Num!FieldValtrim,V.Local.sSql)
+	F.Data.DataTable.CreateFromSQL("INVCHIST","Con",V.Local.sSql,True)
+	F.Data.DataTable.SaveToDB("INVCHIST","con","GCG_5364_INVC_HIST"," ",128,"INVOICE@!@INVOICE*!*ORDER_NO@!@ORDER_NO*!*ORDER_SUFFIX@!@ORDER_SUFFIX*!*ORDER_LINE@!@ORDER_LINE*!*DATE_INVOICE@!@DATE_INVOICE*!*MATL@!@MATL*!*MATL_DESC@!@MATL_DESC*!*FINISH@!@FINISH*!*FIN_DESC@!@FIN_DESC*!*WIDTH@!@WIDTH*!*LENGTH@!@LENGTH*!*DRILL_CODE@!@DRILL_CODE*!*NOTES@!@NOTES*!*BATCH_NOTES@!@BATCH_NOTES")
+	F.Data.DataTable.Close("INVCHIST")
+F.Intrinsic.Control.Next(V.Local.i)
+
+F.Intrinsic.Control.If(V.DataTable.Batch.RowCount--,<>,-1)
+	F.Data.DataTable.DeleteRow("Batch")
+	F.Data.DataTable.SaveToDB("Batch","con","GCG_5364_Q_Batch","Invc*!*Order_Num",7)
+F.Intrinsic.Control.EndIf
+
+F.ODBC.Connection!Con.Close
+
+F.Data.DataTable.Close("Batch")
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("Process_Queued_Batch_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_5364_Sales_Hist.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(Exit)
+Function.Intrinsic.Control.EndIf
+Program.Sub.Process_Queued_Batch.End
