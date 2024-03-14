@@ -1,0 +1,181 @@
+Program.Sub.ScreenSU.Start
+Gui.FCustShip..Create
+Gui.FCustShip..Caption("Customer Shipped Lines by Date")
+Gui.FCustShip..Size(7515,3105)
+Gui.FCustShip..MinX(0)
+Gui.FCustShip..MinY(0)
+Gui.FCustShip..Position(0,0)
+Gui.FCustShip..BackColor(-2147483633)
+Gui.FCustShip..MousePointer(0)
+Gui.FCustShip..Event(UnLoad,FCustShip_UnLoad)
+Gui.FCustShip.lblCust.Create(Label,"Customer",True,1935,255,0,195,255,True,0,"Arial",8,-2147483633,0)
+Gui.FCustShip.txtCust.Create(TextBox,"",True,2205,300,0,135,525,True,0,"Arial",8,-2147483643,1)
+Gui.FCustShip.txtCust.Event(GotFocus,txtCust_GotFocus)
+Gui.FCustShip.txtCust.Event(LostFocus,txtCust_LostFocus)
+Gui.FCustShip.cmdCust.Create(Button)
+Gui.FCustShip.cmdCust.Size(435,375)
+Gui.FCustShip.cmdCust.Position(2430,480)
+Gui.FCustShip.cmdCust.Caption("^")
+Gui.FCustShip.cmdCust.Event(Click,cmdCust_Click)
+Gui.FCustShip.lblship.Create(Label,"Ship Date",True,1935,255,0,3330,255,True,0,"Arial",8,-2147483633,0)
+Gui.FCustShip.dtp1.Create(DatePicker)
+Gui.FCustShip.dtp1.Size(1935,285)
+Gui.FCustShip.dtp1.Position(3330,525)
+Gui.FCustShip.cmdPrint.Create(Button)
+Gui.FCustShip.cmdPrint.Size(1485,540)
+Gui.FCustShip.cmdPrint.Position(210,1920)
+Gui.FCustShip.cmdPrint.Caption("Print")
+Gui.FCustShip.cmdPrint.Event(Click,cmdPrint_Click)
+Gui.FCustShip.lblTrack.Create(Label,"Tracking Number",True,1935,255,0,195,1320,True,0,"Arial",8,-2147483633,0)
+Gui.FCustShip.txtTrack.Create(TextBox,"",True,3690,300,0,135,1545,True,0,"Arial",8,-2147483643,1)
+Gui.FCustShip.txtName.Create(TextBox,"",True,4635,300,0,135,900,True,0,"Arial",8,-2147483643,1)
+Program.Sub.ScreenSU.End
+
+Program.Sub.Preflight.Start
+Program.Sub.Preflight.End
+
+Program.Sub.Main.Start
+F.Intrinsic.Control.SetErrorHandler("Main_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+
+F.ODBC.Connection!Con.OpenCompanyConnection
+
+Gui.FCustShip..Show
+Gui.FCustShip..AlwaysOnTop(True)
+Gui.FCustShip..AlwaysOnTop(False)
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("Main_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_5364_Cust_Ship_Lines.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(FCustShip_UnLoad)
+Function.Intrinsic.Control.EndIf
+Program.Sub.Main.End
+
+Program.Sub.cmdPrint_Click.Start
+F.Intrinsic.Control.SetErrorHandler("Main_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+V.Local.iRunID.Declare(Long,0)
+V.Local.iLogID.Declare(Long,0)
+V.Local.iRet.Declare(Long,0)
+V.Local.sParams.Declare(String,"")
+V.Local.sValues.Declare(String,"")
+
+Gui.FCustShip..Visible(False)
+
+F.Global.BI.GetRunID(V.Local.iRunID)
+F.Global.BI.StartLogging(V.Local.iRunID,-1,-1,"",V.Local.iLogID)
+F.Global.BI.StopLogging(V.Local.iLogID)
+
+V.Local.sParams.Set("Customer*!*Ship_Date*!*Track")
+F.Intrinsic.String.Build("{0}*!*{1}*!*{2}",V.Screen.FCustShip!txtCust.Text,V.Screen.FCustShip!dtp1.Value,V.Screen.FCustShip!txtTrack.Text,V.Local.sValues)
+
+F.Global.BI.RunReportPreProcessor(V.Local.iRunID,V.Local.iLogID,V.Local.sParams,V.Local.sValues,"",-1,True,"",-1,"",-1,"","",V.Local.iRet)
+
+F.Intrinsic.Control.CallSub(FCustShip_UnLoad)
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("Main_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_5364_Cust_Ship_Lines.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(FCustShip_UnLoad)
+Function.Intrinsic.Control.EndIf
+Program.Sub.cmdPrint_Click.End
+
+Program.Sub.FCustShip_UnLoad.Start
+F.Intrinsic.Control.SetErrorHandler("Main_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+
+F.ODBC.Connection!Con.Close
+
+F.Intrinsic.Control.End
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("Main_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.Control.End
+Function.Intrinsic.Control.EndIf
+Program.Sub.FCustShip_UnLoad.End
+
+Program.Sub.txtCust_GotFocus.Start
+F.Intrinsic.Control.SetErrorHandler("Main_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+
+Gui.FCustShip.txtCust.SelectAll
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("Main_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_5364_Cust_Ship_Lines.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(FCustShip_UnLoad)
+Function.Intrinsic.Control.EndIf
+Program.Sub.txtCust_GotFocus.End
+
+Program.Sub.cmdCust_Click.Start
+F.Intrinsic.Control.SetErrorHandler("Main_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+V.Local.sSQL.Declare(String,"")
+V.Local.sRet.Declare(String,"")
+
+F.Intrinsic.UI.SetBrowserHotTypeAhead(True)
+
+V.Local.sSQL.Set("Select Customer, Name_Customer From V_Customer_Master Order by Customer")
+F.Intrinsic.UI.Browser("Select Customer","con",V.Local.sSQL,"Customer*!*Name","30*!*70",V.Local.sRet)
+
+F.Intrinsic.Control.If(V.Local.sRet,<>,"***CANCEL***")
+	F.Intrinsic.String.Split(V.Local.sRet,"*!*",V.Local.sRet)
+	Gui.FCustShip.txtCust.Text(V.Local.sRet.Trim)
+	Gui.FCustShip.txtName.Text(v.Local.sRet(1).Trim)
+F.Intrinsic.Control.EndIf
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("Main_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_5364_Cust_Ship_Lines.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(FCustShip_UnLoad)
+Function.Intrinsic.Control.EndIf
+Program.Sub.cmdCust_Click.End
+
+Program.Sub.txtCust_LostFocus.Start
+F.Intrinsic.Control.SetErrorHandler("Main_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+V.Local.sSQL.Declare(String,"")
+V.Local.sRet.Declare(String,"")
+
+F.Intrinsic.String.Build("Select Name_Customer From V_Customer_Master Where Customer = '{0}'",V.Screen.FCustShip!txtCust.Text,v.Local.sSQL)
+F.ODBC.Connection!Con.ExecuteAndReturn(V.Local.sSQL,V.Local.sRet)
+
+Gui.FCustShip.txtName.Text(v.Local.sRet.Trim)
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("Main_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_5364_Cust_Ship_Lines.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(FCustShip_UnLoad)
+Function.Intrinsic.Control.EndIf
+Program.Sub.txtCust_LostFocus.End
+
+
