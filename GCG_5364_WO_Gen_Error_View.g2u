@@ -1,0 +1,201 @@
+Program.Sub.ScreenSU.Start
+Gui.FormErrorView..Create
+Gui.FormErrorView..Caption("Auto Work Order Generation Error View")
+Gui.FormErrorView..Size(15360,10770)
+Gui.FormErrorView..MinX(0)
+Gui.FormErrorView..MinY(0)
+Gui.FormErrorView..Position(0,0)
+Gui.FormErrorView..BackColor(-2147483633)
+Gui.FormErrorView..MousePointer(0)
+Gui.FormErrorView..Event(UnLoad,FormErrorView_UnLoad)
+Gui.FormErrorView.GsGridControlErrorView.Create(GsGridControl)
+Gui.FormErrorView.GsGridControlErrorView.Size(15045,9675)
+Gui.FormErrorView.GsGridControlErrorView.Position(105,105)
+Gui.FormErrorView.cmdClearErrors.Create(Button)
+Gui.FormErrorView.cmdClearErrors.Size(1830,375)
+Gui.FormErrorView.cmdClearErrors.Position(105,9855)
+Gui.FormErrorView.cmdClearErrors.Caption("Clear Errors")
+Gui.FormErrorView.cmdClearErrors.Event(Click,cmdClearErrors_Click)
+Gui.FormErrorView.cmdRefresh.Create(Button)
+Gui.FormErrorView.cmdRefresh.Size(855,375)
+Gui.FormErrorView.cmdRefresh.Position(2175,9855)
+Gui.FormErrorView.cmdRefresh.Caption("REFRESH")
+Gui.FormErrorView.cmdRefresh.Event(Click,cmdRefresh_Click)
+Program.Sub.ScreenSU.End
+
+Program.Sub.Preflight.Start
+Program.Sub.Preflight.End
+
+Program.Sub.Main.Start
+F.Intrinsic.Control.SetErrorHandler("Main_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+
+F.Intrinsic.Control.CallSub(Get_Errors)
+F.Intrinsic.Control.CallSub(Set_Properties)
+
+Gui.FormErrorView..Show
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("Main_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_5364_WO_Gen_Error_View.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(FormErrorView_UnLoad)
+Function.Intrinsic.Control.EndIf
+Program.Sub.Main.End
+
+Program.Sub.FormErrorView_UnLoad.Start
+F.Intrinsic.Control.SetErrorHandler("FormErrorView_UnLoad_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+
+F.Intrinsic.Control.End
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("FormErrorView_UnLoad_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_5364_WO_Gen_Error_View.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.End
+Function.Intrinsic.Control.EndIf
+Program.Sub.FormErrorView_UnLoad.End
+
+Program.Sub.cmdClearErrors_Click.Start
+F.Intrinsic.Control.SetErrorHandler("cmdClearErrors_Click_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+
+F.ODBC.Connection!Con.OpenCompanyConnection
+
+F.Data.DataTable.DeleteRow("Error")
+
+F.ODBC.Connection!Con.Execute("Delete From GCG_5364_Error_Log")
+'F.Data.DataTable.SaveToDB("Error","Con","GCG_5364_Error_Log","Current_Sub*!*Error_Num*!*Error_Desc*!*Error_Date",7,"Current_Sub@!@Current_Sub*!*Error_Num@!@Error_Num*!*Error_Desc@!@Error_Desc*!*Error_Date@!@Error_Date")
+
+F.ODBC.Connection!con.Close
+
+F.Data.DataTable.AcceptChanges("Error")
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("cmdClearErrors_Click_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_5364_WO_Gen_Error_View.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(FormErrorView_UnLoad)
+Function.Intrinsic.Control.EndIf
+Program.Sub.cmdClearErrors_Click.End
+
+Program.Sub.Get_Errors.Start
+F.Intrinsic.Control.SetErrorHandler("Get_Errors_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+V.Local.sSql.Declare(String,"")
+V.Local.bRet.Declare(Boolean,False)
+
+F.ODBC.Connection!Con.OpenCompanyConnection
+
+'checking if the error table exists
+F.ODBC.Connection!Con.TableExists("GCG_5364_Error_Log",V.Local.bRet)
+
+'if table doesn't create the table.
+F.Intrinsic.Control.If(V.Local.bRet,=,False)
+	F.Intrinsic.String.Build("Create Table GCG_5364_Error_Log({0}Current_Sub{0} CHAR(20),{0}Error_Num{0} CHAR(20),{0}Error_Desc{0} CHAR(100),{0}Error_Date{0} DATE);",V.Ambient.DblQuote,V.Local.sSQL)
+	F.ODBC.Connection!Con.Execute(V.Local.sSQL)
+F.Intrinsic.Control.EndIf
+
+F.Data.DataTable.CreateFromSQL("Error","con","Select Current_Sub, Error_Num, Error_Desc, Error_Date From GCG_5364_Error_Log Order By Error_Date",True)
+
+F.ODBC.Connection!Con.Close
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("Get_Errors_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_5364_WO_Gen_Error_View.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(FormErrorView_UnLoad)
+Function.Intrinsic.Control.EndIf
+Program.Sub.Get_Errors.End
+
+Program.Sub.Set_Properties.Start
+F.Intrinsic.Control.SetErrorHandler("Set_Properties_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+
+Gui.FormErrorView.cmdClearErrors.Anchor(6)
+Gui.FormErrorView.cmdRefresh.Anchor(6)
+Gui.FormErrorView.GsGridControlErrorView.Anchor(15)
+
+Gui.FormErrorView.GsGridControlErrorView.AddGridviewFromDatatable("GError","Error")
+Gui.FormErrorView.GsGridControlErrorView.SetGridviewProperty("GError","Editable",False)
+Gui.FormErrorView.GsGridControlErrorView.SetGridviewProperty("GError","ReadOnly",True)
+
+Gui.FormErrorView.GsGridControlErrorView.SetColumnProperty("GError","Current_Sub","HeaderBackColor","MediumSeaGreen")
+Gui.FormErrorView.GsGridControlErrorView.SetColumnProperty("GError","Current_Sub","HeaderFontBold",True)
+Gui.FormErrorView.GsGridControlErrorView.SetColumnProperty("GError","Error_Num","HeaderBackColor","MediumSeaGreen")
+Gui.FormErrorView.GsGridControlErrorView.SetColumnProperty("GError","Error_Num","HeaderFontBold",True)
+Gui.FormErrorView.GsGridControlErrorView.SetColumnProperty("GError","Error_Desc","HeaderBackColor","MediumSeaGreen")
+Gui.FormErrorView.GsGridControlErrorView.SetColumnProperty("GError","Error_Desc","HeaderFontBold",True)
+Gui.FormErrorView.GsGridControlErrorView.SetColumnProperty("GError","Error_Date","HeaderBackColor","MediumSeaGreen")
+Gui.FormErrorView.GsGridControlErrorView.SetColumnProperty("GError","Error_Date","HeaderFontBold",True)
+
+Gui.FormErrorView.GsGridControlErrorView.SetColumnProperty("GError","Error_Date","DisplayCustomDatetime","d")
+
+Gui.FormErrorView.GsGridControlErrorView.SetColumnProperty("GError","Error_Date","Maxwidth","100")
+Gui.FormErrorView.GsGridControlErrorView.SetColumnProperty("GError","Error_Num","Maxwidth","100")
+Gui.FormErrorView.GsGridControlErrorView.SetColumnProperty("GError","Current_Sub","Maxwidth","180")
+
+Gui.FormErrorView.GsGridControlErrorView.SetColumnProperty("GError","Error_Desc","CellWordWrap","Wrap")
+
+Gui.FormErrorView.GsGridControlErrorView.SetColumnProperty("GError","Error_Date","Caption","Error Date")
+Gui.FormErrorView.GsGridControlErrorView.SetColumnProperty("GError","Error_Num","Caption","Error #")
+Gui.FormErrorView.GsGridControlErrorView.SetColumnProperty("GError","Current_Sub","Caption","Subroutine")
+Gui.FormErrorView.GsGridControlErrorView.SetColumnProperty("GError","Error_Desc","Caption","Error Description")
+
+Gui.FormErrorView.GsGridControlErrorView.MainView("GError")
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("Set_Properties_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_5364_WO_Gen_Error_View.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(FormErrorView_UnLoad)
+Function.Intrinsic.Control.EndIf
+Program.Sub.Set_Properties.End
+
+Program.Sub.cmdRefresh_Click.Start
+F.Intrinsic.Control.SetErrorHandler("cmdRefresh_Click_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+
+Gui.FormErrorView..Enabled(False)
+Gui.FormErrorView.GsGridControlErrorView.SuspendLayout
+
+F.Data.DataTable.Close("Error")
+
+F.Intrinsic.Control.CallSub(Get_Errors)
+F.Intrinsic.Control.CallSub(Set_Properties)
+
+Gui.FormErrorView.GsGridControlErrorView.ResumeLayout
+Gui.FormErrorView..Enabled(True)
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("cmdRefresh_Click_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_5364_WO_Gen_Error_View.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(FormErrorView_UnLoad)
+Function.Intrinsic.Control.EndIf
+Program.Sub.cmdRefresh_Click.End
