@@ -1,0 +1,196 @@
+Program.Sub.ScreenSU.Start
+Gui.FormWC..Create
+Gui.FormWC..Caption("WorkCenter Wave File Management")
+Gui.FormWC..Size(11790,10560)
+Gui.FormWC..MinX(0)
+Gui.FormWC..MinY(0)
+Gui.FormWC..Position(0,0)
+Gui.FormWC..BackColor(-2147483633)
+Gui.FormWC..MousePointer(0)
+Gui.FormWC..Event(UnLoad,FormWC_UnLoad)
+Gui.FormWC.GsGridControl1.Create(GsGridControl)
+Gui.FormWC.GsGridControl1.Size(11370,9495)
+Gui.FormWC.GsGridControl1.Position(105,150)
+Gui.FormWC.GsGridControl1.Anchor(15)
+Gui.FormWC.GsGridControl1.Event(CellValueChanged,GsGridControl1_CellValueChanged)
+Gui.FormWC.cmdSave.Create(Button)
+Gui.FormWC.cmdSave.Size(855,375)
+Gui.FormWC.cmdSave.Position(105,9720)
+Gui.FormWC.cmdSave.Caption("Save")
+Gui.FormWC.cmdSave.Event(Click,cmdSave_Click)
+Gui.FormWC.cmdSave.Anchor(6)
+Program.Sub.ScreenSU.End
+
+Program.Sub.Preflight.Start
+Program.Sub.Preflight.End
+
+Program.Sub.Main.Start
+F.Intrinsic.Control.SetErrorHandler("Main_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+
+F.Intrinsic.Control.CallSub(Get_Data)
+F.Intrinsic.Control.CallSub(Set_Properties)
+
+gui.FormWC..Show
+gui.FormWC..AlwaysOnTop(True)
+gui.FormWC..AlwaysOnTop(False)
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("Main_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_5364_WC_Maint.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(FormWC_UnLoad)
+Function.Intrinsic.Control.EndIf
+Program.Sub.Main.End
+
+Program.Sub.cmdSave_Click.Start
+F.Intrinsic.Control.SetErrorHandler("cmdSave_Click_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+	
+F.ODBC.Connection!Con.OpenCompanyConnection
+	
+F.Data.DataTable.SaveToDB("WC","con","GCG_5364_WC_Maint","WC",256,"WC@!@WC*!*Wave_File@!@Wave_File")
+	
+F.ODBC.Connection!Con.Close
+	
+F.Intrinsic.UI.Msgbox("WC Data Saved..........","Attention")
+	
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("cmdSave_Click_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_5364_WC_Maint.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(FormWC_UnLoad)
+Function.Intrinsic.Control.EndIf
+Program.Sub.cmdSave_Click.End
+
+Program.Sub.FormWC_UnLoad.Start
+F.Intrinsic.Control.SetErrorHandler("FormWC_UnLoad_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+
+F.Intrinsic.Control.If(V.ODBC.Con.State,=,1)
+	F.ODBC.Connection!Con.Close
+F.Intrinsic.Control.EndIf
+
+F.Intrinsic.Control.If(V.DataTable.WC.Exists)
+	F.Data.DataView.Close("WC","VWC")
+	F.Data.DataTable.Close("WC")
+F.Intrinsic.Control.EndIf
+
+F.Intrinsic.Control.End
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("FormWC_UnLoad_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.Control.End
+Function.Intrinsic.Control.EndIf
+Program.Sub.FormWC_UnLoad.End
+
+Program.Sub.Get_Data.Start
+F.Intrinsic.Control.SetErrorHandler("Get_Data_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+V.Local.sSql.Declare(String,"")
+
+V.Local.sSql.Set("Select a.Machine as WC, Wave_File From V_Workcenters a left join GCG_5364_WC_Maint b on a.Machine = b.WC Order by a.Machine")
+
+F.ODBC.Connection!Con.OpenCompanyConnection
+
+F.Data.DataTable.CreateFromSQL("WC","con",V.Local.sSql,True)
+
+F.Data.DataView.Create("WC","VWC",22,"","")
+
+F.ODBC.Connection!Con.Close
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("Get_Data_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_5364_WC_Maint.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(FormWC_UnLoad)
+Function.Intrinsic.Control.EndIf
+Program.Sub.Get_Data.End
+
+Program.Sub.Set_Properties.Start
+F.Intrinsic.Control.SetErrorHandler("Set_Properties_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+
+gui.FormWC.GsGridControl1.AddGridviewFromDatatable("GWC","WC")
+
+gui.FormWC.GsGridControl1.SetColumnProperty("GWC","WC","MaxWidth",85)
+
+gui.FormWC.GsGridControl1.SetColumnProperty("GWC","WC","ReadOnly",True)
+gui.FormWC.GsGridControl1.SetColumnProperty("GWC","Wave_File","ReadOnly",False)
+
+gui.FormWC.GsGridControl1.SetColumnProperty("GWC","WC","AllowEdit",False)
+gui.FormWC.GsGridControl1.SetColumnProperty("GWC","Wave_File","AllowEdit",True)
+
+gui.FormWC.GsGridControl1.SetColumnProperty("GWC","WC","Visible",True)
+gui.FormWC.GsGridControl1.SetColumnProperty("GWC","Wave_File","Visible",True)
+
+gui.FormWC.GsGridControl1.SetColumnProperty("GWC","WC","Caption","WorkCenter")
+gui.FormWC.GsGridControl1.SetColumnProperty("GWC","Wave_File","Caption","Path\Wav File.wav")
+
+gui.FormWC.GsGridControl1.SetColumnProperty("GWC","WC","HeaderBackColor",V.Enum.ThemeColors!ThemeColorDark)
+gui.FormWC.GsGridControl1.SetColumnProperty("GWC","Wave_File","HeaderBackColor",V.Enum.ThemeColors!ThemeColorDark)
+
+gui.FormWC.GsGridControl1.SetColumnProperty("GWC","WC","HeaderForeColor",V.Enum.ThemeColors!TextOnThemeColor)
+gui.FormWC.GsGridControl1.SetColumnProperty("GWC","Wave_File","HeaderForeColor",V.Enum.ThemeColors!TextOnThemeColor)
+
+gui.FormWC.GsGridControl1.SetColumnProperty("GWC","WC","HeaderFontBold",True)
+gui.FormWC.GsGridControl1.SetColumnProperty("GWC","Wave_File","HeaderFontBold",True)
+
+gui.FormWC.GsGridControl1.MainView("GWC")
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("Set_Properties_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_5364_WC_Maint.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(FormWC_UnLoad)
+Function.Intrinsic.Control.EndIf
+Program.Sub.Set_Properties.End
+
+Program.Sub.GsGridControl1_CellValueChanged.Start
+F.Intrinsic.Control.SetErrorHandler("GsGridControl1_CellValueChanged_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+V.Local.sFileType.Declare(String,"")
+V.Local.iCol.Declare(Long,0)
+
+F.Intrinsic.Control.If(V.Args.Column.UCase,=,"WAVE_FILE")
+	Gui.FormWC.GsGridControl1.GetColumnIndexByName("GWC",V.Args.Column,V.Local.iCol)
+	F.Intrinsic.String.Split(V.Args.Value,".",V.Local.sFileType)
+	F.Intrinsic.Control.If(V.Local.sFileType(V.Local.sFileType.UBound).Ucase,<>,"WAV")
+		F.Intrinsic.UI.Msgbox("Only .wav file types are supported......","Attention")
+		Gui.FormWC.GsGridControl1.SetCellValue("GWC",V.Local.iCol,V.Args.RowIndex,"")
+	F.Intrinsic.Control.EndIf
+F.Intrinsic.Control.EndIf
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("GsGridControl1_CellValueChanged_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_5364_WC_Maint.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(FormWC_UnLoad)
+Function.Intrinsic.Control.EndIf
+Program.Sub.GsGridControl1_CellValueChanged.End
+
+
