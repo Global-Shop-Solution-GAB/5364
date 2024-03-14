@@ -1,0 +1,220 @@
+Program.Sub.ScreenSU.Start
+Gui.Form..Create
+Gui.Form..Caption("WO Creation WatchDog")
+Gui.Form..Size(4770,1800)
+Gui.Form..MinX(0)
+Gui.Form..MinY(0)
+Gui.Form..Position(0,0)
+Gui.Form..BackColor(-2147483633)
+Gui.Form..MousePointer(0)
+Gui.Form..Event(UnLoad,Form_UnLoad)
+Gui.Form.cmdStart.Create(Button)
+Gui.Form.cmdStart.Size(1470,375)
+Gui.Form.cmdStart.Position(270,720)
+Gui.Form.cmdStart.Caption("Start")
+Gui.Form.cmdStart.Event(Click,cmdStart_Click)
+Gui.Form.cmdStop.Create(Button)
+Gui.Form.cmdStop.Size(1470,375)
+Gui.Form.cmdStop.Position(2040,720)
+Gui.Form.cmdStop.Caption("Stop")
+Gui.Form.cmdStop.Event(Click,cmdStop_Click)
+Gui.Form.lblStatus.Create(Label,"Click Start.  To Start Processing Sales Orders......",True,5355,255,0,270,375,True,0,"Arial",8,-2147483633,0)
+Program.Sub.ScreenSU.End
+
+Program.Sub.Preflight.Start
+Program.Sub.Preflight.End
+
+Program.Sub.Main.Start
+F.Intrinsic.Control.Try
+	V.Local.sError.Declare(String,"")
+	V.Local.sSql.Declare(String,"")
+	V.Local.sRet.Declare(String,"")
+	
+	'program it run on pre online update hook 38120 
+	'a screen will show up to either start uploading unattended time from factory wiz or to stop uploading time.
+	'a stop file will get created that will stop GCG_5364_Auto_WO_Gen.g2u
+	
+	F.Intrinsic.Control.CallSub(IsRunning)
+	
+	F.ODBC.Connection!Con.OpenCompanyConnection
+	F.ODBC.Connection!Con.ExecuteAndReturn("Select L_Time, Menu_PID, WD_PID From GCG_5364_WO_LAUNCH",V.Local.sRet)
+	F.ODBC.Connection!Con.Execute("Delete From GCG_5364_WO_LAUNCH")
+	F.ODBC.Connection!Con.Close
+	
+	Gui.Form.cmdStop.Enabled(False)
+	
+	F.Intrinsic.Control.If(V.Local.sRet.Trim,<>,"")
+		F.Intrinsic.String.Split(V.Local.sRet,"*!*",V.Local.sRet)
+		V.Local.sRet.RedimPreserve(0,2)
+		F.Intrinsic.Control.If(V.Local.sRet(1).Trim,=,"Launch")
+			F.Intrinsic.Control.CallSub(cmdStart_Click)
+		F.Intrinsic.Control.EndIf
+	F.Intrinsic.Control.EndIf
+	
+	Gui.Form..Show
+
+	F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Catch
+	F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+		F.Intrinsic.String.Build("Project: {0}{1}Subroutine: {2}{1}Error Occurred {3} with description {4}","GCG_5364_WO_WatchDog.g2u",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+		F.Intrinsic.UI.Msgbox(V.Local.sError)
+		F.Intrinsic.Control.CallSub(Form_Unload)
+	F.Intrinsic.Control.EndIf
+Function.Intrinsic.Control.EndTry
+Program.Sub.Main.End
+
+Program.Sub.Form_UnLoad.Start
+F.Intrinsic.Control.SetErrorHandler("Form_UnLoad_Err")
+F.Intrinsic.Control.ClearErrors
+
+	V.Local.sError.Declare(String,"")
+	V.Local.sFile.Declare(String,"")
+	V.Local.bRet.Declare(Boolean,False)
+	V.Local.sRet.Declare(String,"")
+
+	F.ODBC.Connection!Con.OpenCompanyConnection
+	F.ODBC.Connection!Con.ExecuteAndReturn("Select L_Time, Menu_PID, WD_PID From GCG_5364_WO_LAUNCH",V.Local.sRet)
+	F.Intrinsic.Control.If(V.Local.sRet.Trim,<>,"")
+		F.Intrinsic.String.Split(V.Local.sRet,"*!*",V.Local.sRet)
+		F.Intrinsic.Control.Try
+			F.Intrinsic.Task.TerminatePID(V.Local.sRet(1))
+		F.Intrinsic.Control.Catch
+		F.Intrinsic.Control.EndTry
+	F.Intrinsic.Control.EndIf
+	F.ODBC.Connection!Con.Execute("Delete From GCG_5364_WO_LAUNCH")
+	F.ODBC.Connection!Con.Close
+	
+	f.Intrinsic.String.Build("{0}\5364{1}.pid",v.Caller.FilesDir,V.Caller.CompanyCode,v.Local.sFile)
+	F.Intrinsic.File.Exists(V.Local.sFile,V.Local.bRet)
+	
+	F.Intrinsic.Control.If(V.Local.bRet,=,True)
+		F.Intrinsic.File.DeleteFile(V.Local.sFile)
+	F.Intrinsic.Control.EndIf
+	
+	F.Intrinsic.Control.CallSub(cmdStop_Click)
+	
+	F.Intrinsic.Control.End
+
+	F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("Form_UnLoad_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: {0}{1}Subroutine: {2}{1}Error Occurred {3} with description {4}","GCG_5364_WO_WatchDog.g2u",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.End
+F.Intrinsic.Control.EndIf
+Program.Sub.Form_UnLoad.End
+
+Program.Sub.cmdStart_Click.Start
+F.Intrinsic.Control.Try
+	V.Local.sError.Declare(String,"")
+	V.Local.sFile.Declare(String,"")
+	V.Local.bRet.Declare(Boolean,False)
+	V.Local.sGab.Declare(String,"")
+	V.Local.iRet.Declare(String,"")
+	V.Local.sSql.Declare(String,"")
+	V.Local.sRet.Declare(String,"")
+	
+	F.ODBC.Connection!Con.OpenCompanyConnection
+	F.ODBC.Connection!Con.ExecuteAndReturn("Select * From GCG_5364_WO_LAUNCH",V.Local.sRet)
+	F.Intrinsic.Control.If(V.Local.sRet.Trim,=,"")
+		F.Intrinsic.String.Build("Insert Into GCG_5364_WO_LAUNCH (L_Time,Menu_PID,WD_PID) Values('{0}','{1}','{2}')",V.Ambient.Now,V.Caller.PID,V.Ambient.PID,V.Local.sSql)
+		F.ODBC.Connection!Con.Execute(V.Local.sSql)
+	F.Intrinsic.Control.EndIf
+	F.ODBC.Connection!Con.Close
+	
+	F.Intrinsic.String.Build("{0}\5364_{1}.stop",V.Caller.FilesDir,V.Caller.CompanyCode,V.Local.sFile)
+	F.Intrinsic.File.Exists(V.Local.sFile,v.Local.bRet)
+	
+	F.Intrinsic.Control.If(V.Local.bRet,=,True)
+		F.Intrinsic.File.DeleteFile(V.Local.sFile)
+	F.Intrinsic.Control.EndIf
+	
+	Gui.Form.lblStatus.Text("Click Stop. To Stop Processing Sales Orders......")
+	
+	Gui.Form.cmdStart.Enabled(False)
+	Gui.Form.cmdStop.Enabled(True)
+	
+	F.Intrinsic.String.Build("{0}\GAB\GAS\GCG_5364_Auto_WO_Gen.g2u",V.Caller.PluginsDir,V.Local.sGab)
+	
+	F.Global.Task.CallAsyncGas(V.Local.sGab,"",2,V.Local.iRet)
+
+	F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Catch
+	F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+		F.Intrinsic.String.Build("Project: {0}{1}Subroutine: {2}{1}Error Occurred {3} with description {4}","GCG_5364_WO_WatchDog.g2u",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+		F.Intrinsic.UI.Msgbox(V.Local.sError)
+		F.Intrinsic.Control.CallSub(Form_Unload)
+	F.Intrinsic.Control.EndIf
+Function.Intrinsic.Control.EndTry
+Program.Sub.cmdStart_Click.End
+
+Program.Sub.cmdStop_Click.Start
+F.Intrinsic.Control.Try
+	V.Local.sError.Declare(String,"")
+	V.Local.sFile.Declare(String,"")
+	V.Local.bRet.Declare(Boolean,False)
+	
+	Gui.Form.lblStatus.Text("Click Start.  To Start Processing Sales Orders......")
+	
+	F.Intrinsic.String.Build("{0}\5364_{1}.stop",V.Caller.FilesDir,V.Caller.CompanyCode,V.Local.sFile)
+	F.Intrinsic.File.Exists(V.Local.sFile,v.Local.bRet)
+	
+	F.Intrinsic.Control.If(V.Local.bRet,=,False)
+		F.Intrinsic.File.String2File(V.Local.sFile,"Sales Orders Not being processed")
+	F.Intrinsic.Control.EndIf
+	
+	Gui.Form.cmdStart.Enabled(True)
+	Gui.Form.cmdStop.Enabled(False)
+
+	F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Catch
+	F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+		F.Intrinsic.String.Build("Project: {0}{1}Subroutine: {2}{1}Error Occurred {3} with description {4}","GCG_5364_WO_WatchDog.g2u",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+		F.Intrinsic.UI.Msgbox(V.Local.sError)
+		F.Intrinsic.Control.CallSub(Form_Unload)
+	F.Intrinsic.Control.EndIf
+Function.Intrinsic.Control.EndTry
+Program.Sub.cmdStop_Click.End
+
+Program.Sub.IsRunning.Start
+F.Intrinsic.Control.Try
+	V.Local.sError.Declare(String,"")
+	v.Local.sFile.Declare(string,"")
+	v.Local.i.Declare(Long,0)
+	v.Local.bCheck.Declare(Boolean,False)
+	v.Local.sText.Declare(String,"")
+	
+	'we run the program async so it will not hold up online update - we check the PID and if it is stil running, we end the current program.
+	f.Intrinsic.String.Build("{0}\5364_{1}.pid",v.Caller.FilesDir,V.Caller.CompanyCode,v.Local.sFile)
+	f.Intrinsic.File.Exists(v.Local.sFile,v.Local.bCheck)
+	f.Intrinsic.Control.If(v.Local.bCheck,=,True)
+		f.Intrinsic.File.File2String(v.local.sFile,v.Local.sText)
+		f.Intrinsic.Task.PIDRunning(v.Local.sText.Long,v.Local.bCheck)
+		f.Intrinsic.Control.If(v.Local.bCheck,=,True)
+			'end program
+			F.Intrinsic.Control.End
+	
+		f.Intrinsic.Control.Else
+			'create file with current PID and continue running
+			f.Intrinsic.File.String2File(v.Local.sFile,v.Ambient.PID)	
+		f.Intrinsic.Control.EndIf
+	f.Intrinsic.Control.Else
+		'create file with current PID and continue running
+		f.Intrinsic.File.String2File(v.Local.sFile,v.Ambient.PID)
+	f.Intrinsic.Control.EndIf
+
+	F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Catch
+	F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+		F.Intrinsic.String.Build("Project: {0}{1}Subroutine: {2}{1}Error Occurred {3} with description {4}","GCG_5364_WO_WatchDog.g2u",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+		F.Intrinsic.UI.Msgbox(V.Local.sError)
+		F.Intrinsic.Control.CallSub(Form_Unload)
+	F.Intrinsic.Control.EndIf
+Function.Intrinsic.Control.EndTry
+F.Intrinsic.Control.EndTry
+Program.Sub.IsRunning.End
