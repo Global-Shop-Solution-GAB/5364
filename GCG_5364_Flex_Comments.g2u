@@ -1,0 +1,427 @@
+Program.Sub.ScreenSU.Start
+Gui.FormFlexComments..Create
+Gui.FormFlexComments..Caption("Flex Schedule Comments")
+Gui.FormFlexComments..Size(15360,10650)
+Gui.FormFlexComments..MinX(0)
+Gui.FormFlexComments..MinY(0)
+Gui.FormFlexComments..Position(0,0)
+Gui.FormFlexComments..BackColor(-2147483633)
+Gui.FormFlexComments..MousePointer(0)
+Gui.FormFlexComments..Event(UnLoad,FormFlexComments_UnLoad)
+Gui.FormFlexComments.GsGridFlex.Create(GsGridControl)
+Gui.FormFlexComments.GsGridFlex.Size(15045,9630)
+Gui.FormFlexComments.GsGridFlex.Position(105,105)
+Gui.FormFlexComments.GsGridFlex.Anchor(15)
+Gui.FormFlexComments.GsGridFlex.Event(RowCellClick,GsGridFlex_RowCellClick)
+Gui.FormFlexComments.GsGridFlex.Event(MouseCellEnter,GsGridFlex_MouseCellEnter)
+Gui.FormFlexComments.cmdSave.Create(Button)
+Gui.FormFlexComments.cmdSave.Size(855,375)
+Gui.FormFlexComments.cmdSave.Position(120,9855)
+Gui.FormFlexComments.cmdSave.Caption("Save")
+Gui.FormFlexComments.cmdSave.Event(Click,cmdSave_Click)
+Gui.FormFlexComments.cmdSave.Anchor(6)
+Gui.FormFlexComments.cmdRefresh.Create(Button)
+Gui.FormFlexComments.cmdRefresh.Size(855,375)
+Gui.FormFlexComments.cmdRefresh.Position(14295,9855)
+Gui.FormFlexComments.cmdRefresh.Anchor(10)
+Gui.FormFlexComments.cmdRefresh.Caption("REFRESH")
+Gui.FormFlexComments.cmdRefresh.Event(Click,cmdRefresh_Click)
+Gui.FormFlexComments.cmdIssue.Create(Button)
+Gui.FormFlexComments.cmdIssue.Size(2940,375)
+Gui.FormFlexComments.cmdIssue.Position(10995,9855)
+Gui.FormFlexComments.cmdIssue.Anchor(10)
+Gui.FormFlexComments.cmdIssue.Caption("Launch Issue Material Screen")
+Gui.FormFlexComments.cmdIssue.Event(Click,cmdIssue_Click)
+Program.Sub.ScreenSU.End
+
+Program.Sub.Preflight.Start
+V.Global.iIndex.Declare(Long,0)
+V.Global.iPiD.Declare(Long,0)
+Program.Sub.Preflight.End
+
+Program.Sub.Main.Start
+F.Intrinsic.Control.SetErrorHandler("Main_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+
+F.Intrinsic.Control.If(V.Caller.Switches,=,"E")
+	Gui.FormFlexComments.cmdSave.Visible(True)
+F.Intrinsic.Control.Else
+	Gui.FormFlexComments.cmdSave.Visible(False)
+F.Intrinsic.Control.EndIf
+
+Gui.FormFlexComments..ContextMenuCreate("Copy")
+Gui.FormFlexComments..ContextMenuAddItem("Copy","Copy Sched",0,"Copy Schedule #")
+Gui.FormFlexComments..ContextMenuSetItemEventHandler("Copy","Copy Sched",MenuClick)
+
+F.Intrinsic.Control.CallSub(Get_Data)
+F.Intrinsic.Control.CallSub(Set_Properties)
+
+Gui.FormFlexComments..Show
+
+Gui.FormFlexComments..AlwaysOnTop(True)
+Gui.FormFlexComments..AlwaysOnTop(False)
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("Main_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_5364_Flex_Comments.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(FormFlexComments_UnLoad)
+Function.Intrinsic.Control.EndIf
+Program.Sub.Main.End
+
+Program.Sub.FormFlexComments_UnLoad.Start
+F.Intrinsic.Control.SetErrorHandler("FormFlexComments_UnLoad_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+
+F.Intrinsic.Control.End
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("FormFlexComments_UnLoad_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_5364_Flex_Comments.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.End
+Function.Intrinsic.Control.EndIf
+Program.Sub.FormFlexComments_UnLoad.End
+
+Program.Sub.cmdSave_Click.Start
+F.Intrinsic.Control.SetErrorHandler("cmdSave_Click_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+
+F.ODBC.Connection!Con.OpenCompanyConnection
+
+F.Data.DataTable.SaveToDB("Flex","con","GCG_5364_Flex_Comm","Schedule*!*Schedule_Suffix",256,"Schedule@!@Schedule*!*Schedule_Suffix@!@Schedule_Suffix*!*Comment_1@!@Comment_1*!*Comment_2@!@Comment_2*!*Comment_3@!@Comment_3")
+
+F.Intrinsic.UI.Msgbox("Schdule Comments Saved........")
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("cmdSave_Click_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_5364_Flex_Comments.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(FormFlexComments_UnLoad)
+Function.Intrinsic.Control.EndIf
+Program.Sub.cmdSave_Click.End
+
+Program.Sub.Get_Data.Start
+F.Intrinsic.Control.SetErrorHandler("Get_Data_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+V.Local.sSql.Declare(String,"")
+V.Local.i.Declare(Long,0)
+V.Local.sFilter.Declare(String,"")
+V.Local.iC.Declare(Long,0)
+V.Local.fQty.Declare(Float,0)
+
+F.ODBC.Connection!Con.OpenCompanyConnection
+
+V.Local.sSql.Set("Delete From GCG_5364_Flex_Comm where Schedule Not In(Select Distinct Schedule From JOB_CT_FLX_SCHD)")
+
+F.ODBC.Connection!Con.Execute(V.Local.sSql)
+
+F.Intrinsic.Control.If(V.DataTable.Flex.Exists)
+	F.Data.DataTable.Close("Flex")
+F.Intrinsic.Control.EndIf
+
+F.Data.DataTable.CreateFromSQL("Flex","con","Select Distinct Schedule+Schedule_Suffix as SS, Schedule, Schedule_Suffix, Cast('1900-01-01' as Date) as Date_Due, Cast(0 as Double) as Est_Qty, Cast('' as Char) as Finish From V_Job_Ct_Flx_Schd Order By Schedule",True)
+
+F.Data.DataTable.AddColumn("Flex","Comment_1",String)
+F.Data.DataTable.AddColumn("Flex","Comment_2",String)
+F.Data.DataTable.AddColumn("Flex","Comment_3",String)
+
+F.Data.Dictionary.CreateFromSQL("Comment1","con","Select Schedule+Schedule_Suffix, rtrim(Comment_1) From GCG_5364_Flex_Comm")
+F.Data.Dictionary.SetDefaultReturn("Comment1","")
+
+F.Data.DataTable.FillFromDictionary("Flex","Comment1","SS","Comment_1")
+
+F.Data.Dictionary.Close("Comment1")
+
+F.Data.Dictionary.CreateFromSQL("Comment2","con","Select Schedule+Schedule_Suffix, rtrim(Comment_2) From GCG_5364_Flex_Comm")
+F.Data.Dictionary.SetDefaultReturn("Comment2","")
+
+F.Data.DataTable.FillFromDictionary("Flex","Comment2","SS","Comment_2")
+
+F.Data.Dictionary.Close("Comment2")
+
+F.Data.Dictionary.CreateFromSQL("Comment3","con","Select Schedule+Schedule_Suffix, rtrim(Comment_3) From GCG_5364_Flex_Comm")
+F.Data.Dictionary.SetDefaultReturn("Comment3","")
+
+F.Data.DataTable.FillFromDictionary("Flex","Comment3","SS","Comment_3")
+
+F.Data.Dictionary.Close("Comment3")
+
+F.Data.DataTable.CreateFromSQL("FlexJobs","con","Select Schedule, Schedule_Suffix, Matl_Job, Matl_Suffix, Matl_Seq, Hours_Estimated, Date_Due, Part From V_Job_Ct_Flx_Schd a Left Join V_Job_Operations b on a.Matl_Job = b.Job and a.Matl_Suffix = b.Suffix and a.Matl_Seq = b.Seq")
+
+F.Intrinsic.Control.For(V.Local.i,0,V.DataTable.Flex.RowCount--,1)
+	F.Intrinsic.String.Build("Schedule = '{0}' and Schedule_Suffix = '{1}'",V.DataTable.Flex(V.Local.i).Schedule!FieldValTrim,V.DataTable.Flex(V.Local.i).Schedule_Suffix!FieldValTrim,V.Local.sFilter)
+	F.Data.DataView.Create("FlexJobs","VFlexJobs",22,V.Local.sFilter,"Date_Due")
+	V.Local.fQty.Set(0)
+	F.Intrinsic.Control.For(V.Local.iC,0,V.DataView.FlexJobs!VFlexJobs.RowCount--,1)
+		F.Intrinsic.Math.Add(V.Local.fQty,V.DataView.FlexJobs!VFlexJobs(V.Local.iC).Hours_Estimated!FieldValFloat,V.Local.fQty)
+	F.Intrinsic.Control.Next(V.Local.iC)
+	F.Data.DataTable.SetValue("Flex",V.Local.i,"Date_Due",V.DataView.FlexJobs!VFlexJobs(V.DataView.FlexJobs!VFlexJobs.RowCount--).Date_Due!FieldVal,"Est_Qty",V.Local.fQty,"Finish",V.DataView.FlexJobs!VFlexJobs(V.DataView.FlexJobs!VFlexJobs.RowCount--).Part!FieldValTrim)
+	F.Data.DataView.Close("FlexJobs","VFlexJobs")
+F.Intrinsic.Control.Next(V.Local.i)
+
+F.Data.DataTable.Close("FlexJobs")
+
+F.ODBC.Connection!Con.Close
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("Get_Data_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_5364_Flex_Comments.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(FormFlexComments_UnLoad)
+Function.Intrinsic.Control.EndIf
+Program.Sub.Get_Data.End
+
+Program.Sub.Set_Properties.Start
+F.Intrinsic.Control.SetErrorHandler("Set_Properties_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+
+Gui.FormFlexComments.GsGridFlex.AddGridviewFromDatatable("GFlex","Flex")
+
+Gui.FormFlexComments.GsGridFlex.SetGridviewProperty("GFlex","AllowColumnMoving",False)
+GUI.FormFlexComments.GsGridFlex.SetGridviewProperty("GFlex","AllowColumnResizing",False)
+Gui.FormFlexComments.GsGridFlex.SetGridviewProperty("GFlex","OptionsViewColumnAutoWidth",False)
+Gui.FormFlexComments.GsGridFlex.SetGridviewProperty("GFlex","OptionsViewRowAutoHeight",True)
+
+Gui.FormFlexComments.GsGridFlex.SetColumnProperty("GFlex","SS",Visible,False)
+Gui.FormFlexComments.GsGridFlex.SetColumnProperty("GFlex","SS","ReadOnly",True)
+Gui.FormFlexComments.GsGridFlex.SetColumnProperty("GFlex","SS","AllowEdit",False)
+Gui.FormFlexComments.GsGridFlex.SetColumnProperty("GFlex","SS","HeaderBackColor","MediumSeaGreen")
+Gui.FormFlexComments.GsGridFlex.SetColumnProperty("GFlex","SS","HeaderFontBold",True)
+
+Gui.FormFlexComments.GsGridFlex.SetColumnProperty("GFlex","Schedule",Visible,True)
+Gui.FormFlexComments.GsGridFlex.SetColumnProperty("GFlex","Schedule","ReadOnly",True)
+Gui.FormFlexComments.GsGridFlex.SetColumnProperty("GFlex","Schedule","AllowEdit",False)
+Gui.FormFlexComments.GsGridFlex.SetColumnProperty("GFlex","Schedule","HeaderBackColor","MediumSeaGreen")
+Gui.FormFlexComments.GsGridFlex.SetColumnProperty("GFlex","Schedule","HeaderFontBold",True)
+Gui.FormFlexComments.GsGridFlex.SetColumnProperty("GFlex","Schedule","Caption","Schedule")
+
+Gui.FormFlexComments.GsGridFlex.SetColumnProperty("GFlex","Schedule_Suffix",Visible,True)
+Gui.FormFlexComments.GsGridFlex.SetColumnProperty("GFlex","Schedule_Suffix","ReadOnly",True)
+Gui.FormFlexComments.GsGridFlex.SetColumnProperty("GFlex","Schedule_Suffix","AllowEdit",False)
+Gui.FormFlexComments.GsGridFlex.SetColumnProperty("GFlex","Schedule_Suffix","HeaderBackColor","MediumSeaGreen")
+Gui.FormFlexComments.GsGridFlex.SetColumnProperty("GFlex","Schedule_Suffix","HeaderFontBold",True)
+Gui.FormFlexComments.GsGridFlex.SetColumnProperty("GFlex","Schedule_Suffix","Caption","Suffix")
+
+Gui.FormFlexComments.GsGridFlex.SetColumnProperty("GFlex","Date_Due",Visible,True)
+Gui.FormFlexComments.GsGridFlex.SetColumnProperty("GFlex","Date_Due","ReadOnly",True)
+Gui.FormFlexComments.GsGridFlex.SetColumnProperty("GFlex","Date_Due","AllowEdit",False)
+Gui.FormFlexComments.GsGridFlex.SetColumnProperty("GFlex","Date_Due","HeaderBackColor","MediumSeaGreen")
+Gui.FormFlexComments.GsGridFlex.SetColumnProperty("GFlex","Date_Due","HeaderFontBold",True)
+Gui.FormFlexComments.GsGridFlex.SetColumnProperty("GFlex","Date_Due","Caption","Due Date")
+Gui.FormFlexComments.GsGridFlex.SetColumnProperty("GFlex","Date_Due","DisplayCustomDatetime","d")
+
+Gui.FormFlexComments.GsGridFlex.SetColumnProperty("GFlex","Est_Qty",Visible,True)
+Gui.FormFlexComments.GsGridFlex.SetColumnProperty("GFlex","Est_Qty","ReadOnly",True)
+Gui.FormFlexComments.GsGridFlex.SetColumnProperty("GFlex","Est_Qty","AllowEdit",False)
+Gui.FormFlexComments.GsGridFlex.SetColumnProperty("GFlex","Est_Qty","HeaderBackColor","MediumSeaGreen")
+Gui.FormFlexComments.GsGridFlex.SetColumnProperty("GFlex","Est_Qty","HeaderFontBold",True)
+Gui.FormFlexComments.GsGridFlex.SetColumnProperty("GFlex","Est_Qty","Caption","Est Qty")
+Gui.FormFlexComments.GsGridFlex.SetColumnProperty("GFlex","Est_Qty","DisplayCustomNumeric","#0.00")
+
+Gui.FormFlexComments.GsGridFlex.SetColumnProperty("GFlex","Finish",Visible,True)
+Gui.FormFlexComments.GsGridFlex.SetColumnProperty("GFlex","Finish","ReadOnly",True)
+Gui.FormFlexComments.GsGridFlex.SetColumnProperty("GFlex","Finish","AllowEdit",False)
+Gui.FormFlexComments.GsGridFlex.SetColumnProperty("GFlex","Finish","HeaderBackColor","MediumSeaGreen")
+Gui.FormFlexComments.GsGridFlex.SetColumnProperty("GFlex","Finish","HeaderFontBold",True)
+Gui.FormFlexComments.GsGridFlex.SetColumnProperty("GFlex","Finish","Caption","Finish")
+Gui.FormFlexComments.GsGridFlex.SetColumnProperty("GFlex","Finish","Width","200")
+
+Gui.FormFlexComments.GsGridFlex.SetColumnProperty("GFlex","Comment_1",Visible,True)
+F.Intrinsic.Control.If(V.Caller.Switches,=,"E")
+	Gui.FormFlexComments.GsGridFlex.SetColumnProperty("GFlex","Comment_1","ReadOnly",False)
+	Gui.FormFlexComments.GsGridFlex.SetColumnProperty("GFlex","Comment_1","AllowEdit",True)
+F.Intrinsic.Control.Else
+	Gui.FormFlexComments.GsGridFlex.SetColumnProperty("GFlex","Comment_1","ReadOnly",True)
+	Gui.FormFlexComments.GsGridFlex.SetColumnProperty("GFlex","Comment_1","AllowEdit",False)
+F.Intrinsic.Control.EndIf
+Gui.FormFlexComments.GsGridFlex.SetColumnProperty("GFlex","Comment_1","HeaderBackColor","MediumSeaGreen")
+Gui.FormFlexComments.GsGridFlex.SetColumnProperty("GFlex","Comment_1","HeaderFontBold",True)
+Gui.FormFlexComments.GsGridFlex.SetColumnProperty("GFlex","Comment_1","Caption","Comment 1")
+Gui.FormFlexComments.GsGridFlex.SetColumnProperty("GFlex","Comment_1","Width","400")
+Gui.FormFlexComments.GsGridFlex.SetColumnProperty("GFlex","Comment_1","CellWordWrap","Wrap")
+
+Gui.FormFlexComments.GsGridFlex.SetColumnProperty("GFlex","Comment_2",Visible,True)
+F.Intrinsic.Control.If(V.Caller.Switches,=,"E")
+	Gui.FormFlexComments.GsGridFlex.SetColumnProperty("GFlex","Comment_2","ReadOnly",False)
+	Gui.FormFlexComments.GsGridFlex.SetColumnProperty("GFlex","Comment_2","AllowEdit",True)
+F.Intrinsic.Control.Else
+	Gui.FormFlexComments.GsGridFlex.SetColumnProperty("GFlex","Comment_2","ReadOnly",True)
+	Gui.FormFlexComments.GsGridFlex.SetColumnProperty("GFlex","Comment_2","AllowEdit",False)
+F.Intrinsic.Control.EndIf
+Gui.FormFlexComments.GsGridFlex.SetColumnProperty("GFlex","Comment_2","HeaderBackColor","MediumSeaGreen")
+Gui.FormFlexComments.GsGridFlex.SetColumnProperty("GFlex","Comment_2","HeaderFontBold",True)
+Gui.FormFlexComments.GsGridFlex.SetColumnProperty("GFlex","Comment_2","Caption","Comment 2")
+Gui.FormFlexComments.GsGridFlex.SetColumnProperty("GFlex","Comment_2","Width","400")
+Gui.FormFlexComments.GsGridFlex.SetColumnProperty("GFlex","Comment_2","CellWordWrap","Wrap")
+
+Gui.FormFlexComments.GsGridFlex.SetColumnProperty("GFlex","Comment_3",Visible,True)
+F.Intrinsic.Control.If(V.Caller.Switches,=,"E")
+	Gui.FormFlexComments.GsGridFlex.SetColumnProperty("GFlex","Comment_3","ReadOnly",False)
+	Gui.FormFlexComments.GsGridFlex.SetColumnProperty("GFlex","Comment_3","AllowEdit",True)
+F.Intrinsic.Control.Else
+	Gui.FormFlexComments.GsGridFlex.SetColumnProperty("GFlex","Comment_3","ReadOnly",True)
+	Gui.FormFlexComments.GsGridFlex.SetColumnProperty("GFlex","Comment_3","AllowEdit",False)
+F.Intrinsic.Control.EndIf
+Gui.FormFlexComments.GsGridFlex.SetColumnProperty("GFlex","Comment_3","HeaderBackColor","MediumSeaGreen")
+Gui.FormFlexComments.GsGridFlex.SetColumnProperty("GFlex","Comment_3","HeaderFontBold",True)
+Gui.FormFlexComments.GsGridFlex.SetColumnProperty("GFlex","Comment_3","Caption","Comment 3")
+Gui.FormFlexComments.GsGridFlex.SetColumnProperty("GFlex","Comment_3","Width","400")
+Gui.FormFlexComments.GsGridFlex.SetColumnProperty("GFlex","Comment_3","CellWordWrap","Wrap")
+
+Gui.FormFlexComments.GsGridFlex.MainView("GFlex")
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("Set_Properties_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_5364_Flex_Comments.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(FormFlexComments_UnLoad)
+Function.Intrinsic.Control.EndIf
+Program.Sub.Set_Properties.End
+
+Program.Sub.GsGridFlex_RowCellClick.Start
+F.Intrinsic.Control.SetErrorHandler("GsGridFlex_RowCellClick_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+V.Local.iX.Declare(Long,0)
+V.Local.iY.Declare(Long,0)
+
+F.Intrinsic.Control.If(V.Args.Button.UCase,=,"RIGHT")
+	'getting mouse position
+	F.Intrinsic.API.GetMousePosition(V.Local.iX,V.Local.iY)
+	
+	'showing context menu
+	Gui.FormFlexComments..ContextMenuShow("Copy",V.Local.iX,V.Local.iY)
+F.Intrinsic.Control.EndIf
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("GsGridFlex_RowCellClick_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_5364_Flex_Comments.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(FormFlexComments_UnLoad)
+Function.Intrinsic.Control.EndIf
+Program.Sub.GsGridFlex_RowCellClick.End
+
+Program.Sub.GsGridFlex_MouseCellEnter.Start
+F.Intrinsic.Control.SetErrorHandler("GsGridFlex_MouseCellEnter_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+V.Local.sTemp.Declare(String,"")
+
+Gui.FormFlexComments.GsGridFlex.GetCellValueByColumnName("GFlex","Schedule",V.Args.SourceRowIndex,V.Local.sTemp)
+F.Intrinsic.String.Build("Schedule = '{0}'",V.Local.sTemp,V.Local.sTemp)
+F.Data.DataTable.Select("Flex",V.Local.sTemp,V.Local.sTemp.Long)
+V.Global.iIndex.Set(V.Local.sTemp.Long)
+		
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("GsGridFlex_MouseCellEnter_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_5364_Flex_Comments.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(FormFlexComments_UnLoad)
+Function.Intrinsic.Control.EndIf
+Program.Sub.GsGridFlex_MouseCellEnter.End
+
+Program.Sub.MenuClick.Start
+F.Intrinsic.Control.SetErrorHandler("MenuClick_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+V.Local.sSched.Declare(String,"")
+
+F.Intrinsic.Control.SelectCase(V.Args.ItemName.UCase)
+	F.Intrinsic.Control.Case("COPY SCHED")
+		V.Local.sSched.Set(V.DataTable.Flex(V.Global.iIndex).SS!FieldValTrim)
+		
+		F.Intrinsic.String.Build("$%{0}",V.Local.sSched,V.Local.sSched)
+		F.Intrinsic.UI.SetClipboardText(V.Local.sSched)
+		
+F.Intrinsic.Control.EndSelect
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("MenuClick_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_5364_Flex_Comments.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(FormFlexComments_UnLoad)
+Function.Intrinsic.Control.EndIf
+Program.Sub.MenuClick.End
+
+Program.Sub.cmdRefresh_Click.Start
+F.Intrinsic.Control.SetErrorHandler("cmdRefresh_Click_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+
+F.Intrinsic.UI.InvokeWaitDialog("Refreshing Schedule Data........")
+
+Gui.FormFlexComments..Enabled(False)
+
+F.Intrinsic.Control.CallSub(Get_Data)
+F.Intrinsic.Control.CallSub(Set_Properties)
+
+Gui.FormFlexComments..Enabled(True)
+
+F.Intrinsic.UI.CloseWaitDialog
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("cmdRefresh_Click_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_5364_Flex_Comments.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(FormFlexComments_UnLoad)
+Function.Intrinsic.Control.EndIf
+Program.Sub.cmdRefresh_Click.End
+
+Program.Sub.cmdIssue_Click.Start
+F.Intrinsic.Control.SetErrorHandler("cmdRefresh_Click_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+V.Local.bRet.Declare(Boolean,False)
+
+F.Intrinsic.Control.If(V.Global.iPiD,=,0)
+	F.Global.General.LaunchMenuTask(609,0,V.Global.iPiD)
+F.Intrinsic.Control.Else
+	F.Intrinsic.Task.IsProgramRunning(V.Global.iPiD,V.Local.bRet)
+	F.Intrinsic.Control.If(V.Local.bRet,=,False)
+		F.Global.General.LaunchMenuTask(609,0,V.Global.iPiD)
+	F.Intrinsic.Control.EndIf
+F.Intrinsic.Control.EndIf
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("cmdRefresh_Click_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_5364_Flex_Comments.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(FormFlexComments_UnLoad)
+Function.Intrinsic.Control.EndIf
+Program.Sub.cmdIssue_Click.End
