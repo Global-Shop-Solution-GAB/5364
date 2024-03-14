@@ -1,0 +1,629 @@
+Program.Sub.ScreenSU.Start
+Gui.FormMCCode..Create
+Gui.FormMCCode..Caption("MC Code Export File Configuration Screen")
+Gui.FormMCCode..Size(15360,10695)
+Gui.FormMCCode..MinX(0)
+Gui.FormMCCode..MinY(0)
+Gui.FormMCCode..Position(0,0)
+Gui.FormMCCode..BackColor(-2147483633)
+Gui.FormMCCode..MousePointer(0)
+Gui.FormMCCode..Event(UnLoad,FormMCCode_UnLoad)
+Gui.FormMCCode..FontSize(7)
+Gui.FormMCCode.txtMCCode.Create(TextBox,"",True,1905,300,0,105,300,True,0,"Arial",8,-2147483643,1)
+Gui.FormMCCode.txtMCCode.Event(LostFocus,txtMCCode_LostFocus)
+Gui.FormMCCode.lblMCCode.Create(Label,"MC Code",True,1935,255,0,105,90,True,0,"Arial",8,-2147483633,0)
+Gui.FormMCCode.cmdMCCode.Create(Button)
+Gui.FormMCCode.cmdMCCode.Size(435,375)
+Gui.FormMCCode.cmdMCCode.Position(2160,270)
+Gui.FormMCCode.cmdMCCode.Caption("^")
+Gui.FormMCCode.cmdMCCode.Event(Click,cmdMCCode_Click)
+Gui.FormMCCode.GsGridControl1.Create(GsGridControl)
+Gui.FormMCCode.GsGridControl1.Size(15000,8100)
+Gui.FormMCCode.GsGridControl1.Position(105,1785)
+Gui.FormMCCode.GsGridControl1.Anchor(15)
+Gui.FormMCCode.cmdSave.Create(Button)
+Gui.FormMCCode.cmdSave.Size(1305,375)
+Gui.FormMCCode.cmdSave.Position(105,9945)
+Gui.FormMCCode.cmdSave.Anchor(6)
+Gui.FormMCCode.cmdSave.Caption("Save")
+Gui.FormMCCode.cmdSave.Event(Click,cmdSave_Click)
+Gui.FormMCCode.chkLlblData.Create(CheckBox)
+Gui.FormMCCode.chkLlblData.Size(2685,330)
+Gui.FormMCCode.chkLlblData.Position(135,645)
+Gui.FormMCCode.chkLlblData.Caption("Include Label Data In Export File")
+Gui.FormMCCode.GsGridControl2.Create(GsGridControl)
+Gui.FormMCCode.GsGridControl2.Size(6675,1260)
+Gui.FormMCCode.GsGridControl2.Position(8430,495)
+Gui.FormMCCode.GsGridControl2.Anchor(13)
+Gui.FormMCCode.ddlTable.Create(DropDownList)
+Gui.FormMCCode.ddlTable.Size(2955,330)
+Gui.FormMCCode.ddlTable.Position(105,1425)
+Gui.FormMCCode.ddlTable.Event(SelectedIndexChanged,ddlTable_SelectedIndexChanged)
+Gui.FormMCCode.lblFormula.Create(Label,"Formulas:",True,5205,1620,0,3165,150,True,0,"Arial",8,-2147483633,0)
+Gui.FormMCCode.chk5Pcs.Create(CheckBox)
+Gui.FormMCCode.chk5Pcs.Size(1200,330)
+Gui.FormMCCode.chk5Pcs.Position(135,1020)
+Gui.FormMCCode.chk5Pcs.Caption("5 Pcs Door")
+Gui.FormMCCode.chk5Pcs.Event(Click,chk5Pcs_Click)
+Gui.FormMCCode.chkRS.Create(CheckBox)
+Gui.FormMCCode.chkRS.Size(1605,330)
+Gui.FormMCCode.chkRS.Position(1365,1020)
+Gui.FormMCCode.chkRS.Caption("Rails and Stiles")
+Program.Sub.ScreenSU.End
+
+Program.Sub.Preflight.Start
+V.Global.sTable.Declare(String,"")
+Program.Sub.Preflight.End
+
+Program.Sub.Main.Start
+F.Intrinsic.Control.SetErrorHandler("Main_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+V.Local.sFormula.Declare(String,"")
+
+
+Gui.FormMCCode.chkRS.Visible(False)
+
+F.Intrinsic.UI.InvokeWaitDialog("Getting Mapped Column Headers...............")
+
+F.Intrinsic.Control.BlockEvents
+
+F.Intrinsic.Control.CallSub(Build_Empty_DT)
+F.Intrinsic.Control.CallSub(Set_Properties)
+
+gui.FormMCCode.ddlTable.AddItem("V_INVENTORY_MSTR",0)
+gui.FormMCCode.ddlTable.AddItem("V_INVENTORY_MST2",1)
+gui.FormMCCode.ddlTable.AddItem("V_INVENTORY_MST3",2)
+gui.FormMCCode.ddlTable.AddItem("INV_EXTRA",3)
+gui.FormMCCode.ddlTable.AddItem("GCG_5364_OE_LINES",4)
+
+F.Intrinsic.String.Build("Formulas: BatchNum and ItemNum1 = Auto Filled{0}Concat(V_Inventory_Mstr.Part,V_Inventory_Mstr.Location){0}'Export' + V_Inventory_Mstr.Part{0}(GCG_5364_OE_Lines.Width - V_Inventory_Mst3.Thickness){0}CASE WHEN Inv_Extra.User33 <> '' THEN Inv_Extra.User33 Else Inv_Extra.User34 END{0}*** Or any other Formulas that work in Pervasive ***",V.Ambient.NewLine,V.Local.sFormula)
+Gui.FormMCCode.lblFormula.Caption(V.Local.sFormula)
+
+F.Intrinsic.Control.UnBlockEvents
+
+F.Intrinsic.UI.CloseWaitDialog
+
+Gui.FormMCCode..Show
+
+Gui.FormMCCode..AlwaysOnTop(True)
+Gui.FormMCCode..AlwaysOnTop(False)
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("Main_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_5364_MC_Export_Config.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(FormMCCode_UnLoad)
+Function.Intrinsic.Control.EndIf
+Program.Sub.Main.End
+
+Program.Sub.FormMCCode_UnLoad.Start
+F.Intrinsic.Control.SetErrorHandler("FormMCCode_UnLoad_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+
+F.Intrinsic.Control.If(V.ODBC.Con.State,=,1)
+	F.ODBC.Connection!Con.Close
+F.Intrinsic.Control.EndIf
+
+F.Intrinsic.Control.End
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("FormMCCode_UnLoad_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_5364_MC_Export_Config.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.End
+Function.Intrinsic.Control.EndIf
+Program.Sub.FormMCCode_UnLoad.End
+
+Program.Sub.cmdMCCode_Click.Start
+F.Intrinsic.Control.SetErrorHandler("cmdMCCode_Click_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+V.Local.sSql.Declare(String,"")
+V.Local.sTitles.Declare(String,"")
+V.Local.sWidths.Declare(String,"")
+V.Local.sRet.Declare(String,"")
+
+F.Intrinsic.UI.SetBrowserOOT(True)
+F.Intrinsic.UI.SetBrowserHotTypeAhead(True)
+
+V.Local.sSql.Set("Select DISTINCT MC_CODE From GCG_5364_MC_CONFIG Order by MC_CODE") 
+V.Local.sTitles.Set("MC CODE")
+V.Local.sWidths.Set("6250")
+
+F.Intrinsic.String.Split(V.Local.sTitles,"*!*",V.Local.sTitles)
+F.Intrinsic.String.Split(V.Local.sWidths,"*!*",V.Local.sWidths)
+
+F.ODBC.Connection!Con.OpenCompanyConnection
+
+F.Intrinsic.UI.Browser("Select MC CODE","con",V.Local.sSql,V.Local.sTitles,V.Local.sWidths,10200,9000,V.Local.sRet)
+
+F.ODBC.Connection!Con.Close
+
+F.Intrinsic.Control.If(V.Local.sRet,<>,V.Ambient.Cancel)
+	F.Intrinsic.String.Split(V.Local.sRet,"*!*",V.Local.sRet)
+	Gui.FormMCCode.txtMCCode.Text(V.Local.sRet.Trim)
+	F.Intrinsic.Control.CallSub(txtMCCode_LostFocus)
+F.Intrinsic.Control.EndIf
+
+Gui.FormMCCode..AlwaysOnTop(True)
+Gui.FormMCCode..AlwaysOnTop(False)
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("cmdMCCode_Click_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_5364_MC_Export_Config.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(FormMCCode_UnLoad)
+Function.Intrinsic.Control.EndIf
+Program.Sub.cmdMCCode_Click.End
+
+Program.Sub.txtMCCode_LostFocus.Start
+F.Intrinsic.Control.SetErrorHandler("txtMCCode_LostFocus_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+V.Local.sSql.Declare(String,"")
+V.Local.sMC.Declare(String,"")
+V.Local.i.Declare(Long,0)
+V.Local.iRec.Declare(Long,0)
+V.Local.sUserField.Declare(String,"")
+V.Local.sTitles.Declare(String,"")
+V.Local.sTemp.Declare(String,"")
+
+F.Intrinsic.Control.BlockEvents
+
+Gui.FormMCCode.GsGridControl2.FocusCell("GVCONFIG",0,3)
+
+V.Local.sMC.Set(V.Screen.FormMCCode!txtMCCode.Text)
+V.Local.sMC.Set(V.Local.sMC.UCase)
+Gui.FormMCCode.txtMCCode.Text(V.Local.sMC.Trim)
+
+Gui.FormMCCode..Enabled(False)
+
+F.Intrinsic.UI.InvokeWaitDialog("Getting Data..................")
+
+F.Intrinsic.Control.If(V.Local.sMC,<>,"")
+	F.Intrinsic.String.Build("Select MC_CODE, IO, TYPE, FOLDER FROM GCG_5364_CONFIG WHERE MC_CODE = '{0}'",V.Local.sMC.Trim,V.Local.sSql)
+	
+	F.ODBC.Connection!Con.OpenCompanyConnection
+	
+	F.Data.DataTable.CreateFromSQL("TEMPCONFIG","Con",V.Local.sSql,True)
+	
+	F.Data.DataTable.SetValue("CONFIG",-1,"MC_CODE",V.Local.sMC.Trim,"FOLDER","")
+
+	F.Intrinsic.Control.For(V.Local.i,0,V.DataTable.TEMPCONFIG.RowCount--,1)
+		F.Intrinsic.Control.SelectCase(V.DataTable.TEMPCONFIG(V.Local.i).Type!FieldValTrim)
+			F.Intrinsic.Control.Case("PART")
+				F.Data.DataTable.SetValue("CONFIG",0,"FOLDER",V.DataTable.TEMPCONFIG(V.Local.i).Folder!FieldValTrim)
+			F.Intrinsic.Control.Case("CSV")
+				F.Data.DataTable.SetValue("CONFIG",1,"FOLDER",V.DataTable.TEMPCONFIG(V.Local.i).Folder!FieldValTrim)
+			F.Intrinsic.Control.Case("ANSWER")
+				F.Data.DataTable.SetValue("CONFIG",2,"FOLDER",V.DataTable.TEMPCONFIG(V.Local.i).Folder!FieldValTrim)
+		F.Intrinsic.Control.EndSelect
+	F.Intrinsic.Control.Next(V.Local.i)
+	
+	F.Data.DataTable.Close("TEMPCONFIG")
+	
+	F.Intrinsic.String.Build("Select REC_NO, RTRIM(MC_CODE) as MC_CODE, RTRIM(COL_HEAD) as COL_HEAD, ANS_COL, RTRIM(DATA_FIELD) as DATA_FIELD, RTRIM(FORMULA) AS FORMULA, RTRIM(INS_FORMULA) AS INS_FORMULA, RTRIM(RAILS) AS RAILS, RTRIM(STILES) AS STILES, LABEL_DATA, FIVE_PIECE_DOOR, RAILS_STILES FROM GCG_5364_MC_CONFIG WHERE MC_CODE = '{0}' ORDER BY REC_NO",V.Local.sMC.Trim,V.Local.sSql)
+	
+	F.Data.DataTable.CreateFromSQL("TEMP","con",V.Local.sSql,True)
+	
+	F.Intrinsic.Control.If(V.DataTable.TEMP.RowCount--,<>,-1)
+		F.Intrinsic.Control.BlockEvents
+		F.Intrinsic.Control.If(V.DataTable.TEMP(V.DataTable.TEMP.RowCount--).Label_Data!FieldVal,=,True)
+			Gui.FormMCCode.chkLlblData.Value(1)
+		F.Intrinsic.Control.Else
+			Gui.FormMCCode.chkLlblData.Value(0)
+		F.Intrinsic.Control.EndIf
+		F.Intrinsic.Control.If(V.DataTable.TEMP(V.DataTable.TEMP.RowCount--).FIVE_PIECE_DOOR!FieldVal,=,True)
+			Gui.FormMCCode.chk5Pcs.Value(1)
+			Gui.FormMCCode.chkRS.Visible(True)
+			Gui.FormMCCode.GsGridControl1.SetColumnProperty("GVMCCODE","INS_FORMULA","Visible",False)
+			Gui.FormMCCode.GsGridControl1.SetColumnProperty("GVMCCODE","RAILS","Visible",True)
+			Gui.FormMCCode.GsGridControl1.SetColumnProperty("GVMCCODE","STILES","Visible",True)
+		F.Intrinsic.Control.Else
+			Gui.FormMCCode.chk5Pcs.Value(0)
+			Gui.FormMCCode.chkRS.Visible(False)
+			Gui.FormMCCode.GsGridControl1.SetColumnProperty("GVMCCODE","INS_FORMULA","Visible",True)
+			Gui.FormMCCode.GsGridControl1.SetColumnProperty("GVMCCODE","RAILS","Visible",False)
+			Gui.FormMCCode.GsGridControl1.SetColumnProperty("GVMCCODE","STILES","Visible",False)
+		F.Intrinsic.Control.EndIf
+		F.Intrinsic.Control.If(V.DataTable.TEMP(V.DataTable.TEMP.RowCount--).RAILS_STILES!FieldVal,=,True)
+			Gui.FormMCCode.chkRS.Value(1)
+		F.Intrinsic.Control.Else
+			Gui.FormMCCode.chkRS.Value(0)
+		F.Intrinsic.Control.EndIf
+		F.Intrinsic.Control.UnBlockEvents
+	F.Intrinsic.Control.Else
+		F.Intrinsic.Control.BlockEvents
+		Gui.FormMCCode.GsGridControl1.SetColumnProperty("GVMCCODE","INS_FORMULA","Visible",True)
+		Gui.FormMCCode.GsGridControl1.SetColumnProperty("GVMCCODE","RAILS","Visible",False)
+		Gui.FormMCCode.GsGridControl1.SetColumnProperty("GVMCCODE","STILES","Visible",False)
+		Gui.FormMCCode.chkLlblData.Value(0)
+		Gui.FormMCCode.chk5Pcs.Value(0)
+		Gui.FormMCCode.chkRS.Value(0)
+		F.Intrinsic.Control.UnBlockEvents
+	F.Intrinsic.Control.EndIf
+	
+	F.ODBC.Connection!Con.Close
+	
+	F.Data.DataTable.DeleteRow("MCCODE")
+	F.Data.DataTable.Acceptchanges("MCCODE")
+	
+	F.Data.DataTable.Merge("TEMP","MCCODE",False,2)
+	
+	F.Data.DataTable.Close("TEMP")
+F.Intrinsic.Control.Else
+	F.Data.DataTable.SetValue("CONFIG",-1,"MC_CODE","","FOLDER","")
+	F.Data.DataTable.DeleteRow("MCCODE")
+	F.Data.DataTable.AcceptChanges("MCCODE")
+F.Intrinsic.Control.EndIf
+
+F.Intrinsic.Control.UnBlockEvents
+
+F.Intrinsic.UI.CloseWaitDialog
+
+Gui.FormMCCode..Enabled(True)
+
+Gui.FormMCCode..AlwaysOnTop(True)
+Gui.FormMCCode..AlwaysOnTop(False)
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("txtMCCode_LostFocus_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_5364_MC_Export_Config.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(FormMCCode_UnLoad)
+Function.Intrinsic.Control.EndIf
+Program.Sub.txtMCCode_LostFocus.End
+
+Program.Sub.cmdSave_Click.Start
+F.Intrinsic.Control.SetErrorHandler("cmdSave_Click_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+V.Local.sSql.Declare(String,"")
+V.Local.sMC.Declare(String,"")
+V.Local.i.Declare(Long,0)
+V.Local.iRec.Declare(Long,0)
+
+V.Local.sMC.Set(V.Screen.FormMCCode!txtMCCode.Text)
+V.Local.sMC.Set(V.Local.sMC.Trim)
+
+F.ODBC.Connection!Con.OpenCompanyConnection
+
+F.Intrinsic.Control.BlockEvents
+
+F.Intrinsic.Control.If(V.Screen.FormMCCode!chkLlblData.Value,=,1)
+	F.Data.DataTable.SetValue("MCCODE",-1,"LABEL_DATA",True,"MC_CODE",V.Local.sMC.UCase)
+F.Intrinsic.Control.Else
+	F.Data.DataTable.SetValue("MCCODE",-1,"LABEL_DATA",False,"MC_CODE",V.Local.sMC.UCase)
+F.Intrinsic.Control.EndIf
+
+F.Intrinsic.Control.If(V.Screen.FormMCCode!chk5Pcs.Value,=,1)
+	F.Data.DataTable.SetValue("MCCODE",-1,"FIVE_PIECE_DOOR",True)
+F.Intrinsic.Control.Else
+	F.Data.DataTable.SetValue("MCCODE",-1,"FIVE_PIECE_DOOR",False)
+F.Intrinsic.Control.EndIf
+
+F.Intrinsic.Control.If(V.Screen.FormMCCode!chkRS.Value,=,1)
+	F.Data.DataTable.SetValue("MCCODE",-1,"RAILS_STILES",True)
+F.Intrinsic.Control.Else
+	F.Data.DataTable.SetValue("MCCODE",-1,"RAILS_STILES",False)
+F.Intrinsic.Control.EndIf
+
+F.Intrinsic.Control.UnBlockEvents
+
+F.Intrinsic.Control.For(V.Local.i,0,V.DataTable.MCCODE.RowCount--,1)
+	F.Intrinsic.Math.Add(V.Local.i,1,V.Local.iRec)
+	F.Data.DataTable.SetValue("MCCODE",V.Local.i,"REC_NO",V.Local.iRec)
+F.Intrinsic.Control.Next(V.Local.i)
+
+F.Data.DataTable.SaveToDB("CONFIG","con","GCG_5364_CONFIG","MC_CODE*!*IO*!*TYPE",256,"MC_CODE@!@MC_CODE*!*IO@!@IO*!*TYPE@!@TYPE*!*FOLDER@!@FOLDER")
+F.Data.DataTable.SaveToDB("MCCODE","Con","GCG_5364_MC_CONFIG","MC_CODE*!*REC_NO",256,"REC_NO@!@REC_NO*!*MC_CODE@!@MC_CODE*!*ANS_COL@!@ANS_COL*!*COL_HEAD@!@COL_HEAD*!*DATA_FIELD@!@DATA_FIELD*!*LABEL_DATA@!@LABEL_DATA*!*FORMULA@!@FORMULA*!*INS_FORMULA@!@INS_FORMULA*!*FIVE_PIECE_DOOR@!@FIVE_PIECE_DOOR*!*RAILS_STILES@!@RAILS_STILES*!*RAILS@!@RAILS*!*STILES@!@STILES")
+
+F.ODBC.Connection!Con.Close
+
+F.Intrinsic.UI.Msgbox("MC CODE Export Config has been Saved.","Attention")
+
+Gui.FormMCCode..AlwaysOnTop(True)
+Gui.FormMCCode..AlwaysOnTop(False)
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("cmdSave_Click_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_5364_MC_Export_Config.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(FormMCCode_UnLoad)
+Function.Intrinsic.Control.EndIf
+Program.Sub.cmdSave_Click.End
+
+Program.Sub.Build_Empty_DT.Start
+F.Intrinsic.Control.SetErrorHandler("Build_Empty_DT_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+
+V.Global.sTable.Redim(0,4)
+
+F.ODBC.Connection!Con.OpenCompanyConnection
+
+F.ODBC.Connection!Con.GetSchemaFieldList("V_Inventory_Mstr",V.Global.sTable(0))
+F.ODBC.Connection!Con.GetSchemaFieldList("V_Inventory_Mst2",V.Global.sTable(1))
+F.ODBC.Connection!Con.GetSchemaFieldList("V_Inventory_Mst3",V.Global.sTable(2))
+F.ODBC.Connection!Con.GetSchemaFieldList("Inv_Extra",V.Global.sTable(3))
+F.ODBC.Connection!Con.GetSchemaFieldList("GCG_5364_OE_Lines",V.Global.sTable(4))
+
+F.Intrinsic.String.Replace(V.Global.sTable(0),"::",".",V.Global.sTable(0))
+F.Intrinsic.String.Build("*!*{0}",V.Global.sTable(0),V.Global.sTable(0))
+F.Intrinsic.String.Replace(V.Global.sTable(1),"::",".",V.Global.sTable(1))
+F.Intrinsic.String.Build("*!*{0}",V.Global.sTable(1),V.Global.sTable(1))
+F.Intrinsic.String.Replace(V.Global.sTable(2),"::",".",V.Global.sTable(2))
+F.Intrinsic.String.Build("*!*{0}",V.Global.sTable(2),V.Global.sTable(2))
+F.Intrinsic.String.Replace(V.Global.sTable(3),"::",".",V.Global.sTable(3))
+F.Intrinsic.String.Build("*!*{0}",V.Global.sTable(3),V.Global.sTable(3))
+F.Intrinsic.String.Replace(V.Global.sTable(4),"::",".",V.Global.sTable(4))
+F.Intrinsic.String.Build("*!*{0}",V.Global.sTable(4),V.Global.sTable(4))
+
+F.Data.DataTable.CreateFromSQL("CONFIG","Con","Select MC_CODE, IO, TYPE, FOLDER FROM GCG_5364_CONFIG WHERE MC_CODE = '-1'",True)
+
+F.Data.DataTable.CreateFromSQL("MCCODE","con","Select REC_NO, RTRIM(MC_CODE) as MC_CODE, RTRIM(COL_HEAD) as COL_HEAD, ANS_COL, RTRIM(DATA_FIELD) as DATA_FIELD, RTRIM(FORMULA) AS FORMULA, RTRIM(INS_FORMULA) AS INS_FORMULA, RTRIM(RAILS) AS RAILS, RTRIM(STILES) AS STILES, LABEL_DATA, FIVE_PIECE_DOOR, RAILS_STILES, '' as DELETE_ROW FROM GCG_5364_MC_CONFIG WHERE MC_CODE = '-1'",True)
+
+F.Data.DataTable.AddRow("CONFIG","IO","OUTPUT","TYPE","PART")
+F.Data.DataTable.AddRow("CONFIG","IO","OUTPUT","TYPE","CSV")
+F.Data.DataTable.AddRow("CONFIG","IO","INPUT","TYPE","ANSWER")
+
+F.ODBC.Connection!Con.Close
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("Build_Empty_DT_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_5364_MC_Export_Config.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(FormMCCode_UnLoad)
+Function.Intrinsic.Control.EndIf
+Program.Sub.Build_Empty_DT.End
+
+Program.Sub.Set_Properties.Start
+F.Intrinsic.Control.SetErrorHandler("Set_Properties_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+
+Gui.FormMCCode.GsGridControl2.AddGridviewFromDatatable("GVCONFIG","CONFIG")
+
+Gui.FormMCCode.GsGridControl2.SetGridviewProperty("GVCONFIG","Showgrouppanel",False)
+Gui.FormMCCode.GsGridControl2.SetGridviewProperty("GVCONFIG","OptionsViewShowAutoFilterRow",False)
+Gui.FormMCCode.GsGridControl2.SetGridviewProperty("GVCONFIG","EnterKeyNavigation","Vertical")
+
+Gui.FormMCCode.GsGridControl2.SetColumnProperty("GVCONFIG","MC_CODE","Caption","MC CODE")
+Gui.FormMCCode.GsGridControl2.SetColumnProperty("GVCONFIG","IO","Caption","IO")
+Gui.FormMCCode.GsGridControl2.SetColumnProperty("GVCONFIG","TYPE","Caption","TYPE")
+Gui.FormMCCode.GsGridControl2.SetColumnProperty("GVCONFIG","FOLDER","Caption","FOLDER")
+
+Gui.FormMCCode.GsGridControl2.SetColumnProperty("GVCONFIG","MC_CODE","Visible",False)
+Gui.FormMCCode.GsGridControl2.SetColumnProperty("GVCONFIG","IO","Visible",True)
+Gui.FormMCCode.GsGridControl2.SetColumnProperty("GVCONFIG","TYPE","Visible",True)
+Gui.FormMCCode.GsGridControl2.SetColumnProperty("GVCONFIG","FOLDER","Visible",True)
+
+Gui.FormMCCode.GsGridControl2.SetColumnProperty("GVCONFIG","MC_CODE","HeaderBackColor",V.Enum.ThemeColors!ThemeColorDark)
+Gui.FormMCCode.GsGridControl2.SetColumnProperty("GVCONFIG","IO","HeaderBackColor",V.Enum.ThemeColors!ThemeColorDark)
+Gui.FormMCCode.GsGridControl2.SetColumnProperty("GVCONFIG","TYPE","HeaderBackColor",V.Enum.ThemeColors!ThemeColorDark)
+Gui.FormMCCode.GsGridControl2.SetColumnProperty("GVCONFIG","FOLDER","HeaderBackColor",V.Enum.ThemeColors!ThemeColorDark)
+
+Gui.FormMCCode.GsGridControl2.SetColumnProperty("GVCONFIG","MC_CODE","HeaderForeColor",V.Enum.ThemeColors!TextOnThemeColor)
+Gui.FormMCCode.GsGridControl2.SetColumnProperty("GVCONFIG","IO","HeaderForeColor",V.Enum.ThemeColors!TextOnThemeColor)
+Gui.FormMCCode.GsGridControl2.SetColumnProperty("GVCONFIG","TYPE","HeaderForeColor",V.Enum.ThemeColors!TextOnThemeColor)
+Gui.FormMCCode.GsGridControl2.SetColumnProperty("GVCONFIG","FOLDER","HeaderForeColor",V.Enum.ThemeColors!TextOnThemeColor)
+
+Gui.FormMCCode.GsGridControl2.SetColumnProperty("GVCONFIG","MC_CODE","ReadOnly",True)
+Gui.FormMCCode.GsGridControl2.SetColumnProperty("GVCONFIG","IO","ReadOnly",True)
+Gui.FormMCCode.GsGridControl2.SetColumnProperty("GVCONFIG","TYPE","ReadOnly",True)
+Gui.FormMCCode.GsGridControl2.SetColumnProperty("GVCONFIG","FOLDER","ReadOnly",False)
+
+Gui.FormMCCode.GsGridControl2.SetColumnProperty("GVCONFIG","MC_CODE","AllowEdit",False)
+Gui.FormMCCode.GsGridControl2.SetColumnProperty("GVCONFIG","IO","AllowEdit",False)
+Gui.FormMCCode.GsGridControl2.SetColumnProperty("GVCONFIG","TYPE","AllowEdit",False)
+Gui.FormMCCode.GsGridControl2.SetColumnProperty("GVCONFIG","FOLDER","AllowEdit",True)
+
+Gui.FormMCCode.GsGridControl2.SetColumnProperty("GVCONFIG","IO","MaxWidth","60")
+Gui.FormMCCode.GsGridControl2.SetColumnProperty("GVCONFIG","TYPE","MaxWidth","60")
+
+Gui.FormMCCode.GsGridControl2.MainView("GVCONFIG")
+
+F.Data.DataView.Create("MCCODE","VMCCODE",22,"","")
+
+Gui.FormMCCode.GsGridControl1.AddGridviewFromDataview("GVMCCODE","MCCODE","VMCCODE")
+
+Gui.FormMCCode.GsGridControl1.SetGridviewProperty("GVMCCODE","Showgrouppanel",False)
+Gui.FormMCCode.GsGridControl1.SetGridviewProperty("GVMCCODE","OptionsViewShowAutoFilterRow",False)
+Gui.FormMCCode.GsGridControl1.SetGridviewProperty("GVMCCODE","EnterKeyNavigation","Vertical")
+Gui.FormMCCode.GsGridControl1.SetGridviewProperty("GVMCCODE","AllowAddRows",True)
+gui.FormMCCode.GsGridControl1.SetGridviewProperty("GVMCCODE","AllowColumnMoving",False)
+gui.FormMCCode.GsGridControl1.SetGridviewProperty("GVMCCODE","AllowSort",False)
+gui.FormMCCode.GsGridControl1.SetGridviewProperty("GVMCCODE","AllowFilter",False)
+gui.FormMCCode.GsGridControl1.SetGridviewProperty("GVMCCODE","OptionsSelectionEnableAppearanceFocusedRow",False) 
+
+Gui.FormMCCode.GsGridControl1.SetColumnProperty("GVMCCODE","REC_NO","Caption","REC NO")
+Gui.FormMCCode.GsGridControl1.SetColumnProperty("GVMCCODE","MC_CODE","Caption","MC CODE")
+Gui.FormMCCode.GsGridControl1.SetColumnProperty("GVMCCODE","COL_HEAD","Caption","COLUMN HEADER")
+Gui.FormMCCode.GsGridControl1.SetColumnProperty("GVMCCODE","ANS_COL","Caption","ANSWER")
+Gui.FormMCCode.GsGridControl1.SetColumnProperty("GVMCCODE","DATA_FIELD","Caption","DATA FIELD")
+Gui.FormMCCode.GsGridControl1.SetColumnProperty("GVMCCODE","FORMULA","Caption","FORMULA")
+Gui.FormMCCode.GsGridControl1.SetColumnProperty("GVMCCODE","RAILS","Caption","RAILS")
+Gui.FormMCCode.GsGridControl1.SetColumnProperty("GVMCCODE","STILES","Caption","STILES")
+Gui.FormMCCode.GsGridControl1.SetColumnProperty("GVMCCODE","INS_FORMULA","Caption","INSERT FORMULA")
+Gui.FormMCCode.GsGridControl1.SetColumnProperty("GVMCCODE","LABEL_DATA","Caption","LABEL DATA")
+Gui.FormMCCode.GsGridControl1.SetColumnProperty("GVMCCODE","FIVE_PIECE_DOOR","Caption","FIVE PIECE DOOR")
+Gui.FormMCCode.GsGridControl1.SetColumnProperty("GVMCCODE","RAILS_STILES","Caption","RAILS STILES")
+Gui.FormMCCode.GsGridControl1.SetColumnProperty("GVMCCODE","DELETE_ROW","Caption"," ")
+
+Gui.FormMCCode.GsGridControl1.SetColumnProperty("GVMCCODE","ANS_COL","MaxWidth","75")
+Gui.FormMCCode.GsGridControl1.SetColumnProperty("GVMCCODE","DELETE_ROW","MaxWidth","50")
+
+Gui.FormMCCode.GsGridControl1.SetColumnProperty("GVMCCODE","FORMULA","Width","250")
+Gui.FormMCCode.GsGridControl1.SetColumnProperty("GVMCCODE","INS_FORMULA","Width","250")
+Gui.FormMCCode.GsGridControl1.SetColumnProperty("GVMCCODE","RAILS","Width","125")
+Gui.FormMCCode.GsGridControl1.SetColumnProperty("GVMCCODE","STILES","Width","125")
+
+Gui.FormMCCode.GsGridControl1.SetColumnProperty("GVMCCODE","REC_NO","Visible",False)
+Gui.FormMCCode.GsGridControl1.SetColumnProperty("GVMCCODE","MC_CODE","Visible",False)
+Gui.FormMCCode.GsGridControl1.SetColumnProperty("GVMCCODE","COL_HEAD","Visible",True)
+Gui.FormMCCode.GsGridControl1.SetColumnProperty("GVMCCODE","ANS_COL","Visible",True)
+Gui.FormMCCode.GsGridControl1.SetColumnProperty("GVMCCODE","DATA_FIELD","Visible",True)
+Gui.FormMCCode.GsGridControl1.SetColumnProperty("GVMCCODE","FORMULA","Visible",True)
+Gui.FormMCCode.GsGridControl1.SetColumnProperty("GVMCCODE","INS_FORMULA","Visible",True)
+Gui.FormMCCode.GsGridControl1.SetColumnProperty("GVMCCODE","RAILS","Visible",False)
+Gui.FormMCCode.GsGridControl1.SetColumnProperty("GVMCCODE","STILES","Visible",False)
+Gui.FormMCCode.GsGridControl1.SetColumnProperty("GVMCCODE","LABEL_DATA","Visible",False)
+Gui.FormMCCode.GsGridControl1.SetColumnProperty("GVMCCODE","DELETE_ROW","Visible",True)
+Gui.FormMCCode.GsGridControl1.SetColumnProperty("GVMCCODE","FIVE_PIECE_DOOR","Visible",False)
+Gui.FormMCCode.GsGridControl1.SetColumnProperty("GVMCCODE","RAILS_STILES","Visible",False)
+
+Gui.FormMCCode.GsGridControl1.SetColumnProperty("GVMCCODE","REC_NO","HeaderBackColor",V.Enum.ThemeColors!ThemeColorDark)
+Gui.FormMCCode.GsGridControl1.SetColumnProperty("GVMCCODE","MC_CODE","HeaderBackColor",V.Enum.ThemeColors!ThemeColorDark)
+Gui.FormMCCode.GsGridControl1.SetColumnProperty("GVMCCODE","COL_HEAD","HeaderBackColor",V.Enum.ThemeColors!ThemeColorDark)
+Gui.FormMCCode.GsGridControl1.SetColumnProperty("GVMCCODE","ANS_COL","HeaderBackColor",V.Enum.ThemeColors!ThemeColorDark)
+Gui.FormMCCode.GsGridControl1.SetColumnProperty("GVMCCODE","DATA_FIELD","HeaderBackColor",V.Enum.ThemeColors!ThemeColorDark)
+Gui.FormMCCode.GsGridControl1.SetColumnProperty("GVMCCODE","FORMULA","HeaderBackColor",V.Enum.ThemeColors!ThemeColorDark)
+Gui.FormMCCode.GsGridControl1.SetColumnProperty("GVMCCODE","INS_FORMULA","HeaderBackColor",V.Enum.ThemeColors!ThemeColorDark)
+Gui.FormMCCode.GsGridControl1.SetColumnProperty("GVMCCODE","LABEL_DATA","HeaderBackColor",V.Enum.ThemeColors!ThemeColorDark)
+Gui.FormMCCode.GsGridControl1.SetColumnProperty("GVMCCODE","DELETE_ROW","HeaderBackColor",V.Enum.ThemeColors!ThemeColorDark)
+Gui.FormMCCode.GsGridControl1.SetColumnProperty("GVMCCODE","FIVE_PIECE_DOOR","HeaderBackColor",V.Enum.ThemeColors!ThemeColorDark)
+Gui.FormMCCode.GsGridControl1.SetColumnProperty("GVMCCODE","RAILS_STILES","HeaderBackColor",V.Enum.ThemeColors!ThemeColorDark)
+Gui.FormMCCode.GsGridControl1.SetColumnProperty("GVMCCODE","RAILS","HeaderBackColor",V.Enum.ThemeColors!ThemeColorDark)
+Gui.FormMCCode.GsGridControl1.SetColumnProperty("GVMCCODE","STILES","HeaderBackColor",V.Enum.ThemeColors!ThemeColorDark)
+
+Gui.FormMCCode.GsGridControl1.SetColumnProperty("GVMCCODE","REC_NO","HeaderForeColor",V.Enum.ThemeColors!TextOnThemeColor)
+Gui.FormMCCode.GsGridControl1.SetColumnProperty("GVMCCODE","MC_CODE","HeaderForeColor",V.Enum.ThemeColors!TextOnThemeColor)
+Gui.FormMCCode.GsGridControl1.SetColumnProperty("GVMCCODE","COL_HEAD","HeaderForeColor",V.Enum.ThemeColors!TextOnThemeColor)
+Gui.FormMCCode.GsGridControl1.SetColumnProperty("GVMCCODE","ANS_COL","HeaderForeColor",V.Enum.ThemeColors!TextOnThemeColor)
+Gui.FormMCCode.GsGridControl1.SetColumnProperty("GVMCCODE","DATA_FIELD","HeaderForeColor",V.Enum.ThemeColors!TextOnThemeColor)
+Gui.FormMCCode.GsGridControl1.SetColumnProperty("GVMCCODE","FORMULA","HeaderForeColor",V.Enum.ThemeColors!TextOnThemeColor)
+Gui.FormMCCode.GsGridControl1.SetColumnProperty("GVMCCODE","INS_FORMULA","HeaderForeColor",V.Enum.ThemeColors!TextOnThemeColor)
+Gui.FormMCCode.GsGridControl1.SetColumnProperty("GVMCCODE","LABEL_DATA","HeaderForeColor",V.Enum.ThemeColors!TextOnThemeColor)
+Gui.FormMCCode.GsGridControl1.SetColumnProperty("GVMCCODE","DELETE_ROW","HeaderForeColor",V.Enum.ThemeColors!TextOnThemeColor)
+Gui.FormMCCode.GsGridControl1.SetColumnProperty("GVMCCODE","FIVE_PIECE_DOOR","HeaderForeColor",V.Enum.ThemeColors!TextOnThemeColor)
+Gui.FormMCCode.GsGridControl1.SetColumnProperty("GVMCCODE","RAILS_STILES","HeaderForeColor",V.Enum.ThemeColors!TextOnThemeColor)
+Gui.FormMCCode.GsGridControl1.SetColumnProperty("GVMCCODE","RAILS","HeaderForeColor",V.Enum.ThemeColors!TextOnThemeColor)
+Gui.FormMCCode.GsGridControl1.SetColumnProperty("GVMCCODE","STILES","HeaderForeColor",V.Enum.ThemeColors!TextOnThemeColor)
+
+Gui.FormMCCode.GsGridControl1.SetColumnProperty("GVMCCODE","REC_NO","ReadOnly",True)
+Gui.FormMCCode.GsGridControl1.SetColumnProperty("GVMCCODE","MC_CODE","ReadOnly",True)
+Gui.FormMCCode.GsGridControl1.SetColumnProperty("GVMCCODE","COL_HEAD","ReadOnly",False)
+Gui.FormMCCode.GsGridControl1.SetColumnProperty("GVMCCODE","ANS_COL","ReadOnly",False)
+Gui.FormMCCode.GsGridControl1.SetColumnProperty("GVMCCODE","DATA_FIELD","ReadOnly",False)
+Gui.FormMCCode.GsGridControl1.SetColumnProperty("GVMCCODE","FORMULA","ReadOnly",False)
+Gui.FormMCCode.GsGridControl1.SetColumnProperty("GVMCCODE","INS_FORMULA","ReadOnly",False)
+Gui.FormMCCode.GsGridControl1.SetColumnProperty("GVMCCODE","LABEL_DATA","ReadOnly",True)
+Gui.FormMCCode.GsGridControl1.SetColumnProperty("GVMCCODE","DELETE_ROW","ReadOnly",True)
+Gui.FormMCCode.GsGridControl1.SetColumnProperty("GVMCCODE","FIVE_PIECE_DOOR","ReadOnly",True)
+Gui.FormMCCode.GsGridControl1.SetColumnProperty("GVMCCODE","RAILS_STILES","ReadOnly",True)
+Gui.FormMCCode.GsGridControl1.SetColumnProperty("GVMCCODE","RAILS","ReadOnly",False)
+Gui.FormMCCode.GsGridControl1.SetColumnProperty("GVMCCODE","STILES","ReadOnly",False)
+
+Gui.FormMCCode.GsGridControl1.SetColumnProperty("GVMCCODE","DELETE_ROW","Fixed","Right")
+
+Gui.FormMCCode.GsGridControl1.SetColumnProperty("GVMCCODE","REC_NO","AllowEdit",False)
+Gui.FormMCCode.GsGridControl1.SetColumnProperty("GVMCCODE","MC_CODE","AllowEdit",False)
+Gui.FormMCCode.GsGridControl1.SetColumnProperty("GVMCCODE","COL_HEAD","AllowEdit",True)
+Gui.FormMCCode.GsGridControl1.SetColumnProperty("GVMCCODE","ANS_COL","AllowEdit",True)
+Gui.FormMCCode.GsGridControl1.SetColumnProperty("GVMCCODE","DATA_FIELD","AllowEdit",True)
+Gui.FormMCCode.GsGridControl1.SetColumnProperty("GVMCCODE","FORMULA","AllowEdit",True)
+Gui.FormMCCode.GsGridControl1.SetColumnProperty("GVMCCODE","INS_FORMULA","AllowEdit",True)
+Gui.FormMCCode.GsGridControl1.SetColumnProperty("GVMCCODE","LABEL_DATA","AllowEdit",False)
+Gui.FormMCCode.GsGridControl1.SetColumnProperty("GVMCCODE","DELETE_ROW","AllowEdit",False)
+Gui.FormMCCode.GsGridControl1.SetColumnProperty("GVMCCODE","FIVE_PIECE_DOOR","AllowEdit",False)
+Gui.FormMCCode.GsGridControl1.SetColumnProperty("GVMCCODE","RAILS_STILES","AllowEdit",False)
+Gui.FormMCCode.GsGridControl1.SetColumnProperty("GVMCCODE","RAILS","AllowEdit",True)
+Gui.FormMCCode.GsGridControl1.SetColumnProperty("GVMCCODE","STILES","AllowEdit",True)
+
+Gui.FormMCCode.GsGridControl1.ColumnEdit("GVMCCODE","DELETE_ROW","EditorButton","Delete")
+
+Gui.FormMCCode.GsGridControl1.MainView("GVMCCODE")
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("Set_Properties_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_5364_MC_Export_Config.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(FormMCCode_UnLoad)
+Function.Intrinsic.Control.EndIf
+Program.Sub.Set_Properties.End
+
+Program.Sub.ddlTable_SelectedIndexChanged.Start
+F.Intrinsic.Control.SetErrorHandler("ddlTable_SelectedIndexChanged_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+
+Gui.FormMCCode.GsGridControl1.ColumnEdit("GVMCCODE","DATA_FIELD","DropDownList",V.Global.sTable(V.Screen.FormMCCode!ddlTable.ListIndex))
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("ddlTable_SelectedIndexChanged_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_6013_PartField_Mapping.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(Form_UnLoad)
+Function.Intrinsic.Control.EndIf
+Program.Sub.ddlTable_SelectedIndexChanged.End
+
+Program.Sub.chk5Pcs_Click.Start
+F.Intrinsic.Control.SetErrorHandler("chk5Pcs_Click_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+V.Local.sMC.Declare(String,"")
+
+V.Local.sMC.Set(V.Screen.FormMCCode!txtMCCode.Text)
+
+F.Intrinsic.Control.BlockEvents
+
+F.Intrinsic.Control.If(V.Screen.FormMCCode!chk5Pcs.Value,=,1)
+	Gui.FormMCCode.chkRS.Visible(True)
+	Gui.FormMCCode.GsGridControl1.SetColumnProperty("GVMCCODE","INS_FORMULA","Visible",False)
+	Gui.FormMCCode.GsGridControl1.SetColumnProperty("GVMCCODE","RAILS","Visible",True)
+	Gui.FormMCCode.GsGridControl1.SetColumnProperty("GVMCCODE","STILES","Visible",True)
+	F.Intrinsic.Control.If(V.DataTable.MCCODE.RowCount--,=,-1)
+		F.Intrinsic.Control.If(V.Local.sMC.Trim,<>,"")
+			F.Data.DataTable.AddRow("MCCODE","REC_NO",1,"ANS_COL",False,"MC_CODE",V.Local.sMC.Trim,"COL_HEAD","Material")
+			F.Data.DataTable.AddRow("MCCODE","REC_NO",2,"ANS_COL",False,"MC_CODE",V.Local.sMC.Trim,"COL_HEAD","CutWidth")
+			F.Data.DataTable.AddRow("MCCODE","REC_NO",3,"ANS_COL",False,"MC_CODE",V.Local.sMC.Trim,"COL_HEAD","CutLength")
+			F.Data.DataTable.AddRow("MCCODE","REC_NO",4,"ANS_COL",False,"MC_CODE",V.Local.sMC.Trim,"COL_HEAD","CutQty")
+			F.Data.DataTable.AddRow("MCCODE","REC_NO",5,"ANS_COL",False,"MC_CODE",V.Local.sMC.Trim,"COL_HEAD","WoodGrain")
+		F.Intrinsic.Control.EndIf
+	F.Intrinsic.Control.EndIf
+F.Intrinsic.Control.Else
+	Gui.FormMCCode.GsGridControl1.SetColumnProperty("GVMCCODE","INS_FORMULA","Visible",True)
+	Gui.FormMCCode.GsGridControl1.SetColumnProperty("GVMCCODE","RAILS","Visible",False)
+	Gui.FormMCCode.GsGridControl1.SetColumnProperty("GVMCCODE","STILES","Visible",False)
+	Gui.FormMCCode.chkRS.Value(0)
+	Gui.FormMCCode.chkRS.Visible(False)
+F.Intrinsic.Control.EndIf
+
+F.Intrinsic.Control.UnBlockEvents
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("chk5Pcs_Click_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_6013_PartField_Mapping.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(Form_UnLoad)
+Function.Intrinsic.Control.EndIf
+Program.Sub.chk5Pcs_Click.End
