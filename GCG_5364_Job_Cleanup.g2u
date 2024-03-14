@@ -1,0 +1,77 @@
+﻿Program.Sub.Preflight.Start
+Program.Sub.Preflight.End
+
+Program.Sub.Main.Start
+F.Intrinsic.Control.SetErrorHandler("Main_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+V.Local.sSql.Declare(String,"")
+V.Local.sOrder.Declare(String,"")
+
+F.Intrinsic.Control.SelectCase(V.Caller.Hook)
+	F.Intrinsic.Control.Case(16080)
+		F.ODBC.Connection!Con.OpenCompanyConnection
+		
+		F.Intrinsic.String.Build("select Top 1 Order_NO from V_Order_To_WO where Job = '{0}'",V.Passed.000035,V.Local.sSql)
+		F.ODBC.Connection!Con.ExecuteAndReturn(V.Local.sSql,V.Local.sOrder)
+		
+		F.Intrinsic.String.Build("Update GCG_5364_ORD_STATUS Set Status = 'REVIEW' Where Order_No = '{0}'",V.Local.sOrder,V.Local.sSql)
+		F.ODBC.Connection!Con.Execute(V.Local.sSql)
+		
+		F.ODBC.Connection!Con.Close
+		
+	F.Intrinsic.Control.Case(16081)
+		
+		F.ODBC.Connection!Con.OpenCompanyConnection
+		
+		F.Intrinsic.String.Build("Delete From GCG_5364_BATCH Where Job = '{0}' and Suffix = '{1}'",V.Passed.000035,V.Passed.000017,V.Local.sSql)
+		F.ODBC.Connection!Con.Execute(V.Local.sSql)
+		
+		F.Intrinsic.String.Build("Delete From GCG_5364_JOB_DTL Where Job = '{0}' and Suffix = '{1}'",V.Passed.000035,V.Passed.000017,V.Local.sSql)
+		F.ODBC.Connection!Con.Execute(V.Local.sSql)
+		
+		F.Intrinsic.String.Build("Delete From GCG_5364_LABEL_DATA Where Job = '{0}' and Suffix = '{1}'",V.Passed.000035,V.Passed.000017,V.Local.sSql)
+		F.ODBC.Connection!Con.Execute(V.Local.sSql)
+		
+		F.Intrinsic.String.Build("Delete From GCG_5364_NON_DOOR_WO Where Job = '{0}' and Suffix = '{1}'",V.Passed.000035,V.Passed.000017,V.Local.sSql)
+		F.ODBC.Connection!Con.Execute(V.Local.sSql)
+		
+		F.Intrinsic.String.Build("Delete From GCG_5364_REWORK Where Job = '{0}' and Suffix = '{1}'",V.Passed.000035,V.Passed.000017,V.Local.sSql)
+		F.ODBC.Connection!Con.Execute(V.Local.sSql)
+		
+		F.Intrinsic.String.Build("Delete From GCG_5364_SPRAY_JOB_D Where Job = '{0}' and Suffix = '{1}'",V.Passed.000035,V.Passed.000017,V.Local.sSql)
+		F.ODBC.Connection!Con.Execute(V.Local.sSql)
+		
+		F.Intrinsic.String.Build("Delete From GCG_5364_SPRAY_SCH Where Job = '{0}' and Suffix = '{1}'",V.Passed.000035,V.Passed.000017,V.Local.sSql)
+		F.ODBC.Connection!Con.Execute(V.Local.sSql)
+		
+		F.Intrinsic.String.Build("Delete From GCG_5364_UpCut Where Job = '{0}' and Suffix = '{1}'",V.Passed.000035,V.Passed.000017,V.Local.sSql)
+		F.ODBC.Connection!Con.Execute(V.Local.sSql)
+		
+		F.Intrinsic.String.Build("Delete From GCG_5364_RW_Flex Where Job = '{0}' and Suffix = '{1}'",V.Passed.000035,V.Passed.000017,V.Local.sSql)
+		F.ODBC.Connection!Con.Execute(V.Local.sSql)
+		
+		F.ODBC.Connection!Con.Close
+		
+		F.Intrinsic.Control.End
+		
+	F.Intrinsic.Control.CaseElse
+		F.Intrinsic.Control.End
+		
+F.Intrinsic.Control.EndSelect
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("Main_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_5364_Job_Cleanup.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.End
+Function.Intrinsic.Control.EndIf
+Program.Sub.Main.End
+
+Program.Sub.Comments.Start
+${$5$}$2.0.0.0$}$2
+${$6$}$gsandoval$}$20230711083153643$}$pxyipsmdqasyAY7lJ5+YqAibKN4I37/YudkzCwm6ngSdTZJ0XeoTQP6YPIjni7yHTQ7GoshdIQXJl3Nmhiz9Ig==
+Program.Sub.Comments.End
