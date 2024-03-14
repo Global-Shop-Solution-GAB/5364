@@ -1,0 +1,3 @@
+TIMEOUT 5 
+SET GSSDF=C:\Data1\Global\GCG_5364_WO_WatchDog.dir
+C:\Data1\Global\PLUGINS\LOGIN\GSSMENU.EXE
