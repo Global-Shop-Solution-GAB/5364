@@ -1,0 +1,94 @@
+Program.Sub.Preflight.Start
+Program.Sub.Preflight.End
+
+Program.Sub.Main.Start
+F.Intrinsic.Control.SetErrorHandler("Main_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+
+F.Intrinsic.Control.SelectCase(V.Caller.Hook)
+	
+	F.Intrinsic.Control.Case(16090)
+
+		F.Intrinsic.Control.If(V.Passed.BIP_REPORTID,=,"001808","AND",V.Passed.Calling-Pgm,=,"JB0095N")
+			F.Intrinsic.Control.CallSub(UpCut_Report)
+		F.Intrinsic.Control.EndIf
+		F.Intrinsic.Control.CallSub(Exit)
+		
+	F.Intrinsic.Control.CaseElse
+		F.Intrinsic.Control.End
+		
+F.Intrinsic.Control.EndSelect
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("Main_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_5364_Reprint_Upcut.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(Exit)
+Function.Intrinsic.Control.EndIf
+Program.Sub.Main.End
+
+Program.Sub.Exit.Start
+F.Intrinsic.Control.SetErrorHandler("Exit_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+
+F.Intrinsic.Control.End
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("Exit_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.Control.End
+Function.Intrinsic.Control.EndIf
+Program.Sub.Exit.End
+
+Program.Sub.UpCut_Report.Start
+F.Intrinsic.Control.SetErrorHandler("UpCut_Report_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+V.Local.sFSched.Declare(String,"")
+V.Local.sParams.Declare(String,"")
+V.Local.sValues.Declare(String,"")
+V.Local.sLSched.Declare(String,"")
+V.Local.sSql.Declare(String,"")
+V.Local.i.Declare(Long,0)
+V.Local.iBIRUNID.Declare(Long,0)
+V.Local.iRPT.Declare(Long,0)
+
+V.Local.sParams.Set("RUNID")
+F.Intrinsic.Control.If(V.Passed.BIP_Allsched,<>,"Y")
+	F.Intrinsic.String.Split(V.Passed.BIP_BegSched,"-",V.Local.sFSched)
+	F.Intrinsic.String.Split(V.Passed.BIP_EndSched,"-",V.Local.sLSched)
+	F.Intrinsic.String.Build("Select distinct schedule+schedule_Suffix as Sched From V_Job_Ct_Flx_Schd Where Schedule between '{0}' and '{1}'",V.Local.sFSched,V.Local.sLSched,V.Local.sSql)
+
+	F.ODBC.Connection!Con.OpenCompanyConnection
+	F.Data.DataTable.CreateFromSQL("DistSched","con",V.Local.sSql,True)
+	F.Intrinsic.Control.If(V.DataTable.DistSched.RowCount--,<>,-1)
+		F.Global.BI.GetIDFromName("GCG_5364_UpCut.rpt",V.Local.iRPT)
+		F.Intrinsic.Control.For(V.Local.i,0,V.DataTable.DistSched.RowCount--,1)
+			F.Intrinsic.String.Build("Select Top 1 BIRUNID From GCG_5364_UpCut Where Sched = '{0}'",V.DataTable.DistSched(V.Local.i).Sched!FieldValTrim,V.Local.sSql)
+			F.ODBC.Connection!Con.ExecuteAndReturn(V.Local.sSql,V.Local.iBIRUNID)
+			F.Intrinsic.Control.If(V.Local.iBIRUNID,>,0)
+				V.Local.sValues.Set(V.Local.iBIRUNID)
+				F.Global.BI.PrintReport(V.Local.iRPT,-1,V.Local.sParams,V.Local.sValues,"",False)
+			F.Intrinsic.Control.EndIf		
+		F.Intrinsic.Control.Next(V.Local.i)
+	F.Intrinsic.Control.EndIf
+	F.ODBC.Connection!Con.Close
+F.Intrinsic.Control.EndIf
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("UpCut_Report_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_5364_Reprint_Upcut.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(Exit)
+Function.Intrinsic.Control.EndIf
+Program.Sub.UpCut_Report.End
