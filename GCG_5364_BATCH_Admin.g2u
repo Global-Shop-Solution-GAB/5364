@@ -1,0 +1,170 @@
+Program.Sub.ScreenSU.Start
+Gui.FormBatch..Create
+Gui.FormBatch..Size(5295,11205)
+Gui.FormBatch..MinX(0)
+Gui.FormBatch..MinY(0)
+Gui.FormBatch..Position(0,0)
+Gui.FormBatch..BackColor(-2147483633)
+Gui.FormBatch..MousePointer(0)
+Gui.FormBatch..Caption("Job Batch Admin Screen")
+Gui.FormBatch..Event(UnLoad,FormBatch_UnLoad)
+Gui.FormBatch.GsGridBatch.Create(GsGridControl)
+Gui.FormBatch.GsGridBatch.Size(4890,9855)
+Gui.FormBatch.GsGridBatch.Position(120,225)
+Gui.FormBatch.GsGridBatch.Anchor(15)
+Gui.FormBatch.cmdSave.Create(Button)
+Gui.FormBatch.cmdSave.Size(855,375)
+Gui.FormBatch.cmdSave.Position(165,10200)
+Gui.FormBatch.cmdSave.Caption("Save")
+Gui.FormBatch.cmdSave.Event(Click,cmdSave_Click)
+Gui.FormBatch.cmdSave.Anchor(6)
+Program.Sub.ScreenSU.End
+
+Program.Sub.Preflight.Start
+Program.Sub.Preflight.End
+
+Program.Sub.Main.Start
+F.Intrinsic.Control.SetErrorHandler("Main_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+
+F.Intrinsic.Control.CallSub(Get_Data)
+F.Intrinsic.Control.CallSub(Set_Properties)
+
+gui.FormBatch..Show
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("Main_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_5364_BATCH_Admin.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(FormBatch_UnLoad)
+Function.Intrinsic.Control.EndIf
+Program.Sub.Main.End
+
+Program.Sub.Get_Data.Start
+F.Intrinsic.Control.SetErrorHandler("Get_Data_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+
+F.ODBC.Connection!Con.OpenCompanyConnection
+
+F.Data.DataTable.CreateFromSQL("Batch","con","Select Batched, Job, Suffix From GCG_5364_Batch Where Batched = 1",True)
+
+F.ODBC.Connection!Con.Close
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("Get_Data_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_5364_BATCH_Admin.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(FormBatch_UnLoad)
+Function.Intrinsic.Control.EndIf
+Program.Sub.Get_Data.End
+
+Program.Sub.Set_Properties.Start
+F.Intrinsic.Control.SetErrorHandler("Set_Properties_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+	
+'setting properties of the grid
+gui.FormBatch.GsGridBatch.AddGridviewFromDatatable("GBatch","Batch")
+gui.FormBatch.GsGridBatch.SetGridviewProperty("GBatch","AllowColumnMoving",True)
+gui.FormBatch.GsGridBatch.SetGridviewProperty("GBatch","OptionsSelectionEnableAppearanceFocusedRow",False)
+gui.FormBatch.GsGridBatch.SetGridviewProperty("GBatch","ShowGroupPanel",True)
+gui.FormBatch.GsGridBatch.SetGridviewProperty("GBatch","OptionsViewShowAutoFilterRow",True)
+
+gui.FormBatch.GsGridBatch.BestFitColumns("GBatch")
+
+gui.FormBatch.GsGridBatch.SetColumnProperty("GBatch","Batched","HeaderBackColor","MediumSeaGreen")
+gui.FormBatch.GsGridBatch.SetColumnProperty("GBatch","Batched","HeaderFontBold",True)
+gui.FormBatch.GsGridBatch.SetColumnProperty("GBatch","Batched","Caption","Batched")
+gui.FormBatch.GsGridBatch.SetColumnProperty("GBatch","Batched","ReadOnly",False)
+gui.FormBatch.GsGridBatch.SetColumnProperty("GBatch","Batched","AllowEdit",True)
+
+gui.FormBatch.GsGridBatch.SetColumnProperty("GBatch","Job","HeaderBackColor","MediumSeaGreen")
+gui.FormBatch.GsGridBatch.SetColumnProperty("GBatch","Job","HeaderFontBold",True)
+gui.FormBatch.GsGridBatch.SetColumnProperty("GBatch","Job","Caption","JOB")
+gui.FormBatch.GsGridBatch.SetColumnProperty("GBatch","Job","ReadOnly",True)
+gui.FormBatch.GsGridBatch.SetColumnProperty("GBatch","Job","AllowEdit",False)
+
+gui.FormBatch.GsGridBatch.SetColumnProperty("GBatch","Suffix","HeaderBackColor","MediumSeaGreen")
+gui.FormBatch.GsGridBatch.SetColumnProperty("GBatch","Suffix","HeaderFontBold",True)
+gui.FormBatch.GsGridBatch.SetColumnProperty("GBatch","Suffix","Caption","SUFFIX")
+gui.FormBatch.GsGridBatch.SetColumnProperty("GBatch","Suffix","ReadOnly",True)
+gui.FormBatch.GsGridBatch.SetColumnProperty("GBatch","Suffix","AllowEdit",False)
+	
+gui.FormBatch.GsGridBatch.MainView("GBatch")
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("Set_Properties_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_5364_BATCH_Admin.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(FormBatch_UnLoad)
+Function.Intrinsic.Control.EndIf
+Program.Sub.Set_Properties.End
+
+Program.Sub.FormBatch_UnLoad.Start
+F.Intrinsic.Control.SetErrorHandler("FormBatch_UnLoad_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+
+F.Intrinsic.Control.End
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("FormBatch_UnLoad_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_5364_BATCH_Admin.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.End
+Function.Intrinsic.Control.EndIf
+Program.Sub.FormBatch_UnLoad.End
+
+Program.Sub.cmdSave_Click.Start
+F.Intrinsic.Control.SetErrorHandler("cmdSave_Click_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+V.Local.sSql.Declare(String,"")
+V.Local.i.Declare(Long,0)
+
+F.ODBC.Connection!Con.OpenCompanyConnection
+
+F.Data.DataTable.SaveToDB("Batch","con","GCG_5364_Batch","Job*!*Suffix",3,"Batched@!@Batched*!*Job@!@Job*!*Suffix@!@Suffix")
+
+F.Data.DataView.Create("Batch","VBatch",22,"Batched = False","")
+F.Intrinsic.Control.For(V.Local.i,0,V.DataView.Batch!VBatch.RowCount--,1)
+	F.Intrinsic.String.Build("Delete From JOB_CT_FLX_SCHD where Job = '{0}' and Suffix = '{1}' and Schedule_Suffix <> '000'",V.DataView.Batch!VBatch(V.Local.i).Job!FieldValTrim,V.DataView.Batch!VBatch(V.Local.i).Suffix!FieldValTrim,V.Local.sSql)
+	F.ODBC.Connection!Con.Execute(V.Local.sSql)
+F.Intrinsic.Control.Next(V.Local.i)
+
+F.ODBC.Connection!Con.Close
+
+F.Data.DataTable.AcceptChanges("Batch")
+
+F.Intrinsic.UI.Msgbox("Job Batch Flag Updated.....")
+
+Gui.FormBatch.GsGridBatch.SuspendLayout
+F.Data.DataTable.Close("Batch")
+F.Intrinsic.Control.CallSub(Get_Data)
+F.Intrinsic.Control.CallSub(Set_Properties)
+Gui.FormBatch.GsGridBatch.ResumeLayout
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("cmdSave_Click_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_5364_BATCH_Admin.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(FormBatch_UnLoad)
+Function.Intrinsic.Control.EndIf
+Program.Sub.cmdSave_Click.End
