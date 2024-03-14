@@ -1,0 +1,192 @@
+Program.Sub.Preflight.Start
+Program.External.Include.Library("2003.lib")
+Program.Sub.Preflight.End
+
+Program.Sub.Main.Start
+F.Intrinsic.Control.SetErrorHandler("Main_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+
+F.ODBC.Connection!Con.OpenCompanyConnection
+
+'post online update hook running sync program not designed to run async
+'F.Intrinsic.Control.If(V.Caller.Hook,=,38130)
+	F.Intrinsic.Control.CallSub(Get_Data)
+	F.Intrinsic.Control.CallSub(Process_Records)
+	'cleaning up Bin Alloc Table
+	F.ODBC.Connection!Con.Execute("Delete From GCG_5364_BIN_ALLOC Where Order_NO Not In(Select Order_NO From V_Order_Header)")
+	F.ODBC.Connection!Con.Execute("Delete From GCG_5364_RW_Flex where Schedule Not In(Select Distinct Schedule From JOB_CT_FLX_SCHD)")
+'	F.ODBC.Connection!Con.Execute("Delete From GCG_5364_BIN_ALLOC Where Bin Not In(Select Bin From V_Item_Master where Quantity > 0)")
+'	F.ODBC.Connection!con.Execute("delete from gcg_5364_rework a where Job+suffix in (Select b.Job+b.suffix From Job_Header b where date_closed <> '000000')")
+'F.Intrinsic.Control.EndIf
+
+F.Intrinsic.Control.CallSub(Exit)
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("Main_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_5364_PROC_WIPFG.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(Exit)
+Function.Intrinsic.Control.EndIf
+Program.Sub.Main.End
+
+Program.Sub.Get_Data.Start
+F.Intrinsic.Control.SetErrorHandler("Get_Data_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+
+F.Data.DataTable.CreateFromSQL("WIPFG","con","Select * From GCG_5364_WIP_QUEUE",True)
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("Get_Data_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_5364_PROC_WIPFG.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(Exit)
+Function.Intrinsic.Control.EndIf
+Program.Sub.Get_Data.End
+
+Program.Sub.Process_Records.Start
+F.Intrinsic.Control.SetErrorHandler("Process_Records_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+V.Local.i.Declare(Long,0)
+V.Local.iC.Declare(Long,0)
+V.Local.sFilter.Declare(String,"")
+V.Local.iQtySum.Declare(Long,0)
+V.Local.iQty.Declare(Long,0)
+V.Local.bDelete.Declare(Boolean,False)
+V.Local.sSql.Declare(String,"")
+V.Local.iDay.Declare(Long,0)
+V.Local.iMonth.Declare(Long,0)
+V.Local.iYear.Declare(Long,0)
+V.Local.iSumOfQty.Declare(Long,0)
+V.Local.sRet.Declare(String,"")
+
+F.Intrinsic.Date.Day(V.Ambient.Date,V.Local.iDay)
+F.Intrinsic.Date.Month(V.Ambient.Date,V.Local.iMonth)
+F.Intrinsic.Date.Year(V.Ambient.Date,V.Local.iYear)
+
+F.Intrinsic.Control.If(V.DataTable.WIPFG.RowCount--,<>,-1)
+	F.Data.DataView.Create("WIPFG","VWIPFG")
+	F.Data.DataView.ToDataTableDistinct("WIPFG","VWIPFG","JOBSUFF","JOB*!*SUFFIX",True)
+	F.Data.DataView.Close("WIPFG","VWIPFG")
+	F.Intrinsic.Control.For(V.Local.i,0,V.DataTable.JOBSUFF.RowCount--,1)
+		F.Intrinsic.String.Build("{0}-{1}",V.DataTable.JOBSUFF(V.Local.i).JOB!FieldValTrim,V.DataTable.JOBSUFF(V.Local.i).SUFFIX!FieldValTrim,V.Local.sFilter)
+		F.Intrinsic.String.Build("Select Rec_Key From X_Lock_File Where Company = '{0}' and Rec_Key = '{1}' and Lock_Type = 'WO'",V.Caller.CompanyCode,V.Local.sFilter,V.Local.sSql)
+		F.ODBC.Connection!Con.ExecuteAndReturn(V.Local.sSql,V.Local.sRet)
+'		V.Local.sRet.Set("")
+		F.Intrinsic.Control.If(V.Local.sRet.Trim,=,"")
+			
+			V.Local.iSumOfQty.Set(0)
+			F.Intrinsic.String.Build("JOB = '{0}' and SUFFIX = '{1}'",V.DataTable.JOBSUFF(V.Local.i).JOB!FieldValTrim,V.DataTable.JOBSUFF(V.Local.i).SUFFIX!FieldValTrim,V.Local.sFilter)
+			F.Data.DataView.Create("WIPFG","VWIPFG",22,V.Local.sFilter,"SERIAL_NUMBER")
+			V.Local.bDelete.Set(False)
+	
+			F.Intrinsic.String.Build("Select Qty_Order - Qty_Completed From V_Job_Header Where Job = '{0}' and Suffix = '{1}'",V.DataTable.JOBSUFF(V.Local.i).JOB!FieldValTrim,V.DataTable.JOBSUFF(V.Local.i).SUFFIX!FieldValTrim,V.Local.sSql)
+			F.ODBC.Connection!Con.ExecuteAndReturn(V.Local.sSql,V.Local.iQtySum)
+			
+			F.Intrinsic.Control.If(V.Local.iQtySum,>,0)
+				F.Intrinsic.Control.For(V.Local.iC,0,V.DataView.WIPFG!VWIPFG.RowCount--,1)
+					F.Intrinsic.Control.If(V.DataTable.2003.RowCount--,=,-1)
+						F.Data.DataTable.AddRow("2003","Mode","NS","WONum",V.DataTable.JOBSUFF(V.Local.i).JOB!FieldValTrim,"WOSuffix",V.DataTable.JOBSUFF(V.Local.i).SUFFIX!FieldValTrim,"CloseWO","Y","Quantity",V.DataView.WIPFG!VWIPFG.RowCount,"XferYear",V.Local.iYear,"XferDay",V.Local.iDay,"XferMonth",V.Local.iMonth,"PrintLabels","N","CostMethod","R","UpdateInv","Y")
+						F.Data.DataTable.AddRow("2003File","WONum",V.DataTable.JOBSUFF(V.Local.i).JOB!FieldValTrim,"WOSuffix",V.DataTable.JOBSUFF(V.Local.i).SUFFIX!FieldValTrim,"Bin",V.DataView.WIPFG!VWIPFG(V.Local.iC).Bin!FieldValTrim,"Serial",V.DataView.WIPFG!VWIPFG(V.Local.iC).Serial_Number!FieldValTrim,"SpecificQuantity",V.DataView.WIPFG!VWIPFG(V.Local.iC).QTY_SCANNED!FieldVal)
+						F.Intrinsic.Math.Add(V.Local.iSumOfQty,V.DataView.WIPFG!VWIPFG(V.Local.iC).QTY_SCANNED!FieldVal,V.Local.iSumOfQty)
+					F.Intrinsic.Control.Else
+						'adding the bin info to 2003file datatable, job suffix already exists in 2003 datatable no need to add another row
+						F.Data.DataTable.AddRow("2003File","WONum",V.DataTable.JOBSUFF(V.Local.i).JOB!FieldValTrim,"WOSuffix",V.DataTable.JOBSUFF(V.Local.i).SUFFIX!FieldValTrim,"Bin",V.DataView.WIPFG!VWIPFG(V.Local.iC).Bin!FieldValTrim,"Serial",V.DataView.WIPFG!VWIPFG(V.Local.iC).Serial_Number!FieldValTrim,"SpecificQuantity",V.DataView.WIPFG!VWIPFG(V.Local.iC).QTY_SCANNED!FieldVal)
+						F.Intrinsic.Math.Add(V.Local.iSumOfQty,V.DataView.WIPFG!VWIPFG(V.Local.iC).QTY_SCANNED!FieldVal,V.Local.iSumOfQty)
+					F.Intrinsic.Control.EndIf
+				F.Intrinsic.Control.Next(V.Local.iC)
+				
+				F.Intrinsic.Control.If(V.Local.iSumOfQty,>=,V.Local.iQtySum)
+					
+					'checking and making sure last labor step is closed if not don't wiptofg
+		'				F.Intrinsic.String.Build("Select Job, Suffix, Seq, LMO, Flag_Closed From V_Job_Operations Where Job = '{0}' and Suffix = '{1}'",V.DataTable.JOBSUFF(V.Local.i).JOB!FieldValTrim,V.DataTable.JOBSUFF(V.Local.i).SUFFIX!FieldValTrim,V.Local.sSql)
+		'				F.Data.DataTable.CreateFromSQL("JobOp","con",V.Local.sSql,True)
+		'				F.Data.DataView.Create("JobOp","VJobOp",22,"LMO = 'L'","Seq")
+		'				F.Intrinsic.Control.If(V.DataTable.JobOp.RowCount--,<>,-1)
+		'					F.Intrinsic.Control.If(V.DataView.JobOp!VJobOp(V.DataView.JobOp!VJobOp.RowCount--).Flag_Closed!FieldValTrim,=,"Y")
+							V.Local.bDelete.Set(True)
+		'						F.Intrinsic.Control.If(V.DataTable.2003.RowCount--,<>,-1)
+								F.Data.DataTable.SetValue("2003",-1,"Quantity",V.Local.iSumOfQty)
+								F.Intrinsic.Control.CallSub(2003Sync)
+								F.Data.DataTable.AcceptChanges("2003")
+		'						F.Intrinsic.Control.EndIf
+		'					F.Intrinsic.Control.Else
+		'						F.Data.DataTable.DeleteRow("2003")
+		'						F.Data.DataTable.DeleteRow("2003File")
+		'						F.Data.DataTable.AcceptChanges("2003")
+		'						F.Data.DataTable.AcceptChanges("2003File")
+		'					F.Intrinsic.Control.EndIf
+		'				F.Intrinsic.Control.Else
+		'					F.Data.DataTable.DeleteRow("2003")
+		'					F.Data.DataTable.DeleteRow("2003File")
+		'					F.Data.DataTable.AcceptChanges("2003")
+		'					F.Data.DataTable.AcceptChanges("2003File")
+		'				F.Intrinsic.Control.EndIf
+		'				F.Data.DataView.Close("JobOp","VJobOp")
+		'				F.Data.DataTable.Close("JobOp")
+				F.Intrinsic.Control.Else
+					V.Local.bDelete.Set(False)
+					F.Data.DataTable.SetValue("2003",-1,"CostMethod","E","CloseWO","N","Quantity",V.Local.iSumOfQty)
+					F.Intrinsic.Control.CallSub(2003Sync)
+					F.Data.DataTable.AcceptChanges("2003")
+	'				F.Data.DataTable.DeleteRow("2003")
+	'				F.Data.DataTable.DeleteRow("2003File")
+	'				F.Data.DataTable.AcceptChanges("2003")
+	'				F.Data.DataTable.AcceptChanges("2003File")
+				F.Intrinsic.Control.EndIf
+				F.Intrinsic.Control.If(V.Local.bDelete)
+					F.Intrinsic.String.Build("Update Job_Operations Set Flag_Closed = 'Y' Where Job = '{0}' and Suffix = '{1}' and Seq < '995000' and (LMO = 'M' or LMO = 'L')",V.DataTable.JOBSUFF(V.Local.i).JOB!FieldValTrim,V.DataTable.JOBSUFF(V.Local.i).SUFFIX!FieldValTrim,V.Local.sSql)
+					F.ODBC.Connection!Con.Execute(V.Local.sSql)
+				F.Intrinsic.Control.EndIf
+				F.Intrinsic.Control.For(V.Local.iC,V.DataView.WIPFG!VWIPFG.RowCount--,0,-1)
+					F.Data.DataTable.DeleteRow("WIPFG",V.DataView.WIPFG!VWIPFG(V.Local.iC).DataTableIndex)
+				F.Intrinsic.Control.Next(V.Local.iC)
+			F.Intrinsic.Control.Else
+				F.Intrinsic.Control.For(V.Local.iC,V.DataView.WIPFG!VWIPFG.RowCount--,0,-1)
+					F.Data.DataTable.DeleteRow("WIPFG",V.DataView.WIPFG!VWIPFG(V.Local.iC).DataTableIndex)
+				F.Intrinsic.Control.Next(V.Local.iC)
+			F.Intrinsic.Control.EndIf
+			F.Data.DataView.Close("WIPFG","VWIPFG")
+			F.Data.DataTable.SaveToDB("WIPFG","con","GCG_5364_WIP_QUEUE","Rec_No",7)
+			F.Data.DataTable.AcceptChanges("WIPFG")
+		F.Intrinsic.Control.EndIf
+	F.Intrinsic.Control.Next(V.Local.i)
+	F.Data.DataTable.Close("JOBSUFF")
+F.Intrinsic.Control.EndIf
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("Process_Records_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_5364_PROC_WIPFG.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(Exit)
+Function.Intrinsic.Control.EndIf
+Program.Sub.Process_Records.End
+
+Program.Sub.Exit.Start
+F.Intrinsic.Control.SetErrorHandler("Exit_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+
+F.ODBC.Connection!Con.Close
+
+F.Intrinsic.Control.End
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("Exit_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.Control.End
+Function.Intrinsic.Control.EndIf
+Program.Sub.Exit.End
